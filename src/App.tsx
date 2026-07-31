@@ -1,9 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import Layout from '@/components/Layout'
-import Loading from '@/components/Loading'
+import Layout from '@/components/layout/Layout'
+import Loading from '@/components/ui/Loading'
 import Login from '@/pages/Login'
 import Setup from '@/pages/Setup'
+import AuthConfirm from '@/pages/AuthConfirm'
 import Dashboard from '@/pages/Dashboard'
 import Calendar from '@/pages/Calendar'
 import Members from '@/pages/Members'
@@ -52,6 +53,7 @@ export default function App() {
         <Route element={<RequireGuest />}>
           <Route path="/login" element={<Login />} />
         </Route>
+        <Route path="/auth/confirm" element={<AuthConfirm />} />
         <Route element={<RequireAuth />}>
           <Route element={<RequireSetup />}>
             <Route path="/setup" element={<Setup />} />
