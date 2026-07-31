@@ -1,5 +1,5 @@
 import { Store } from 'lucide-react'
-import Modal from '@/components/Modal'
+import Modal from '@/components/ui/Modal'
 import { useReceiptSignedUrl } from '@/hooks/useReceipts'
 import type { ExpenseWithRelations } from '@/lib/types'
 import { formatCurrency } from '@/lib/money'

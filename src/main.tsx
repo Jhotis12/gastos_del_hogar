@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from '@/hooks/useAuth'
-import { ToastProvider } from '@/components/Toast'
+import { ToastProvider } from '@/components/ui/Toast'
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -59,8 +59,15 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 │   │   ├── constants.ts     # FREQUENCIAS, CATEGORY_ICONS, COLORS, WEEKDAYS
 │   │   └── utils.ts         # cn() y errorMessage()
 │   ├── hooks/               # 1 archivo por dominio (ver §6)
-│   ├── components/          # UI reutilizable + formularios extraídos
-│   └── pages/               # 1 página por ruta
+│   ├── components/         # Agrupados por apartado:
+│   │   ├── layout/         #   Layout (sidebar + header móvil)
+│   │   ├── ui/             #   Base: Modal, ConfirmDialog, Toast, Loading, QueryError,
+│   │   │                   #   MoneyInput, MonthPicker, CategoryBadge, StatCard
+│   │   ├── expenses/       #   Gastos: ExpenseForm + ReceiptCapture/Result/Viewer (facturas)
+│   │   ├── services/       #   ServiceForm (gastos fijos)
+│   │   ├── savings/        #   GoalForm + AdjustGoalModal (metas de ahorro)
+│   │   └── categories/     #   BudgetModal (presupuestos por categoría)
+│   └── pages/              # 1 página por ruta
 ├── tests/
 │   ├── e2e-flow.mjs         # Suite e2e de 30 pasos (navegación SPA)
 │   ├── reset-sandbox.sh     # Reinicia el usuario sandbox (requiere SUPABASE_SERVICE_ROLE)
