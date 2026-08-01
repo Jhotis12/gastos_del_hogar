@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowDownCircle, ArrowUpCircle, Sparkles, AlertTriangle } from 'lucide-react'
+import { ArrowDownCircle, ArrowUpCircle, Sparkles, AlertTriangle, Plus } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { useAddExpense } from '@/hooks/useExpenses'
 import { useCountUp } from '@/hooks/useCountUp'
 import { useApplyRecurring, usePendingRecurring } from '@/hooks/useRecurring'
 import { useBudgets } from '@/hooks/useCategories'
@@ -9,6 +10,7 @@ import { useExpenses, useSummary } from '@/hooks/useExpenses'
 import { useHousehold } from '@/hooks/useHousehold'
 import { useMembers, useSalaries } from '@/hooks/useMembers'
 import StatCard from '@/components/ui/StatCard'
+import ExpenseForm from '@/components/expenses/ExpenseForm'
 import MonthPicker from '@/components/ui/MonthPicker'
 import CategoryBadge from '@/components/ui/CategoryBadge'
 import Loading from '@/components/ui/Loading'
@@ -21,6 +23,25 @@ export default function Dashboard() {
   const { user, profile } = useAuth()
   const [month, setMonth] = useState(currentMonthKey())
   const toast = useToast()
+  const [quickOpen, setQuickOpen] = useState(false)
+  const addExpense = useAddExpense()
+
+  const handleQuickAdd = async (input: {
+    amount: number
+    description: string
+    category_id: string | null
+    paid_by: string | null
+    expense_date: string
+  }) => {
+    try {
+      await addExpense.mutateAsync(input)
+      toast.success('Gasto registrado')
+      setQuickOpen(false)
+    } catch (err) {
+      toast.error(errorMessage(err))
+      throw err
+    }
+  }
   const { data: household } = useHousehold()
   const { data: members } = useMembers()
   const { data: salaries } = useSalaries(month)
@@ -78,23 +99,33 @@ export default function Dashboard() {
             {household.name} · {user?.email}
           </p>
         </div>
-        <MonthPicker month={month} onChange={setMonth} />
+        <div className="flex items-center gap-2">
+          <MonthPicker month={month} onChange={setMonth} />
+          <button
+            onClick={() => setQuickOpen(true)}
+            aria-label="Agregar gasto rápido"
+            title="Agregar gasto rápido"
+            className="flex h-10 w-10 items-center justify-center rounded-lg bg-pine-700 text-white shadow-md shadow-pine-900/20 transition-transform hover:bg-pine-800 active:scale-95"
+          >
+            <Plus size={20} />
+          </button>
+        </div>
       </div>
 
       <div className="animate-fade-up relative overflow-hidden rounded-2xl bg-gradient-to-br from-pine-700 via-pine-800 to-pine-950 p-5 text-white shadow-lg shadow-pine-900/20 sm:p-8">
         <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-400/20 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-14 left-1/3 h-40 w-40 rounded-full bg-pine-400/20 blur-2xl" />
         <div className="relative">
-          <p className="text-sm font-medium text-pine-200">Saldo disponible · {monthLabel(month)}</p>
+          <p className="text-sm font-medium text-[#b3dcca]">Saldo disponible · {monthLabel(month)}</p>
           <p className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-5xl">
             {formatCurrency(balanceAnimated)}
           </p>
           <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2 text-sm">
-            <span className="flex items-center gap-2 text-pine-100">
+            <span className="flex items-center gap-2 text-[#d8ede4]">
               <ArrowUpCircle size={16} className="text-emerald-300" />
               Ingresos {formatCurrency(totalIncome)}
             </span>
-            <span className="flex items-center gap-2 text-pine-100">
+            <span className="flex items-center gap-2 text-[#d8ede4]">
               <ArrowDownCircle size={16} className="text-coral-300" />
               Gastos {formatCurrency(totalExpenses)}
             </span>
@@ -279,6 +310,13 @@ export default function Dashboard() {
           </ul>
         )}
       </div>
+         <ExpenseForm
+        open={quickOpen}
+        initial={null}
+        onClose={() => setQuickOpen(false)}
+        busy={addExpense.isPending}
+        onSave={handleQuickAdd}
+      />
     </div>
   )
 }

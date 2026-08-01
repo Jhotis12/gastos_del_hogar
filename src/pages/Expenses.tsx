@@ -112,7 +112,7 @@ export default function Expenses() {
           <MonthPicker month={month} onChange={setMonth} />
           <button
             onClick={() => setCaptureOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-gold-500 px-4 py-2 text-sm font-medium text-white hover:bg-gold-600"
+            className="inline-flex items-center gap-2 rounded-lg bg-gold-500 px-4 py-2 text-sm font-medium text-[#16231e] hover:bg-gold-600"
           >
             <ScanLine size={16} />
             Escanear factura
@@ -138,7 +138,7 @@ export default function Expenses() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por descripción…"
-            className="w-56 rounded-lg border border-slate-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink/70 focus:border-pine-500 focus:outline-none"
+            className="w-56 rounded-lg border border-slate-200 bg-surface py-1.5 pl-9 pr-3 text-xs text-ink/70 focus:border-pine-500 focus:outline-none"
           />
         </div>
         <button
@@ -146,7 +146,7 @@ export default function Expenses() {
           className={`rounded-full px-3 py-1.5 text-xs font-medium ${
             categoryFilter === 'all'
               ? 'bg-slate-900 text-white'
-              : 'bg-white text-ink/55 ring-1 ring-ink/10 hover:bg-cream'
+              : 'bg-surface text-ink/55 ring-1 ring-ink/10 hover:bg-cream'
           }`}
         >
           Todas
@@ -162,7 +162,7 @@ export default function Expenses() {
                 className={`rounded-full px-3 py-1.5 text-xs font-medium ${
                   categoryFilter === cat.id
                     ? 'bg-slate-900 text-white'
-                    : 'bg-white text-ink/55 ring-1 ring-ink/10 hover:bg-cream'
+                    : 'bg-surface text-ink/55 ring-1 ring-ink/10 hover:bg-cream'
                 }`}
               >
                 {cat.name}
@@ -173,7 +173,7 @@ export default function Expenses() {
         {searched.length > 0 && (
           <button
             onClick={exportCSV}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-ink/55 hover:bg-cream"
+            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-surface px-3 py-1.5 text-xs font-medium text-ink/55 hover:bg-cream"
           >
             <Download size={14} />
             Exportar CSV

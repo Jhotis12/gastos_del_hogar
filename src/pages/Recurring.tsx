@@ -228,7 +228,7 @@ export default function Recurring() {
                       aria-label={r.is_active ? 'Desactivar' : 'Activar'}
                     >
                       <span
-                        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+                        className={`absolute top-0.5 h-5 w-5 rounded-full bg-surface shadow transition-all ${
                           r.is_active ? 'left-[22px]' : 'left-0.5'
                         }`}
                       />

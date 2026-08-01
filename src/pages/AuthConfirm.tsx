@@ -31,7 +31,7 @@ export default function AuthConfirm() {
   }, [params, navigate])
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-cream p-4">
+    <div className="force-light flex min-h-screen items-center justify-center bg-cream p-4">
       <div className="card w-full max-w-sm p-8 text-center">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-pine-600 to-pine-800 text-white shadow-lg shadow-pine-900/20">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -7,6 +7,15 @@ import { AuthProvider } from '@/hooks/useAuth'
 import { ToastProvider } from '@/components/ui/Toast'
 import SessionSync from '@/components/ui/SessionSync'
 
+// Aplicar tema guardado antes del primer render (evita parpadeo)
+{
+  const saved = localStorage.getItem('theme')
+  const dark = saved
+    ? saved === 'dark'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches
+  if (dark) document.documentElement.classList.add('dark')
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

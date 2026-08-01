@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Eye, EyeOff, Wallet, ShieldCheck, Users, ReceiptText } from 'lucide-react'
+import { Eye, EyeOff, ShieldCheck, Users, ReceiptText } from 'lucide-react'
+import AppLogo from '@/components/ui/AppLogo'
 import { supabase } from '@/lib/supabase'
 
 type Mode = 'login' | 'register'
@@ -11,7 +12,7 @@ const FEATURES = [
 ]
 
 const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
+  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-[15px] text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 export default function Login() {
   const [mode, setMode] = useState<Mode>('login')
@@ -55,16 +56,14 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen bg-cream lg:bg-white">
+    <div className="force-light flex min-h-screen bg-cream lg:bg-surface">
       {/* Panel de marca (desktop) */}
       <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-pine-700 via-pine-800 to-pine-950 p-12 text-white lg:flex">
         <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-gold-400/20 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 rounded-full bg-pine-400/20 blur-3xl" />
 
         <div className="relative flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 backdrop-blur">
-            <Wallet size={22} />
-          </div>
+          <AppLogo size={44} />
           <p className="font-display text-lg font-bold">Gastos del Hogar</p>
         </div>
 
@@ -76,7 +75,7 @@ export default function Login() {
           <ul className="mt-10 space-y-5">
             {FEATURES.map((f) => (
               <li key={f.text} className="flex items-center gap-4 text-pine-100">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface/10">
                   <f.icon size={18} />
                 </span>
                 <span className="text-sm">{f.text}</span>
@@ -94,9 +93,7 @@ export default function Login() {
       <div className="flex w-full items-center justify-center px-4 py-10 lg:w-1/2 lg:px-12">
         <div className="w-full max-w-sm">
           <div className="mb-8 flex flex-col items-center lg:items-start">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-pine-600 to-pine-800 text-white shadow-lg shadow-pine-900/20 lg:hidden">
-              <Wallet size={26} />
-            </div>
+            <AppLogo size={64} className="mb-4 lg:hidden" />
             <h2 className="font-display text-2xl font-bold tracking-tight text-ink">
               {mode === 'login' ? '¡Hola de nuevo!' : 'Crea tu cuenta'}
             </h2>
@@ -115,7 +112,7 @@ export default function Login() {
               }}
               className={`min-h-11 rounded-lg py-2.5 text-sm font-semibold transition-all ${
                 mode === 'login'
-                  ? 'bg-white text-ink shadow-sm'
+                  ? 'bg-surface text-ink shadow-sm'
                   : 'text-ink/50 hover:text-ink/70'
               }`}
             >
@@ -128,7 +125,7 @@ export default function Login() {
               }}
               className={`min-h-11 rounded-lg py-2.5 text-sm font-semibold transition-all ${
                 mode === 'register'
-                  ? 'bg-white text-ink shadow-sm'
+                  ? 'bg-surface text-ink shadow-sm'
                   : 'text-ink/50 hover:text-ink/70'
               }`}
             >

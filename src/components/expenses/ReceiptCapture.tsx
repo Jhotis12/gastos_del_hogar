@@ -124,7 +124,7 @@ export default function ReceiptCapture({ open, onClose, onAnalyzed }: ReceiptCap
 
         {analyzing && (
           <div className="flex flex-col items-center gap-4 rounded-xl border border-pine-200 bg-pine-50/40 py-10">
-            <div className="relative w-44 overflow-hidden rounded-lg border border-dashed border-pine-300 bg-white p-4 shadow-sm">
+            <div className="relative w-44 overflow-hidden rounded-lg border border-dashed border-pine-300 bg-surface p-4 shadow-sm">
               <div className="h-2 w-3/4 rounded bg-slate-200" />
               <div className="mt-1.5 h-1.5 w-1/2 rounded bg-slate-100" />
               <div className="mt-4 space-y-2">

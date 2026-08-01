@@ -50,7 +50,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={t.id}
             role="status"
             className={cn(
-              'animate-slide-in pointer-events-auto flex items-start gap-2.5 rounded-xl border bg-white p-3.5 shadow-lg',
+              'animate-slide-in pointer-events-auto flex items-start gap-2.5 rounded-xl border bg-surface p-3.5 shadow-lg',
               t.type === 'success' ? 'border-pine-200' : 'border-coral-200',
             )}
           >

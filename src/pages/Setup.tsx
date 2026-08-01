@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Home, UserPlus, Wallet } from 'lucide-react'
+import { Home, UserPlus } from 'lucide-react'
+import AppLogo from '@/components/ui/AppLogo'
 import { useCreateHousehold, useJoinHousehold } from '@/hooks/useHousehold'
 
 const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
+  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-[15px] text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 export default function Setup() {
   const createHousehold = useCreateHousehold()
@@ -31,12 +32,10 @@ export default function Setup() {
   const busy = createHousehold.isPending || joinHousehold.isPending
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-cream px-4 py-10">
+    <div className="force-light flex min-h-screen flex-col items-center justify-center bg-cream px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-pine-600 to-pine-800 text-white shadow-lg shadow-pine-900/20">
-            <Wallet size={26} />
-          </div>
+          <AppLogo size={72} className="mb-4" />
           <h1 className="font-display text-2xl font-bold tracking-tight text-ink">
             Bienvenido al hogar
           </h1>
@@ -54,7 +53,7 @@ export default function Setup() {
             className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl border px-4 py-3 text-sm font-semibold transition-all ${
               mode === 'create'
                 ? 'border-pine-600 bg-pine-50 text-pine-700'
-                : 'border-slate-200 bg-white text-ink/55 hover:bg-cream'
+                : 'border-slate-200 bg-surface text-ink/55 hover:bg-cream'
             }`}
           >
             <Home size={20} />
@@ -68,7 +67,7 @@ export default function Setup() {
             className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl border px-4 py-3 text-sm font-semibold transition-all ${
               mode === 'join'
                 ? 'border-pine-600 bg-pine-50 text-pine-700'
-                : 'border-slate-200 bg-white text-ink/55 hover:bg-cream'
+                : 'border-slate-200 bg-surface text-ink/55 hover:bg-cream'
             }`}
           >
             <UserPlus size={20} />
@@ -76,7 +75,7 @@ export default function Setup() {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-surface p-6 shadow-sm">
           {mode === 'create' ? (
             <div>
               <label className="mb-1.5 block text-sm font-medium text-ink/70">

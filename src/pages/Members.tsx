@@ -201,7 +201,7 @@ export default function Members() {
           </p>
           <button
             onClick={copyCode}
-            className="mt-1 inline-flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-ink/70 shadow-sm hover:bg-cream"
+            className="mt-1 inline-flex items-center gap-2 rounded-lg bg-surface px-3 py-1.5 text-sm font-semibold text-ink/70 shadow-sm hover:bg-cream"
           >
             {copied ? <Check size={16} className="text-pine-600" /> : <Copy size={16} />}
             {household.invite_code}
