@@ -263,6 +263,14 @@ create policy "households: crear hogar"
   on public.households for insert
   with check (true);
 
+create policy "households: editar del hogar"
+  on public.households for update
+  using (public.is_household_member(id));
+
+create policy "households: eliminar del hogar"
+  on public.households for delete
+  using (public.is_household_member(id));
+
 -- salaries
 alter table public.salaries enable row level security;
 

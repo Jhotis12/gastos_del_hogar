@@ -7,14 +7,16 @@ import {
   Tags,
   Repeat,
   LogOut,
-  Wallet,
   CalendarDays,
   PiggyBank,
   MoreHorizontal,
   X,
+  Settings,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
+import AppLogo from '@/components/ui/AppLogo'
+import ThemeToggle from '@/components/ui/ThemeToggle'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -24,6 +26,7 @@ const NAV_ITEMS = [
   { to: '/recurrentes', label: 'Servicios', icon: Repeat },
   { to: '/ahorros', label: 'Metas de ahorro', icon: PiggyBank },
   { to: '/categorias', label: 'Categorías', icon: Tags },
+  { to: '/perfil', label: 'Perfil y Hogar', icon: Settings },
 ]
 
 // Navegación inferior (móvil): los 4 principales + "Más"
@@ -37,9 +40,7 @@ const BOTTOM_NAV = [
 function Brand() {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-pine-600 to-pine-800 text-white shadow-md shadow-pine-900/20">
-        <Wallet size={20} />
-      </div>
+      <AppLogo size={44} />
       <div>
         <p className="font-display text-sm font-semibold text-ink">Gastos del Hogar</p>
         <p className="text-xs text-ink/50">Presupuesto en común</p>
@@ -85,7 +86,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-cream">
       {/* Sidebar (desktop) */}
-      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-pine-950/5 bg-white/70 backdrop-blur lg:block">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-pine-950/5 bg-surface/70 backdrop-blur lg:block">
         <div className="flex h-full flex-col">
           <div className="px-6 py-5">
             <Brand />
@@ -102,9 +103,10 @@ export default function Layout() {
                 {profile?.full_name}
               </span>
             </div>
+            <ThemeToggle />
             <button
               onClick={signOut}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-ink/55 hover:bg-coral-100/60 hover:text-coral-700"
+              className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-ink/55 hover:bg-coral-100/60 hover:text-coral-700"
             >
               <LogOut size={18} />
               Cerrar sesión
@@ -117,14 +119,15 @@ export default function Layout() {
       <div className="lg:pl-64">
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-pine-950/5 bg-cream/80 px-4 py-3 backdrop-blur lg:hidden">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-pine-600 to-pine-800 text-white">
-              <Wallet size={18} />
-            </div>
+            <AppLogo size={36} />
             <p className="font-display text-sm font-semibold text-ink">Gastos del Hogar</p>
           </div>
-          <span className="max-w-[8rem] truncate text-xs text-ink/50">
-            {profile?.full_name}
-          </span>
+          <div className="flex items-center gap-1">
+            <ThemeToggle compact />
+            <span className="max-w-[6rem] truncate text-xs text-ink/50">
+              {profile?.full_name}
+            </span>
+          </div>
         </header>
 
         <main className="mx-auto max-w-5xl px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-6">
@@ -136,7 +139,7 @@ export default function Layout() {
       <div
         role="navigation"
         aria-label="Navegación principal"
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-pine-950/5 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-pine-950/5 bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
       >
         <div className="mx-auto grid max-w-md grid-cols-5">
           {BOTTOM_NAV.map((item) => (
@@ -176,7 +179,7 @@ export default function Layout() {
       {moreOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={closeMore} />
-          <div className="animate-fade-up absolute inset-x-0 bottom-0 rounded-t-3xl bg-white p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl">
+          <div className="animate-fade-up absolute inset-x-0 bottom-0 rounded-t-3xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl">
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-ink/10" />
             <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-ink/40">
               Más opciones
@@ -190,9 +193,7 @@ export default function Layout() {
                   className={({ isActive }) =>
                     cn(
                       'flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors',
-                      isActive
-                        ? 'bg-pine-50 text-pine-700'
-                        : 'text-ink/70 hover:bg-cream',
+                      isActive ? 'bg-pine-50 text-pine-700' : 'text-ink/70 hover:bg-cream',
                     )
                   }
                 >
@@ -200,6 +201,7 @@ export default function Layout() {
                   {item.label}
                 </NavLink>
               ))}
+              <ThemeToggle />
               <button
                 onClick={signOut}
                 className="mt-1 flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-coral-600 hover:bg-coral-100/60"

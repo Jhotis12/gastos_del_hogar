@@ -12,6 +12,7 @@ import Expenses from '@/pages/Expenses'
 import Recurring from '@/pages/Recurring'
 import Savings from '@/pages/Savings'
 import Categories from '@/pages/Categories'
+import Profile from '@/pages/Profile'
 
 function RequireAuth() {
   const { user, loading } = useAuth()
@@ -67,6 +68,7 @@ export default function App() {
               <Route path="/recurrentes" element={<Recurring />} />
               <Route path="/ahorros" element={<Savings />} />
               <Route path="/categorias" element={<Categories />} />
+              <Route path="/perfil" element={<Profile />} />
             </Route>
           </Route>
         </Route>

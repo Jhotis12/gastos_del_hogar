@@ -100,3 +100,65 @@ export function useDeleteSalary() {
   })
 }
 
+
+// ---------- Perfil y hogar ----------
+
+export function useUpdateProfile() {
+  const { user, refreshProfile } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ full_name }: { full_name: string }) => {
+      if (!user) throw new Error('No autenticado')
+      const { error } = await supabase
+        .from('profiles')
+        .update({ full_name })
+        .eq('id', user.id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      void refreshProfile()
+      queryClient.invalidateQueries({ queryKey: ['members'] })
+    },
+  })
+}
+
+export function useLeaveHousehold() {
+  const { user, refreshProfile } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error('No autenticado')
+      const { error } = await supabase
+        .from('profiles')
+        .update({ household_id: null })
+        .eq('id', user.id)
+      if (error) throw error
+    },
+    onSuccess: async () => {
+      await refreshProfile()
+      await queryClient.invalidateQueries()
+    },
+  })
+}
+
+export function useDeleteHousehold() {
+  const { profile, refreshProfile } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!profile?.household_id) throw new Error('Sin hogar')
+      const { error } = await supabase
+        .from('households')
+        .delete()
+        .eq('id', profile.household_id)
+      if (error) throw error
+    },
+    onSuccess: async () => {
+      await refreshProfile()
+      await queryClient.invalidateQueries()
+    },
+  })
+}
