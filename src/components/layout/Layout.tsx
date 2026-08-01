@@ -18,6 +18,7 @@ import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { cn } from '@/lib/utils'
 import AppLogo from '@/components/ui/AppLogo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
+import InstallAppButton from '@/components/ui/InstallAppButton'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -203,6 +204,7 @@ export default function Layout() {
                   {item.label}
                 </NavLink>
               ))}
+              <InstallAppButton />
               <ThemeToggle />
               <button
                 onClick={signOut}
