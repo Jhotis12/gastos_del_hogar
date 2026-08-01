@@ -345,6 +345,42 @@ await step('crear gasto desde factura y ver detalle', async () => {
   await page.keyboard.press('Escape')
 })
 
+// Quick-add desde el Dashboard
+await step('quick-add de gasto desde dashboard', async () => {
+  await goTo('Dashboard', '/')
+  await page.click('button[aria-label="Agregar gasto rápido"]')
+  await page.fill('input[inputmode="decimal"]', '35.000')
+  await page.fill('input[placeholder="Ej. Supermercado del mes"]', 'Rápido test')
+  await page.click('text="Agregar gasto"')
+  await waitForText('Rápido test')
+})
+
+// Dark mode
+await step('modo oscuro y claro', async () => {
+  await page.click('button[aria-label="Cambiar a modo oscuro"]')
+  const dark = await page.evaluate(() => document.documentElement.classList.contains('dark'))
+  if (!dark) throw new Error('modo oscuro no aplicado')
+  await page.click('button[aria-label="Cambiar a modo claro"]')
+  const light = await page.evaluate(() => !document.documentElement.classList.contains('dark'))
+  if (!light) throw new Error('modo claro no aplicado')
+})
+
+// Perfil: cambiar nombre
+await step('cambiar nombre en perfil', async () => {
+  await goTo('Perfil y Hogar', '/perfil')
+  await waitForText('Tu cuenta')
+  await page.fill('input[placeholder="Tu nombre"]', 'Sandbox Editado')
+  await page.click('text=Guardar cambios')
+  await waitForText('Sandbox Editado')
+})
+
+// Perfil: eliminar hogar (cierra el flujo — va a /setup)
+await step('eliminar hogar desde perfil', async () => {
+  await page.click('text=Eliminar hogar')
+  await page.click('[data-testid="confirm-dialog-confirm"]')
+  await page.waitForURL(/\/setup/, { timeout: 20000 })
+})
+
 console.log('\n===== RESUMEN =====')
 console.log(failed === 0 ? 'TODOS LOS PASOS PASARON' : `${failed} paso(s) fallaron`)
 if (httpErrors.length) {

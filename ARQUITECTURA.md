@@ -210,6 +210,25 @@ Skill de referencia: `mobile-app-ui-design` (`.agents/skills/`).
 - Regla de oro: **sin overflow horizontal a 375px** (verificado por
   `tests/check-mobile.mjs`).
 
+### Modo oscuro
+- Tokens temáticos como variables CSS (`@theme inline`): `cream`, `ink`,
+  `surface`, escala `slate` y tintes `pine/gold/coral` se invierten con la
+  clase `.dark` en `<html>` (variante `@custom-variant dark`). Las superficies
+  blancas usan `bg-surface` (token) — **no** `bg-white` (reservado para texto).
+- `useTheme` (hook) + `ThemeToggle` (sidebar, header móvil y sheet "Más");
+  persiste en `localStorage('theme')` y respeta `prefers-color-scheme`.
+  `main.tsx` aplica el tema antes del primer render (evita parpadeo).
+
+### Perfil y Hogar (`/perfil`)
+- Cambiar nombre (`useUpdateProfile`), salir del hogar (`useLeaveHousehold`),
+  **eliminar hogar** (`useDeleteHousehold`, requiere política DELETE en
+  `households`) y cerrar sesión. Tras salir/eliminar, los guards redirigen a
+  `/setup`.
+
+### Quick-add
+- Botón "+" en el Dashboard que abre `ExpenseForm` para registrar un gasto
+  sin navegar a la página de Gastos.
+
 ---
 
 ## 7. Flujos clave
