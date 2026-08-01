@@ -57,7 +57,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfileLoading(true)
     setProfileLoaded(false)
 
-    const fetchProfile = (attempt: number) => {
+    const fetchProfile = async (attempt: number) => {
+      // Valida que el usuario siga existiendo: si la cuenta fue eliminada,
+      // la sesión es obsoleta → cerrar sesión para ir al login.
+      const { data: userData } = await supabase.auth.getUser()
+      if (!active) return
+      if (!userData.user) {
+        await supabase.auth.signOut()
+        if (!active) return
+        setProfile(null)
+        setProfileLoading(false)
+        setProfileLoaded(true)
+        return
+      }
       supabase
         .from('profiles')
         .select('*')
