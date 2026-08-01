@@ -15,7 +15,9 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
   (useMembers, useCategories, useExpenses, useRecurring, useSavings,
   useReceipts). No crear god-files.
 - **Montos COP**: siempre `MoneyInput` + `parseMoneyInput` (formato
-  colombiano: puntos = miles, coma = decimales).
+  colombiano: puntos = miles, coma = decimales). No usar inputs < 16px
+  (zoom de iOS al enfocar); usar `SelectInput`/`DateInput` para selects y
+  fechas.
 - **Guards declarativos**: nunca `navigate()` manual desde formularios; los
   guards de `App.tsx` esperan `loading`/`profileLoaded`.
 - **Errores**: mutations con `try/catch` + `toast`; queries con `QueryError`.

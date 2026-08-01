@@ -62,14 +62,17 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 │   ├── components/         # Agrupados por apartado:
 │   │   ├── layout/         #   Layout (sidebar + header móvil)
 │   │   ├── ui/             #   Base: Modal, ConfirmDialog, Toast, Loading, QueryError,
-│   │   │                   #   MoneyInput, MonthPicker, CategoryBadge, StatCard
+│   │   │                   #   MoneyInput, SelectInput, DateInput, MonthPicker,
+│   │   │                   #   CategoryBadge, StatCard, AppLogo, ThemeToggle, SessionSync
 │   │   ├── expenses/       #   Gastos: ExpenseForm + ReceiptCapture/Result/Viewer (facturas)
 │   │   ├── services/       #   ServiceForm (gastos fijos)
 │   │   ├── savings/        #   GoalForm + AdjustGoalModal (metas de ahorro)
 │   │   └── categories/     #   BudgetModal (presupuestos por categoría)
 │   └── pages/              # 1 página por ruta
 ├── tests/
-│   ├── e2e-flow.mjs         # Suite e2e de 30 pasos (navegación SPA)
+│   ├── e2e-flow.mjs         # Suite e2e de 34 pasos (navegación SPA)
+│   ├── e2e-realtime.mjs     # Sincronización en tiempo real entre 2 miembros
+│   ├── check-mobile.mjs     # Verificación móvil (375px, sin overflow)
 │   ├── reset-sandbox.sh     # Reinicia el usuario sandbox (requiere SUPABASE_SERVICE_ROLE)
 │   ├── screenshots.mjs      # Capturas de las páginas (dev)
 │   └── fixtures/factura.jpg # Factura de prueba para el escaneo
@@ -177,8 +180,17 @@ manualmente desde formularios**:
 
 ### Montos en COP
 Siempre por `MoneyInput` (texto con `inputMode="decimal"`): acepta
-`450.000`, `2.500.000,50` o `450000`; puntos = miles, coma = decimales;
-formatea con puntos al salir. Parseo con `parseMoneyInput` al guardar.
+`450.000`, `2.500.000,50` o `450000`; puntos = miles, coma = decimales.
+- **Formato en vivo** con puntos de miles mientras se teclea (solo con el
+  cursor al final; con separadores se normaliza al salir).
+- Prefijo "$" fijo, dígitos tabulares (`tabular-nums`) y **16px** (los
+  inputs menores a 16px provocan zoom automático de iOS al enfocar).
+- Parseo con `parseMoneyInput` al guardar.
+
+### Selects y fechas
+- `SelectInput`: select nativo con `appearance-none` + chevron visible en
+  todas las plataformas y misma altura que los inputs (16px, `py-3`).
+- `DateInput`: `type="date"` con icono de calendario y estilos consistentes.
 
 ### Fechas y meses (TZ-seguras)
 Todas las utilidades de mes construyen fechas al **mediodía local**
@@ -291,7 +303,7 @@ Página Servicios: total fijo del mes, % vs ingreso, estado
 
 ## 9. Testing
 
-- Suite e2e de 30 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios,
+- Suite e2e de 34 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios,
   gastos, calendario, saldos, presupuestos, servicios, metas, escaneo de
   facturas (con fixture + Gemini real).
 - Usa **navegación SPA** (clics en el sidebar, no `page.goto` a rutas
