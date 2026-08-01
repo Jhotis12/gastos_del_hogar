@@ -12,7 +12,8 @@ interface MoneyInputProps {
 }
 
 // Campo de monto en pesos colombianos: acepta "450.000", "2.500.000,50" o "450000".
-// Al salir del campo, formatea el valor con puntos de miles.
+// Formatea con puntos de miles en vivo (mientras se escriben solo dígitos),
+// muestra prefijo "$" y usa dígitos tabulares. Al salir, normaliza el valor.
 export default function MoneyInput({
   value,
   onChange,
@@ -31,6 +32,25 @@ export default function MoneyInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value
+    const el = e.target
+    setText(raw)
+    onChange(raw)
+    // Formato en vivo solo cuando el cursor está al final y el texto (sin
+    // puntos de miles) son dígitos puros; así "2.500" + "0" -> "25.000"
+    if (el.selectionStart === raw.length && el.selectionEnd === raw.length) {
+      const stripped = raw.replace(/\./g, '')
+      if (/^\d+$/.test(stripped)) {
+        const formatted = formatMoneyInput(Number(stripped))
+        if (formatted !== raw) {
+          setText(formatted)
+          onChange(formatted)
+        }
+      }
+    }
+  }
+
   const handleBlur = () => {
     const parsed = parseMoneyInput(text)
     if (parsed !== null) {
@@ -41,20 +61,23 @@ export default function MoneyInput({
   }
 
   return (
-    <input
-      type="text"
-      inputMode="decimal"
-      autoComplete="off"
-      required={required}
-      autoFocus={autoFocus}
-      value={text}
-      onChange={(e) => setText(e.target.value)}
-      onBlur={handleBlur}
-      placeholder={placeholder}
-      className={cn(
-        'w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-pine-500 focus:outline-none',
-        className,
-      )}
-    />
+    <div className={cn('relative', className)}>
+      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base text-ink/40">
+        $
+      </span>
+      <input
+        type="text"
+        inputMode="decimal"
+        autoComplete="off"
+        enterKeyHint="done"
+        required={required}
+        autoFocus={autoFocus}
+        value={text}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder={placeholder}
+        className="w-full rounded-xl border border-slate-200 bg-surface py-3 pl-8 pr-4 text-base tabular-nums text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20"
+      />
+    </div>
   )
 }

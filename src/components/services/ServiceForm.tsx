@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import Modal from '@/components/ui/Modal'
 import MoneyInput from '@/components/ui/MoneyInput'
+import DateInput from '@/components/ui/DateInput'
+import SelectInput from '@/components/ui/SelectInput'
 import { useAddRecurring, useUpdateRecurring } from '@/hooks/useRecurring'
 import { useCategories } from '@/hooks/useCategories'
 import { useMembers } from '@/hooks/useMembers'
@@ -12,7 +14,7 @@ import { parseMoneyInput } from '@/lib/money'
 import { todayISO } from '@/lib/dates'
 
 const inputClass =
-  'w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-pine-500 focus:outline-none'
+  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 export default function ServiceForm({
   open,
@@ -100,7 +102,7 @@ export default function ServiceForm({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className={inputClass}
-            placeholder="Ej. Internet del hogar"
+            enterKeyHint="next" placeholder="Ej. Internet del hogar"
           />
         </div>
         <div>
@@ -116,10 +118,9 @@ export default function ServiceForm({
             <label className="mb-1 block text-sm font-medium text-ink/70">
               Categoría
             </label>
-            <select
+            <SelectInput
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className={inputClass}
             >
               <option value="">Sin categoría</option>
               {categories?.map((c) => (
@@ -127,16 +128,15 @@ export default function ServiceForm({
                   {c.name}
                 </option>
               ))}
-            </select>
+            </SelectInput>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-ink/70">
               ¿Quién paga?
             </label>
-            <select
+            <SelectInput
               value={paidBy}
               onChange={(e) => setPaidBy(e.target.value)}
-              className={inputClass}
             >
               <option value="">Sin asignar</option>
               {members?.map((m) => (
@@ -144,7 +144,7 @@ export default function ServiceForm({
                   {m.full_name}
                 </option>
               ))}
-            </select>
+            </SelectInput>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -152,28 +152,26 @@ export default function ServiceForm({
             <label className="mb-1 block text-sm font-medium text-ink/70">
               Frecuencia
             </label>
-            <select
+            <SelectInput
               value={frequency}
               onChange={(e) => setFrequency(e.target.value as Frequency)}
-              className={inputClass}
             >
               {FREQUENCIES.map((f) => (
                 <option key={f.value} value={f.value}>
                   {f.label}
                 </option>
               ))}
-            </select>
+            </SelectInput>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-ink/70">
               Próximo vencimiento
             </label>
-            <input
+            <DateInput
               type="date"
               required
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className={inputClass}
             />
           </div>
         </div>

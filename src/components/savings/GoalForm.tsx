@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Modal from '@/components/ui/Modal'
 import MoneyInput from '@/components/ui/MoneyInput'
+import DateInput from '@/components/ui/DateInput'
 import { useAddSavingsGoal, useUpdateSavingsGoal } from '@/hooks/useSavings'
 import { useToast } from '@/components/ui/Toast'
 import type { SavingsGoal } from '@/lib/types'
@@ -8,7 +9,7 @@ import { errorMessage } from '@/lib/utils'
 import { parseMoneyInput } from '@/lib/money'
 
 const inputClass =
-  'w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-pine-500 focus:outline-none'
+  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 type GoalModalProps = {
   open: boolean
@@ -89,7 +90,7 @@ export default function GoalForm({ open, initial, onClose }: GoalModalProps) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className={inputClass}
-            placeholder="Ej. Viaje de fin de año"
+            enterKeyHint="next" placeholder="Ej. Viaje de fin de año"
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -110,11 +111,10 @@ export default function GoalForm({ open, initial, onClose }: GoalModalProps) {
           <label className="mb-1 block text-sm font-medium text-ink/70">
             Fecha objetivo (opcional)
           </label>
-          <input
+          <DateInput
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className={inputClass}
           />
         </div>
         {error && (

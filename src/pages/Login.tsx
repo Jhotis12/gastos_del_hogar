@@ -12,7 +12,7 @@ const FEATURES = [
 ]
 
 const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-[15px] text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
+  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 export default function Login() {
   const [mode, setMode] = useState<Mode>('login')
@@ -158,7 +158,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={inputClass}
-                placeholder="correo@ejemplo.com"
+                enterKeyHint="next" placeholder="correo@ejemplo.com"
               />
             </div>
 
@@ -174,7 +174,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className={`${inputClass} pr-12`}
-                  placeholder="••••••••"
+                  enterKeyHint="done" placeholder="••••••••"
                 />
                 <button
                   type="button"

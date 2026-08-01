@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { CheckCircle2, Store } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import MoneyInput from '@/components/ui/MoneyInput'
+import DateInput from '@/components/ui/DateInput'
+import SelectInput from '@/components/ui/SelectInput'
 import { useCategories } from '@/hooks/useCategories'
 import { useMembers } from '@/hooks/useMembers'
 import { useToast } from '@/components/ui/Toast'
@@ -11,7 +13,7 @@ import { formatCurrency, parseMoneyInput } from '@/lib/money'
 import { todayISO } from '@/lib/dates'
 
 const inputClass =
-  'w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-pine-500 focus:outline-none'
+  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 interface ReceiptResultProps {
   receipt: Receipt | null
@@ -151,11 +153,10 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-ink/70">Fecha</label>
-              <input
+              <DateInput
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className={inputClass}
               />
             </div>
           </div>
@@ -163,10 +164,9 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="mb-1 block text-sm font-medium text-ink/70">Categoría</label>
-              <select
+              <SelectInput
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className={inputClass}
               >
                 <option value="">Sin categoría</option>
                 {categories?.map((c) => (
@@ -174,14 +174,13 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
                     {c.name}
                   </option>
                 ))}
-              </select>
+              </SelectInput>
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-ink/70">¿Quién pagó?</label>
-              <select
+              <SelectInput
                 value={paidBy}
                 onChange={(e) => setPaidBy(e.target.value)}
-                className={inputClass}
               >
                 <option value="">Sin asignar</option>
                 {members?.map((m) => (
@@ -189,7 +188,7 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
                     {m.full_name}
                   </option>
                 ))}
-              </select>
+              </SelectInput>
             </div>
           </div>
 

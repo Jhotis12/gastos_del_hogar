@@ -279,3 +279,14 @@ button:not(:disabled):active {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Inputs y montos: dígitos tabulares y 16px mínimo (evita el zoom de iOS al enfocar) */
+input,
+select,
+textarea {
+  font-variant-numeric: tabular-nums;
+}
+
+.font-display {
+  font-variant-numeric: tabular-nums;
+}

@@ -138,7 +138,7 @@ export default function Expenses() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por descripción…"
-            className="w-56 rounded-lg border border-slate-200 bg-surface py-1.5 pl-9 pr-3 text-xs text-ink/70 focus:border-pine-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-200 bg-surface py-2.5 pl-9 pr-3 text-base text-ink/70 focus:border-pine-500 focus:outline-none sm:w-56"
           />
         </div>
         <button

@@ -11,7 +11,7 @@ import AppLogo from '@/components/ui/AppLogo'
 import { errorMessage } from '@/lib/utils'
 
 const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-[15px] text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
+  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 export default function Profile() {
   const { user, profile, signOut } = useAuth()
@@ -83,7 +83,7 @@ export default function Profile() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               className={inputClass}
-              placeholder="Tu nombre"
+              enterKeyHint="done" placeholder="Tu nombre"
             />
           </div>
           <button

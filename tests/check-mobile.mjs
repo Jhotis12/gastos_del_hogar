@@ -1,22 +1,27 @@
 import { firefox } from 'playwright'
 const browser = await firefox.launch()
 const page = await browser.newPage({ viewport: { width: 375, height: 812 } })
-page.on('pageerror', (e) => console.log('[PAGEERROR]', e.message.slice(0, 200)))
+const issues = []
 await page.goto('http://localhost:5173/login', { waitUntil: 'networkidle' })
 await page.fill('input[type="email"]', 'sandbox-test@test.com')
 await page.fill('input[type="password"]', 'Sandbox123!')
 await page.click('button[type="submit"]')
 await page.waitForTimeout(6000)
-console.log('URL:', page.url())
-const btn = await page.$('button[aria-label="Más opciones"]')
-console.log('botón Más existe:', !!btn)
-if (btn) {
-  await btn.click()
-  await page.waitForTimeout(1000)
-  const body = (await page.evaluate(() => document.body.innerText)).trim()
-  console.log('contiene Más opciones:', body.includes('Más opciones'))
-  console.log('contiene Cerrar sesión:', body.includes('Cerrar sesión'))
-  console.log('BODY tail:', JSON.stringify(body.slice(-150)))
-  await page.screenshot({ path: '/tmp/opencode/mobile-sheet.png' })
+if (page.url().includes('/setup')) {
+  await page.fill('input[placeholder="Ej. Casa de la familia"]', 'Hogar Sandbox')
+  await page.click('button[type="submit"]')
+  await page.waitForTimeout(5000)
 }
+for (const [label, url] of [['gastos', '/gastos'], ['servicios', '/recurrentes'], ['ahorros', '/ahorros'], ['perfil', '/perfil']]) {
+  await page.goto(`http://localhost:5173${url}`, { waitUntil: 'domcontentloaded' })
+  await page.waitForTimeout(2000)
+  const info = await page.evaluate(() => ({
+    overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+    sw: document.documentElement.scrollWidth,
+    iw: window.innerWidth,
+  }))
+  if (info.overflow) issues.push(`${label}: overflow ${info.sw} > ${info.iw}`)
+  console.log(`${label}: ${info.overflow ? '⚠ OVERFLOW' : 'ok'} (${info.sw}px)`)
+}
+console.log(issues.length ? 'ISSUES: ' + issues.join(' | ') : 'SIN OVERFLOW HORIZONTAL ✓')
 await browser.close()
