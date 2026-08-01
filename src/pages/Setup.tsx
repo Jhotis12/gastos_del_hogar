@@ -1,6 +1,9 @@
 import { useState } from 'react'
-import { Home, UserPlus } from 'lucide-react'
+import { Home, UserPlus, Wallet } from 'lucide-react'
 import { useCreateHousehold, useJoinHousehold } from '@/hooks/useHousehold'
+
+const inputClass =
+  'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 export default function Setup() {
   const createHousehold = useCreateHousehold()
@@ -28,49 +31,55 @@ export default function Setup() {
   const busy = createHousehold.isPending || joinHousehold.isPending
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-cream p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-cream px-4 py-10">
       <div className="w-full max-w-md">
-        <div className="mb-6 text-center">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-pine-600 to-pine-800 text-white shadow-lg shadow-pine-900/20">
+            <Wallet size={26} />
+          </div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-ink">
             Bienvenido al hogar
           </h1>
-          <p className="mt-1 text-sm text-ink/50">
+          <p className="mt-1 max-w-xs text-sm text-ink/50">
             Crea un hogar nuevo o únete a uno existente con un código
           </p>
         </div>
 
-        <div className="mb-5 grid grid-cols-2 gap-2">
+        <div className="mb-6 grid grid-cols-2 gap-2">
           <button
-            onClick={() => setMode('create')}
-            className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium ${
+            onClick={() => {
+              setMode('create')
+              setError('')
+            }}
+            className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl border px-4 py-3 text-sm font-semibold transition-all ${
               mode === 'create'
-                ? 'border-pine-700 bg-pine-50 text-pine-700'
+                ? 'border-pine-600 bg-pine-50 text-pine-700'
                 : 'border-slate-200 bg-white text-ink/55 hover:bg-cream'
             }`}
           >
-            <Home size={18} />
+            <Home size={20} />
             Crear hogar
           </button>
           <button
-            onClick={() => setMode('join')}
-            className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium ${
+            onClick={() => {
+              setMode('join')
+              setError('')
+            }}
+            className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl border px-4 py-3 text-sm font-semibold transition-all ${
               mode === 'join'
-                ? 'border-pine-700 bg-pine-50 text-pine-700'
+                ? 'border-pine-600 bg-pine-50 text-pine-700'
                 : 'border-slate-200 bg-white text-ink/55 hover:bg-cream'
             }`}
           >
-            <UserPlus size={18} />
+            <UserPlus size={20} />
             Unirme a uno
           </button>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="card p-6 shadow-sm"
-        >
+        <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           {mode === 'create' ? (
             <div>
-              <label className="mb-1 block text-sm font-medium text-ink/70">
+              <label className="mb-1.5 block text-sm font-medium text-ink/70">
                 Nombre del hogar
               </label>
               <input
@@ -78,13 +87,13 @@ export default function Setup() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-pine-500 focus:outline-none"
+                className={inputClass}
                 placeholder="Ej. Casa de la familia"
               />
             </div>
           ) : (
             <div>
-              <label className="mb-1 block text-sm font-medium text-ink/70">
+              <label className="mb-1.5 block text-sm font-medium text-ink/70">
                 Código de invitación
               </label>
               <input
@@ -92,14 +101,14 @@ export default function Setup() {
                 required
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm uppercase tracking-widest focus:border-pine-500 focus:outline-none"
+                className={`${inputClass} uppercase tracking-widest`}
                 placeholder="ABC123"
               />
             </div>
           )}
 
           {error && (
-            <p className="mt-4 rounded-lg hover:bg-coral-100/70 px-3 py-2 text-sm text-coral-600">
+            <p className="mt-4 rounded-xl bg-coral-100/60 px-4 py-3 text-sm text-coral-700">
               {error}
             </p>
           )}
@@ -107,7 +116,7 @@ export default function Setup() {
           <button
             type="submit"
             disabled={busy}
-            className="mt-5 w-full rounded-lg bg-pine-700 py-2.5 text-sm font-semibold text-white hover:bg-pine-800 disabled:opacity-50"
+            className="mt-5 min-h-12 w-full rounded-xl bg-pine-700 py-3 text-[15px] font-semibold text-white shadow-md shadow-pine-900/20 transition-all hover:bg-pine-800 disabled:opacity-50"
           >
             {busy ? 'Procesando…' : 'Continuar'}
           </button>

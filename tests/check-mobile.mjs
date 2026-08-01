@@ -1,0 +1,22 @@
+import { firefox } from 'playwright'
+const browser = await firefox.launch()
+const page = await browser.newPage({ viewport: { width: 375, height: 812 } })
+page.on('pageerror', (e) => console.log('[PAGEERROR]', e.message.slice(0, 200)))
+await page.goto('http://localhost:5173/login', { waitUntil: 'networkidle' })
+await page.fill('input[type="email"]', 'sandbox-test@test.com')
+await page.fill('input[type="password"]', 'Sandbox123!')
+await page.click('button[type="submit"]')
+await page.waitForTimeout(6000)
+console.log('URL:', page.url())
+const btn = await page.$('button[aria-label="Más opciones"]')
+console.log('botón Más existe:', !!btn)
+if (btn) {
+  await btn.click()
+  await page.waitForTimeout(1000)
+  const body = (await page.evaluate(() => document.body.innerText)).trim()
+  console.log('contiene Más opciones:', body.includes('Más opciones'))
+  console.log('contiene Cerrar sesión:', body.includes('Cerrar sesión'))
+  console.log('BODY tail:', JSON.stringify(body.slice(-150)))
+  await page.screenshot({ path: '/tmp/opencode/mobile-sheet.png' })
+}
+await browser.close()

@@ -167,14 +167,14 @@ export default function Savings() {
                         setEditing(g)
                         setFormOpen(true)
                       }}
-                      className="rounded-lg p-1.5 text-ink/40 hover:bg-cream hover:text-ink/70"
+                      className="rounded-lg p-2 text-ink/40 hover:bg-cream hover:text-ink/70"
                       aria-label="Editar meta"
                     >
                       <Pencil size={16} />
                     </button>
                     <button
                       onClick={() => setDeleting(g)}
-                      className="rounded-lg p-1.5 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
+                      className="rounded-lg p-2 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
                       aria-label="Eliminar meta"
                     >
                       <Trash2 size={16} />

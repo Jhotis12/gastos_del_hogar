@@ -122,7 +122,7 @@ export default function Categories() {
                 </div>
                 <button
                   onClick={() => setDeleting(c.id)}
-                  className="rounded-lg p-1.5 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
+                  className="rounded-lg p-2 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
                   aria-label="Eliminar categoría"
                 >
                   <Trash2 size={16} />

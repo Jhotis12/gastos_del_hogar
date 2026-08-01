@@ -214,7 +214,7 @@ export default function Recurring() {
                         setEditing(r)
                         setFormOpen(true)
                       }}
-                      className="rounded-lg p-1.5 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
+                      className="rounded-lg p-2 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
                       aria-label="Editar servicio"
                     >
                       <Pencil size={16} />
@@ -235,7 +235,7 @@ export default function Recurring() {
                     </button>
                     <button
                       onClick={() => setDeleting(r)}
-                      className="rounded-lg p-1.5 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
+                      className="rounded-lg p-2 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
                       aria-label="Eliminar"
                     >
                       <Trash2 size={16} />

@@ -152,7 +152,7 @@ export default function Calendar() {
                   data-testid={`day-${iso}`}
                   onClick={() => setSelectedDay(iso)}
                   className={cn(
-                    'flex min-h-16 flex-col items-stretch gap-1 border border-slate-100 p-1.5 text-left transition-colors hover:bg-pine-50/60 sm:min-h-20',
+                    'flex min-h-14 flex-col items-stretch gap-1 border border-slate-100 p-1 text-left transition-colors hover:bg-pine-50/60 sm:min-h-20 sm:p-1.5',
                     due > 0 && 'border-gold-200 bg-gold-100/60/40',
                   )}
                 >

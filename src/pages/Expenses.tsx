@@ -225,7 +225,7 @@ export default function Expenses() {
                     {e.receipt && (
                       <button
                         onClick={() => setViewExpense(e)}
-                        className="rounded-lg p-1.5 text-gold-600 hover:bg-gold-100/60"
+                        className="rounded-lg p-2 text-gold-600 hover:bg-gold-100/60"
                         aria-label="Ver factura"
                         title="Ver factura"
                       >
@@ -237,14 +237,14 @@ export default function Expenses() {
                         setEditing(e)
                         setFormOpen(true)
                       }}
-                      className="rounded-lg p-1.5 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
+                      className="rounded-lg p-2 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
                       aria-label="Editar"
                     >
                       <Pencil size={16} />
                     </button>
                     <button
                       onClick={() => setDeleting(e)}
-                      className="rounded-lg p-1.5 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
+                      className="rounded-lg p-2 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
                       aria-label="Eliminar"
                     >
                       <Trash2 size={16} />

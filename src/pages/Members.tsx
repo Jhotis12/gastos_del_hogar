@@ -73,14 +73,14 @@ function SalaryInput({
             <div className="flex gap-1">
               <button
                 onClick={startEdit}
-                className="rounded-lg p-1.5 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
+                className="rounded-lg p-2 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
                 aria-label="Editar salario"
               >
                 <Pencil size={16} />
               </button>
               <button
                 onClick={() => setConfirmOpen(true)}
-                className="rounded-lg p-1.5 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
+                className="rounded-lg p-2 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
                 aria-label="Eliminar salario"
               >
                 <Trash2 size={16} />

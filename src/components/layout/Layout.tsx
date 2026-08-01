@@ -8,10 +8,10 @@ import {
   Repeat,
   LogOut,
   Wallet,
-  Menu,
-  X,
   CalendarDays,
   PiggyBank,
+  MoreHorizontal,
+  X,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
@@ -24,6 +24,14 @@ const NAV_ITEMS = [
   { to: '/recurrentes', label: 'Servicios', icon: Repeat },
   { to: '/ahorros', label: 'Metas de ahorro', icon: PiggyBank },
   { to: '/categorias', label: 'Categorías', icon: Tags },
+]
+
+// Navegación inferior (móvil): los 4 principales + "Más"
+const BOTTOM_NAV = [
+  { to: '/', label: 'Inicio', icon: LayoutDashboard },
+  { to: '/gastos', label: 'Gastos', icon: Receipt },
+  { to: '/ahorros', label: 'Ahorros', icon: PiggyBank },
+  { to: '/recurrentes', label: 'Servicios', icon: Repeat },
 ]
 
 function Brand() {
@@ -40,14 +48,13 @@ function Brand() {
   )
 }
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarNav() {
   return (
     <>
       {NAV_ITEMS.map((item) => (
         <NavLink
           key={item.to}
           to={item.to}
-          onClick={onNavigate}
           className={({ isActive }) =>
             cn(
               'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
@@ -71,10 +78,13 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
 export default function Layout() {
   const { profile, signOut } = useAuth()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
+
+  const closeMore = () => setMoreOpen(false)
 
   return (
     <div className="min-h-screen bg-cream">
+      {/* Sidebar (desktop) */}
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-pine-950/5 bg-white/70 backdrop-blur lg:block">
         <div className="flex h-full flex-col">
           <div className="px-6 py-5">
@@ -82,7 +92,7 @@ export default function Layout() {
           </div>
 
           <nav className="mt-2 flex-1 space-y-1 px-3">
-            <NavLinks />
+            <SidebarNav />
           </nav>
 
           <div className="border-t border-slate-200/70 p-4">
@@ -103,42 +113,104 @@ export default function Layout() {
         </div>
       </aside>
 
+      {/* Contenido */}
       <div className="lg:pl-64">
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-pine-950/5 bg-cream/80 px-4 py-3 backdrop-blur lg:hidden">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setMenuOpen((open) => !open)}
-              className="rounded-lg p-2 text-ink/50 hover:bg-white"
-              aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
-            >
-              {menuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-pine-600 to-pine-800 text-white">
-              <Wallet size={16} />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-pine-600 to-pine-800 text-white">
+              <Wallet size={18} />
             </div>
             <p className="font-display text-sm font-semibold text-ink">Gastos del Hogar</p>
           </div>
-          <button
-            onClick={signOut}
-            className="rounded-lg p-2 text-ink/50 hover:bg-white"
-            aria-label="Cerrar sesión"
-          >
-            <LogOut size={18} />
-          </button>
+          <span className="max-w-[8rem] truncate text-xs text-ink/50">
+            {profile?.full_name}
+          </span>
         </header>
 
-        {menuOpen && (
-          <div className="animate-fade-up border-b border-pine-950/5 bg-white lg:hidden">
-            <nav className="space-y-1 px-3 py-3">
-              <NavLinks onNavigate={() => setMenuOpen(false)} />
-            </nav>
-          </div>
-        )}
-
-        <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+        <main className="mx-auto max-w-5xl px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-6">
           <Outlet />
         </main>
       </div>
+
+      {/* Navegación inferior (móvil) */}
+      <div
+        role="navigation"
+        aria-label="Navegación principal"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-pine-950/5 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+      >
+        <div className="mx-auto grid max-w-md grid-cols-5">
+          {BOTTOM_NAV.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                cn(
+                  'flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors',
+                  isActive ? 'text-pine-700' : 'text-ink/45',
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <item.icon size={20} strokeWidth={isActive ? 2.4 : 2} />
+                  {item.label}
+                </>
+              )}
+            </NavLink>
+          ))}
+          <button
+            onClick={() => setMoreOpen(true)}
+            className={cn(
+              'flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors',
+              moreOpen ? 'text-pine-700' : 'text-ink/45',
+            )}
+            aria-label="Más opciones"
+          >
+            {moreOpen ? <X size={20} /> : <MoreHorizontal size={20} />}
+            Más
+          </button>
+        </div>
+      </div>
+
+      {/* Sheet "Más" (móvil) */}
+      {moreOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="absolute inset-0 bg-black/40" onClick={closeMore} />
+          <div className="animate-fade-up absolute inset-x-0 bottom-0 rounded-t-3xl bg-white p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl">
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-ink/10" />
+            <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-ink/40">
+              Más opciones
+            </p>
+            <div className="space-y-1">
+              {NAV_ITEMS.slice(1).map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={closeMore}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-pine-50 text-pine-700'
+                        : 'text-ink/70 hover:bg-cream',
+                    )
+                  }
+                >
+                  <item.icon size={18} className="text-ink/40" />
+                  {item.label}
+                </NavLink>
+              ))}
+              <button
+                onClick={signOut}
+                className="mt-1 flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-coral-600 hover:bg-coral-100/60"
+              >
+                <LogOut size={18} />
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

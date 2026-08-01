@@ -194,6 +194,22 @@ rangos vacíos en UTC−5 (bug histórico: "los gastos no se registraban").
 - Count-up de montos con `useCountUp` — **hooks siempre antes de cualquier
   `return` condicional** (regla de hooks).
 
+### Diseño mobile (mobile-first, 375px)
+Skill de referencia: `mobile-app-ui-design` (`.agents/skills/`).
+- **Navegación inferior** (`Layout.tsx`): barra fija con 4 accesos principales
+  (Inicio, Gastos, Ahorros, Servicios) + botón "Más" que abre un **sheet**
+  inferior (Calendario, Miembros, Categorías, Cerrar sesión). El sidebar de
+  desktop permanece intacto (la barra inferior usa `role="navigation"`, no
+  `<nav>`, para no colisionar con los selectores del test e2e).
+- **Login/Registro**: split en desktop (panel de marca en gradiente pine con
+  features) y móvil centrado; segmented control, toggle de mostrar/ocultar
+  contraseña, inputs y CTAs con `min-h-12` (44px+ de área táctil).
+- **Touch targets**: botones de icono en filas `p-2` mínimo; CTAs `min-h-12`.
+- **Safe area**: `pb-[env(safe-area-inset-bottom)]` en la barra inferior y
+  contenido con `pb-28 lg:pb-6` para que nada quede oculto.
+- Regla de oro: **sin overflow horizontal a 375px** (verificado por
+  `tests/check-mobile.mjs`).
+
 ---
 
 ## 7. Flujos clave

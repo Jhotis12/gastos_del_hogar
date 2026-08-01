@@ -81,12 +81,12 @@ export default function Dashboard() {
         <MonthPicker month={month} onChange={setMonth} />
       </div>
 
-      <div className="animate-fade-up relative overflow-hidden rounded-2xl bg-gradient-to-br from-pine-700 via-pine-800 to-pine-950 p-6 text-white shadow-lg shadow-pine-900/20 sm:p-8">
+      <div className="animate-fade-up relative overflow-hidden rounded-2xl bg-gradient-to-br from-pine-700 via-pine-800 to-pine-950 p-5 text-white shadow-lg shadow-pine-900/20 sm:p-8">
         <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-400/20 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-14 left-1/3 h-40 w-40 rounded-full bg-pine-400/20 blur-2xl" />
         <div className="relative">
           <p className="text-sm font-medium text-pine-200">Saldo disponible · {monthLabel(month)}</p>
-          <p className="mt-1 font-display text-4xl font-bold tracking-tight sm:text-5xl">
+          <p className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-5xl">
             {formatCurrency(balanceAnimated)}
           </p>
           <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2 text-sm">
