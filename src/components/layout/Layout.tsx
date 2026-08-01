@@ -14,6 +14,7 @@ import {
   Settings,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { cn } from '@/lib/utils'
 import AppLogo from '@/components/ui/AppLogo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
@@ -80,6 +81,7 @@ function SidebarNav() {
 export default function Layout() {
   const { profile, signOut } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
+  useRealtimeSync(profile?.household_id ?? null)
 
   const closeMore = () => setMoreOpen(false)
 

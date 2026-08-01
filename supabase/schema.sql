@@ -384,3 +384,19 @@ create policy "savings: editar del hogar"
 create policy "savings: eliminar del hogar"
   on public.savings_goals for delete
   using (public.is_household_member(household_id));
+
+-- Realtime: publicar los cambios de las tablas del hogar (sincronización entre miembros)
+do $$
+declare
+  t text;
+begin
+  foreach t in array array['expenses','salaries','categories','category_budgets','recurring_expenses','savings_goals','receipts','profiles','households']
+  loop
+    if not exists (
+      select 1 from pg_publication_tables
+      where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t
+    ) then
+      execute format('alter publication supabase_realtime add table public.%I', t);
+    end if;
+  end loop;
+end $$;
