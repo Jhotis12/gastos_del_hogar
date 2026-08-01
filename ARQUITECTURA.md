@@ -229,6 +229,23 @@ Skill de referencia: `mobile-app-ui-design` (`.agents/skills/`).
 - Botón "+" en el Dashboard que abre `ExpenseForm` para registrar un gasto
   sin navegar a la página de Gastos.
 
+### Sincronización en tiempo real
+- **Supabase Realtime** (`useRealtimeSync` en Layout): un canal por hogar
+  (`postgres_changes` en las 9 tablas del hogar, filtrado por
+  `household_id`) que invalida las queries de React Query correspondientes
+  al recibir cualquier cambio. Si un miembro registra un gasto, salario o
+  edita algo, **los demás lo ven al instante sin recargar** (la publicación
+  `supabase_realtime` está habilitada en `schema.sql`).
+- Mapa tabla → claves invalidadas (ej. `expenses` → `['expenses'], ['receipts']`;
+  `profiles` además refresca el perfil propio).
+
+### Lazy loading y caché
+- **Code splitting por ruta** (`React.lazy` + `Suspense` en `App.tsx`): cada
+  página se descarga solo al navegar a ella (verificado: chunks separados en
+  `dist/assets/`).
+- **Caché**: TanStack Query con `staleTime: 30s`, `gcTime: 30min` y
+  `refetchOnWindowFocus`; los cambios remotos invalidan por dominio.
+
 ---
 
 ## 7. Flujos clave
