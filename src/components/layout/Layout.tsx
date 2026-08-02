@@ -12,6 +12,7 @@ import {
   MoreHorizontal,
   X,
   Settings,
+  History,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
@@ -23,6 +24,7 @@ import InstallAppButton from '@/components/ui/InstallAppButton'
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/calendario', label: 'Calendario', icon: CalendarDays },
+  { to: '/historial', label: 'Historial', icon: History },
   { to: '/miembros', label: 'Miembros y Salarios', icon: Users },
   { to: '/gastos', label: 'Gastos', icon: Receipt },
   { to: '/recurrentes', label: 'Servicios', icon: Repeat },

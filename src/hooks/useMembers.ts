@@ -129,6 +129,7 @@ export function useUpsertSalary() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['salaries'] })
       queryClient.invalidateQueries({ queryKey: ['running-balance'] })
+      queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
     },
   })
 }
@@ -143,6 +144,7 @@ export function useDeleteSalary() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['salaries'] })
       queryClient.invalidateQueries({ queryKey: ['running-balance'] })
+      queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
     },
   })
 }
@@ -165,6 +167,7 @@ export function useUpdatePayday() {
       queryClient.invalidateQueries({ queryKey: ['members'] })
       queryClient.invalidateQueries({ queryKey: ['salaries'] })
       queryClient.invalidateQueries({ queryKey: ['running-balance'] })
+      queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
       toast.success(`Día de pago: ${vars.payday}`)
     },
     onError: (err) => toast.error(errorMessage(err)),

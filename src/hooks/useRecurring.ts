@@ -115,6 +115,7 @@ export function useApplyRecurringOne(month: string) {
       queryClient.invalidateQueries({ queryKey: ['expenses'] })
       queryClient.invalidateQueries({ queryKey: ['recurring'] })
       queryClient.invalidateQueries({ queryKey: ['running-balance'] })
+      queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
     },
   })
 }

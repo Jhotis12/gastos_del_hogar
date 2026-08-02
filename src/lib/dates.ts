@@ -13,6 +13,16 @@ export function monthLabel(key: string): string {
   })
 }
 
+const SHORT_MONTHS = [
+  'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+  'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
+]
+
+export function shortMonthLabel(key: string): string {
+  const [y, m] = key.split('-').map(Number)
+  return `${SHORT_MONTHS[(m ?? 1) - 1]} ${y}`
+}
+
 export function currentMonthKey(): string {
   return monthKey(new Date())
 }

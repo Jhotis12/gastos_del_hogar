@@ -163,6 +163,22 @@ await step('saldo acumulado en dashboard (sobrante arrastrado)', async () => {
   await waitForText('2.300.000')
 })
 
+await step('tarjeta sobrantes por mes en dashboard', async () => {
+  await waitForText('Sobrantes por mes')
+  await page.waitForSelector('text=/Ingresos.*2\\.500\\.000.*Gastos.*200\\.000/')
+  await waitForText('Ahorro 92%')
+  await waitForText('Ver historial')
+})
+
+await step('historial completo por mes', async () => {
+  await goTo('Historial', '/historial')
+  await waitForText('Sobrantes por mes: cuánto quedó libre de cada mes')
+  await waitForText('Ahorro acumulado')
+  await waitForText('Totales')
+  await waitForText('92%')
+  await goTo('Dashboard', '/')
+})
+
 await step('búsqueda y export CSV en gastos', async () => {
   await goTo('Gastos', '/gastos')
   await waitForText('Mercado test')

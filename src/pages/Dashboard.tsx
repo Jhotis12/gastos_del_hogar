@@ -1,12 +1,17 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowDownCircle, ArrowUpCircle, Sparkles, AlertTriangle, Plus } from 'lucide-react'
+import { ArrowDownCircle, ArrowUpCircle, Sparkles, AlertTriangle, Plus, Wallet } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useAddExpense } from '@/hooks/useExpenses'
 import { useCountUp } from '@/hooks/useCountUp'
 import { usePendingRecurring, useRecurringExpenses } from '@/hooks/useRecurring'
 import { useBudgets } from '@/hooks/useCategories'
-import { useExpenses, useRunningBalance, useSummary } from '@/hooks/useExpenses'
+import {
+  useExpenses,
+  useRunningBalance,
+  useSummary,
+  useMonthlySurpluses,
+} from '@/hooks/useExpenses'
 import { useHousehold } from '@/hooks/useHousehold'
 import { useMembers, useSalaries } from '@/hooks/useMembers'
 import StatCard from '@/components/ui/StatCard'
@@ -16,8 +21,14 @@ import MonthPicker from '@/components/ui/MonthPicker'
 import CategoryBadge from '@/components/ui/CategoryBadge'
 import Loading from '@/components/ui/Loading'
 import { useToast } from '@/components/ui/Toast'
-import { errorMessage } from '@/lib/utils'
-import { currentMonthKey, formatDate, monthLabel, shiftMonth } from '@/lib/dates'
+import { cn, errorMessage } from '@/lib/utils'
+import {
+  currentMonthKey,
+  formatDate,
+  monthLabel,
+  shiftMonth,
+  shortMonthLabel,
+} from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
 export default function Dashboard() {
@@ -50,6 +61,7 @@ export default function Dashboard() {
   const { data: budgets } = useBudgets(month)
   const { totalIncome, totalExpenses } = useSummary(month)
   const { data: runningBalance } = useRunningBalance(month)
+  const { data: surpluses } = useMonthlySurpluses()
   const pendingRecurring = usePendingRecurring(month)
   const { data: recurring } = useRecurringExpenses()
   const balanceAnimated = useCountUp(runningBalance ?? 0)
@@ -84,6 +96,15 @@ export default function Dashboard() {
   }
   const categoriesSorted = [...byCategory.values()].sort((a, b) => b.total - a.total)
   const maxCategory = categoriesSorted[0]?.total ?? 1
+
+  const monthSurplus = totalIncome - totalExpenses
+  const monthList = (surpluses ?? []).slice(-6)
+  const monthAccumulated = monthList.reduce((sum, s) => sum + s.surplus, 0)
+  const idxCurrent = (surpluses ?? []).findIndex((s) => s.month === month)
+  const currentSurplus = idxCurrent >= 0 ? (surpluses ?? [])[idxCurrent] : undefined
+  const prevSurplus = idxCurrent > 0 ? (surpluses ?? [])[idxCurrent - 1] : undefined
+  const deltaSurplus =
+    currentSurplus && prevSurplus ? currentSurplus.surplus - prevSurplus.surplus : null
 
   if (!profile?.household_id) return null
   if (!household) return <Loading />
@@ -136,7 +157,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           label="Ingresos del mes"
           value={totalIncome}
@@ -150,6 +171,13 @@ export default function Dashboard() {
           icon={<ArrowDownCircle size={20} />}
           tone="negative"
           delay={160}
+        />
+        <StatCard
+          label="Sobrante del mes"
+          value={monthSurplus}
+          icon={<Wallet size={20} />}
+          tone={monthSurplus >= 0 ? 'positive' : 'negative'}
+          delay={240}
         />
       </div>
 
@@ -275,6 +303,89 @@ export default function Dashboard() {
       </div>
 
       <div className="card card-hover animate-fade-up p-5" style={{ animationDelay: '340ms' }}>
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h2 className="font-display text-sm font-semibold text-ink">
+              Sobrantes por mes
+            </h2>
+            <p className="mt-0.5 text-xs text-ink/50">
+              Acumulado (6 meses): {formatCurrency(monthAccumulated)}
+              {deltaSurplus !== null && prevSurplus && (
+                <span className="ml-2">
+                  <span className={cn('font-medium', deltaSurplus >= 0 ? 'text-pine-600' : 'text-coral-600')}>
+                    {deltaSurplus >= 0 ? '+' : '−'}
+                    {formatCurrency(Math.abs(deltaSurplus))}
+                  </span>{' '}
+                  vs {shortMonthLabel(prevSurplus.month)}
+                </span>
+              )}
+            </p>
+          </div>
+          <Link
+            to="/historial"
+            className="shrink-0 text-sm font-medium text-pine-600 hover:text-pine-700"
+          >
+            Ver historial
+          </Link>
+        </div>
+        {monthList.length === 0 ? (
+          <p className="py-8 text-center text-sm text-ink/40">
+            Sin movimientos registrados
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {monthList.map((s) => {
+              const isCurrent = s.month === month
+              const ratio = s.income > 0 ? s.surplus / s.income : 0
+              return (
+                <div
+                  key={s.month}
+                  className={cn(
+                    'rounded-xl border p-4',
+                    isCurrent
+                      ? 'border-pine-200 bg-pine-50/40'
+                      : 'border-slate-100 bg-cream/50',
+                  )}
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="text-sm font-semibold text-ink">
+                      {shortMonthLabel(s.month)}
+                    </p>
+                    <p
+                      className={cn(
+                        'text-sm font-bold',
+                        s.surplus >= 0 ? 'text-pine-600' : 'text-coral-600',
+                      )}
+                    >
+                      {s.surplus >= 0 ? '+' : '−'}
+                      {formatCurrency(Math.abs(s.surplus))}
+                    </p>
+                  </div>
+                  <p className="mt-1 text-xs text-ink/50">
+                    Ingresos {formatCurrency(s.income)} · Gastos{' '}
+                    {formatCurrency(s.expenses)}
+                  </p>
+                  <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-cream">
+                    <div
+                      className={cn(
+                        'animate-grow-bar h-full rounded-full',
+                        s.surplus >= 0 ? 'bg-pine-500' : 'bg-coral-500',
+                      )}
+                      style={{ width: `${Math.max(4, Math.min(100, ratio * 100))}%` }}
+                    />
+                  </div>
+                  <p className="mt-1.5 text-xs text-ink/50">
+                    Ahorro {s.income > 0 ? Math.round(ratio * 100) : 0}% de los
+                    ingresos
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      <div className="card card-hover animate-fade-up p-5" style={{ animationDelay: '400ms' }}>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-display text-sm font-semibold text-ink">Gastos recientes</h2>
           <Link

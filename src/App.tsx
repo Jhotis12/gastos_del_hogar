@@ -10,6 +10,7 @@ const Setup = lazy(() => import('@/pages/Setup'))
 const AuthConfirm = lazy(() => import('@/pages/AuthConfirm'))
 const Dashboard = lazy(() => import('@/pages/Dashboard'))
 const Calendar = lazy(() => import('@/pages/Calendar'))
+const History = lazy(() => import('@/pages/History'))
 const Members = lazy(() => import('@/pages/Members'))
 const Expenses = lazy(() => import('@/pages/Expenses'))
 const Recurring = lazy(() => import('@/pages/Recurring'))
@@ -67,6 +68,7 @@ export default function App() {
             <Route element={<Layout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/calendario" element={<Calendar />} />
+              <Route path="/historial" element={<History />} />
               <Route path="/miembros" element={<Members />} />
               <Route path="/gastos" element={<Expenses />} />
               <Route path="/recurrentes" element={<Recurring />} />

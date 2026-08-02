@@ -70,7 +70,7 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 │   │   └── categories/     #   BudgetModal (presupuestos por categoría)
 │   └── pages/              # 1 página por ruta
 ├── tests/
-│   ├── e2e-flow.mjs         # Suite e2e de 34 pasos (navegación SPA)
+│   ├── e2e-flow.mjs         # Suite e2e de 39 pasos (navegación SPA)
 │   ├── e2e-realtime.mjs     # Sincronización en tiempo real entre 2 miembros
 │   ├── check-mobile.mjs     # Verificación móvil (375px, sin overflow)
 │   ├── reset-sandbox.sh     # Reinicia el usuario sandbox (requiere SUPABASE_SERVICE_ROLE)
@@ -116,6 +116,14 @@ receipts            household_id, storage_path, uploaded_by, parsed_data (jsonb)
   p_date`. En el mes actual se calcula hasta hoy (la nómina del mes solo
   cuenta desde su día de pago); en meses pasados, hasta fin de mes. Así el
   sobrante de meses anteriores se arrastra al mes siguiente.
+- **Sobrantes por mes (Dashboard + `/historial`):** RPC
+  `get_monthly_surpluses()` devuelve una fila por mes desde el primer mes con
+  actividad hasta el actual: `(month, income, expenses, surplus)`, donde
+  sobrante de M = Σ salarios con `pay_date` en M − Σ gastos con
+  `expense_date` en M. La suma acumulada de los sobrantes = `get_running_balance`
+  (el saldo disponible es el sobrante acumulado). Tarjeta en Dashboard
+  (últimos 6 meses, % de ahorro sobre ingresos, delta vs mes anterior) y
+  tabla completa en `/historial` con columna Acumulado (suma corrida).
 - **Fechas de mes** siempre como `YYYY-MM-01` (primer día).
 
 ---
@@ -140,6 +148,7 @@ recursión infinita en políticas).
 | `get_household_by_code(p_code)` | Busca hogar por código (solo con sesión). |
 | `apply_recurring_expense(p_recurring_id, p_month)` | Aplica **un** servicio vencido a `expenses` (con guarda anti-duplicados por mes) y avanza su `next_due_date` según `frequency` (1/2/3/12 meses). Se llama por servicio desde el wizard de "Aplicar al mes". |
 | `get_running_balance(p_date)` | Saldo acumulado del hogar a una fecha: Σ salarios (`pay_date <= p_date`) − Σ gastos (`expense_date <= p_date`). Security definer con `auth.uid()`. |
+| `get_monthly_surpluses()` | Sobrantes por mes desde el primer mes con actividad hasta el actual: `(month, income, expenses, surplus)` (pay_date/expense_date agrupados por mes). Suma acumulada = saldo disponible. |
 
 ### Edge Function `analyze-receipt`
 - Deno + `@supabase/supabase-js`. Valida JWT y pertenencia al hogar del path.
@@ -329,9 +338,10 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
 
 ## 9. Testing
 
-- Suite e2e de 38 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios
+- Suite e2e de 39 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios
   (día de pago + herencia al mes siguiente), gastos, calendario, saldos,
-  saldo acumulado, presupuestos, servicios, metas, escaneo de facturas
+  saldo acumulado, sobrantes por mes (tarjeta Dashboard + `/historial`),
+  presupuestos, servicios, metas, escaneo de facturas
   (con fixture + Gemini real).
 - Usa **navegación SPA** (clics en el sidebar, no `page.goto` a rutas
   protegidas), esperas por selector y `data-testid="confirm-dialog-confirm"`

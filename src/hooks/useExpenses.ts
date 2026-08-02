@@ -63,6 +63,7 @@ export function useAddExpense() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] })
       queryClient.invalidateQueries({ queryKey: ['running-balance'] })
+      queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
     },
   })
 }
@@ -78,6 +79,7 @@ export function useUpdateExpense() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] })
       queryClient.invalidateQueries({ queryKey: ['running-balance'] })
+      queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
     },
   })
 }
@@ -93,6 +95,7 @@ export function useDeleteExpense() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] })
       queryClient.invalidateQueries({ queryKey: ['running-balance'] })
+      queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
     },
   })
 }
@@ -131,6 +134,32 @@ export function useRunningBalance(month: string) {
       })
       if (error) throw error
       return Number(data ?? 0)
+    },
+    enabled: !!householdId,
+  })
+}
+
+export interface MonthlySurplus {
+  month: string
+  income: number
+  expenses: number
+  surplus: number
+}
+
+// Sobrantes por mes (historial): una fila por mes desde el primer
+// mes con actividad hasta el mes actual. Sobrante de M = Σ salarios
+// con pay_date en M − Σ gastos con expense_date en M; la suma
+// acumulada coincide con get_running_balance.
+export function useMonthlySurpluses() {
+  const { profile } = useAuth()
+  const householdId = profile?.household_id
+
+  return useQuery({
+    queryKey: ['monthly-surpluses', householdId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_monthly_surpluses')
+      if (error) throw error
+      return (data ?? []) as MonthlySurplus[]
     },
     enabled: !!householdId,
   })
