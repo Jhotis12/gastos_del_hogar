@@ -29,6 +29,7 @@ import {
   monthLabel,
   shiftMonth,
   shortMonthLabel,
+  todayISO,
 } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
@@ -99,6 +100,13 @@ export default function Dashboard() {
   const maxCategory = categoriesSorted[0]?.total ?? 1
 
   const monthSurplus = totalIncome - totalExpenses
+  const pendingSalaries = (salaries ?? []).filter((s) => s.pay_date > todayISO())
+  const pendingLabel = pendingSalaries
+    .map((s) => {
+      const name = members?.find((m) => m.id === s.profile_id)?.full_name ?? 'Miembro'
+      return `${formatCurrency(Number(s.amount))} (${name}, ${formatDate(s.pay_date)})`
+    })
+    .join(' · ')
   const monthList = (surpluses ?? []).slice(-6)
   const monthAccumulated = monthList.reduce((sum, s) => sum + s.surplus, 0)
   const idxCurrent = (surpluses ?? []).findIndex((s) => s.month === month)
@@ -139,16 +147,20 @@ export default function Dashboard() {
         <div className="pointer-events-none absolute -bottom-14 left-1/3 h-40 w-40 rounded-full bg-pine-400/20 blur-2xl" />
         <div className="relative">
           <p className="text-sm font-medium text-[#b3dcca]">Saldo disponible · {monthLabel(month)}</p>
-          {runningBalance === undefined ? (
-            <Skeleton tone="onDark" className="mt-2 h-9 w-52 sm:h-12" />
-          ) : (
-            <p className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-5xl">
-              {formatCurrency(balanceAnimated)}
-            </p>
-          )}
+          <p
+            data-testid="hero-saldo"
+            className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-5xl"
+          >
+            {runningBalance === undefined ? '$ —' : formatCurrency(balanceAnimated)}
+          </p>
           <p className="mt-1 text-xs text-[#b3dcca]/80">
             Incluye el sobrante de meses anteriores
           </p>
+          {pendingLabel && (
+            <p className="mt-1 text-xs font-medium text-gold-300">
+              Por llegar: {pendingLabel}
+            </p>
+          )}
           <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2 text-sm">
             <span className="flex items-center gap-2 text-[#d8ede4]">
               <ArrowUpCircle size={16} className="text-emerald-300" />
@@ -288,7 +300,7 @@ export default function Dashboard() {
             <ul className="space-y-3">
               {salaries.map((s) => (
                 <li
-                  key={s.profile_id}
+                  key={`${s.profile_id}-${s.pay_date}`}
                   className="flex items-center justify-between gap-2 text-sm"
                 >
                   <span className="flex min-w-0 items-center gap-2 text-ink/60">

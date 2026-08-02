@@ -163,6 +163,26 @@ await step('saldo acumulado en dashboard (sobrante arrastrado)', async () => {
   await waitForText('2.300.000')
 })
 
+await step('fecha real de pago editable (nómina no pagada no infla el saldo)', async () => {
+  await goTo('Miembros y Salarios', '/miembros')
+  await page.click('button[aria-label="Editar salario"]')
+  const now = new Date()
+  const nextFirst = `${now.getFullYear()}-${String(now.getMonth() + 2).padStart(2, '0')}-01`
+  await page.fill('input[type="date"]', nextFirst)
+  await page.click('text=Guardar')
+  await waitForText('Llega el 1 de')
+  const heroSaldo = page.locator('[data-testid="hero-saldo"]')
+  await goTo('Dashboard', '/')
+  await heroSaldo.locator('text=/200\\.000/').waitFor({ timeout: 8000 })
+  await goTo('Miembros y Salarios', '/miembros')
+  await page.click('button[aria-label="Editar salario"]')
+  const first = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+  await page.fill('input[type="date"]', first)
+  await page.click('text=Guardar')
+  await goTo('Dashboard', '/')
+  await heroSaldo.locator('text=2.300.000').waitFor({ timeout: 8000 })
+})
+
 await step('tarjeta sobrantes por mes en dashboard', async () => {
   await waitForText('Sobrantes por mes')
   await page.waitForSelector('text=/Ingresos.*2\\.500\\.000.*Gastos.*200\\.000/')

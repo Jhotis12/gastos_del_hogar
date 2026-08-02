@@ -48,12 +48,16 @@ function SalaryInput({
 
   const [editing, setEditing] = useState(false)
   const [amount, setAmount] = useState(row ? String(row.amount) : '')
+  const [payDate, setPayDate] = useState(
+    row ? row.pay_date : payDateForMonth(payday, month),
+  )
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   const startEdit = () => {
     setAmount(
       row ? String(row.amount) : effective ? String(effective.amount) : '',
     )
+    setPayDate(row ? row.pay_date : payDateForMonth(payday, month))
     setEditing(true)
   }
 
@@ -66,7 +70,7 @@ function SalaryInput({
         profileId,
         month,
         amount: value,
-        payDate: payDateForMonth(payday, month),
+        payDate,
       })
       toast.success('Salario guardado')
       setEditing(false)
@@ -90,9 +94,17 @@ function SalaryInput({
     if (row) {
       return (
         <div className="flex items-center justify-between gap-3">
-          <span className="text-sm font-semibold text-pine-600">
-            {formatCurrency(Number(row.amount))}
-          </span>
+          <div className="min-w-0 text-right">
+            <span className="text-sm font-semibold text-pine-600">
+              {formatCurrency(Number(row.amount))}
+            </span>
+            {row.pay_date > todayISO() && (
+              <p className="mt-0.5 text-xs text-ink/40">
+                Llega el {Number(row.pay_date.slice(-2))} de{' '}
+                {monthLabel(row.pay_date)}
+              </p>
+            )}
+          </div>
           {canEdit && (
             <div className="flex gap-1">
               <button

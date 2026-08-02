@@ -70,7 +70,7 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 │   │   └── categories/     #   BudgetModal (presupuestos por categoría)
 │   └── pages/              # 1 página por ruta
 ├── tests/
-│   ├── e2e-flow.mjs         # Suite e2e de 40 pasos (navegación SPA)
+│   ├── e2e-flow.mjs         # Suite e2e de 41 pasos (navegación SPA)
 │   ├── e2e-realtime.mjs     # Sincronización en tiempo real entre 2 miembros
 │   ├── check-mobile.mjs     # Verificación móvil (375px, sin overflow)
 │   ├── reset-sandbox.sh     # Reinicia el usuario sandbox (requiere SUPABASE_SERVICE_ROLE)
@@ -106,17 +106,24 @@ receipts            household_id, storage_path, uploaded_by, parsed_data (jsonb)
 - **Fondo común:** ingreso del mes = `SUM(salaries.amount)` del hogar
   (salarios efectivos: fila del mes o heredado); saldo = ingresos − gastos
   del mes.
-- **Salario efectivo del mes** (`src/lib/salaries.ts`): si existe la fila de
-  ese mes se usa su `amount`; si no, se **hereda** el último salario registrado
-  en un mes anterior (badge "Heredado de {mes}"). Su `pay_date` efectiva se
-  calcula con `payDateForMonth(payday, month)`: el día de pago de la persona
-  recortado al último día del mes (p. ej. día 31 en febrero → 28).
+- **Salario efectivo del mes** (`src/lib/salaries.ts`): toda fila cuyo
+  `pay_date` (fecha REAL de llegada del dinero) cae dentro del mes — puede
+  haber varias por persona si un pago atrasado de otro mes llegó aquí. Para
+  personas sin fila en el mes se **hereda** el último salario registrado en
+  un mes anterior (badge "Heredado de {mes}"), con `pay_date` calculada con
+  `payDateForMonth(payday, month)`: el día de pago de la persona recortado
+  al último día del mes (p. ej. día 31 en febrero → 28). `pay_date` es la
+  **fuente de verdad** del dinero: al registrar un salario se puede editar
+  la fecha real de llegada (nóminas atrasadas, cambios de día).
 - **Saldo disponible (Dashboard):** RPC `get_running_balance(p_date)` = `SUM`
   salarios con `pay_date <= p_date` − `SUM` gastos con `expense_date <=
-  p_date`. El frontend siempre la llama con **fin de mes** (nunca "hasta
-  hoy"): así el saldo del mes actual coincide con el sobrante del mes + los
-  sobrantes anteriores (el día de pago no resta el salario aún no recibido;
-  antes, un salario con `pay_date` futuro bajaba la suma sin explicación).
+  p_date`. El frontend la llama con `min(hoy, fin de mes)` — **cash basis**:
+  solo cuenta el dinero realmente recibido; una nómina con `pay_date` futuro
+  (aún no pagada) NO infla el saldo. El hero muestra debajo "Por llegar:
+  $X (nombre, fecha)" por cada salario con `pay_date > hoy` para explicar la
+  diferencia con los ingresos del mes. (Nota: el sobrante acumulado de los
+  meses cerrados coincide con el saldo; durante el mes actual difieren
+  cuando hay nóminas aún no pagadas.)
 - **Sobrantes por mes (Dashboard + `/historial`):** RPC
   `get_monthly_surpluses()` devuelve una fila por mes desde el primer mes con
   actividad hasta el actual: `(month, income, expenses, surplus)`, donde
@@ -339,7 +346,7 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
 
 ## 9. Testing
 
-- Suite e2e de 40 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios
+- Suite e2e de 41 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios
   (día de pago + herencia al mes siguiente), gastos, calendario, saldos,
   saldo acumulado, sobrantes por mes (tarjeta Dashboard + `/historial`),
   recarga de página con salarios visibles, presupuestos, servicios, metas,
@@ -372,8 +379,14 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
    llegaran y nada la volvía a ejecutar → ahora es una **derivación en
    memoria** (`useMemo` sobre las dos fuentes), con estado `isPending` propio
    para no mostrar "Aún no hay salarios" mientras carga.
-9. **"Saldo disponible" mostraba una suma menor a la esperada** — se calculaba
-   "hasta hoy" y excluía los salarios con `pay_date` futuro (p. ej. salario
-   con día de pago 24 registrado el 1: solo contaba el del día 1) → ahora
-   `useRunningBalance` usa **fin de mes** y el saldo coincide con el sobrante
-   del mes + sobrantes anteriores.
+9. **"Saldo disponible" no coincidía con lo esperado (dos versiones opuestas)**
+   — v1 calculaba "hasta hoy": un salario con `pay_date` futuro (día de pago
+   24 registrado el 1) no contaba y el saldo parecía menor a lo esperado. v2
+   pasó a fin de mes, pero entonces la nómina no pagada (o atrasada de un mes
+   anterior) **inflaba** el saldo con dinero que no había llegado. Solución
+   definitiva: **cash basis** — `useRunningBalance` usa `min(hoy, fin de
+   mes)` (solo dinero realmente recibido), el `pay_date` se vuelve **editable**
+   al registrar el salario (fecha real de llegada, para nóminas atrasadas) y
+   el hero muestra "Por llegar: $X (nombre, fecha)" por cada salario con
+   `pay_date > hoy`. Los sobrantes/historial ya agrupaban por `pay_date`; la
+   tarjeta "Salarios del mes" se alineó a esa misma base.

@@ -153,7 +153,7 @@ pnpm build     # typecheck (tsc) + build de producción
 pnpm lint      # oxlint
 ```
 
-Suite e2e (40 pasos, Playwright/Firefox) — requiere:
+Suite e2e (41 pasos, Playwright/Firefox) — requiere:
 
 1. Dev server corriendo (`pnpm dev`, puerto 5173).
 2. El `.env` apuntando al entorno contra el que se probará (la app puede
@@ -180,7 +180,7 @@ Ejecutar:
 
 ```bash
 bash tests/reset-sandbox.sh   # crea el usuario sandbox-test@test.com / Sandbox123!
-node tests/e2e-flow.mjs       # corre los 40 pasos y muestra el resumen
+node tests/e2e-flow.mjs       # corre los 41 pasos y muestra el resumen
 ```
 
 > El sandbox se elimina automáticamente al final del flujo.
