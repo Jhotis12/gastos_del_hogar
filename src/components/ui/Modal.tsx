@@ -27,7 +27,7 @@ export default function Modal({ open, title, onClose, children }: ModalProps) {
       onClick={onClose}
     >
       <div
-        className="animate-scale-in w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl"
+        className="animate-scale-in my-auto max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl bg-surface p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">

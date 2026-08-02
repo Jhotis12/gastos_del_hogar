@@ -12,7 +12,7 @@ import { useToast } from '@/components/ui/Toast'
 import type { ExpenseWithRelations } from '@/lib/types'
 import { cn, errorMessage } from '@/lib/utils'
 import { WEEKDAYS } from '@/lib/constants'
-import { currentMonthKey, daysInMonth, formatDate, todayISO } from '@/lib/dates'
+import { currentMonthKey, daysInMonth, formatDate, monthLabel, todayISO } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
 export default function Calendar() {
@@ -184,7 +184,7 @@ export default function Calendar() {
 
       <Modal
         open={!!selectedDay}
-        title={selectedDay ? `${formatDate(selectedDay)} · ${month}` : ''}
+        title={selectedDay ? `${formatDate(selectedDay)} · ${monthLabel(month)}` : ''}
         onClose={() => setSelectedDay(null)}
       >
         {selectedDay && (
