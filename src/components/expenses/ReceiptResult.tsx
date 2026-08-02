@@ -146,7 +146,7 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm font-medium text-ink/70">Total</label>
               <MoneyInput value={total} onChange={setTotal} placeholder="Ej. 20.500" />
@@ -161,7 +161,7 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm font-medium text-ink/70">Categoría</label>
               <SelectInput

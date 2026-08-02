@@ -14,6 +14,7 @@ import { useHousehold } from '@/hooks/useHousehold'
 import MonthPicker from '@/components/ui/MonthPicker'
 import SelectInput from '@/components/ui/SelectInput'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import DateInput from '@/components/ui/DateInput'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 import QueryError from '@/components/ui/QueryError'
 import MoneyInput from '@/components/ui/MoneyInput'
@@ -179,28 +180,36 @@ function SalaryInput({
   }
 
   return (
-    <form onSubmit={submit} className="flex items-center gap-2">
+    <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
       <MoneyInput
         value={amount}
         onChange={setAmount}
         autoFocus
-        className="w-28 rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-pine-500 focus:outline-none"
+        className="w-full sm:w-40"
         placeholder="0.00"
       />
-      <button
-        type="submit"
-        disabled={upsert.isPending}
-        className="rounded-lg bg-pine-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-pine-800 disabled:opacity-50"
-      >
-        Guardar
-      </button>
-      <button
-        type="button"
-        onClick={() => setEditing(false)}
-        className="rounded-lg px-2 py-1.5 text-sm text-ink/50 hover:bg-slate-100"
-      >
-        Cancelar
-      </button>
+      <DateInput
+        aria-label="Fecha real de pago"
+        value={payDate}
+        onChange={(e) => setPayDate(e.target.value)}
+        className="w-full sm:w-48"
+      />
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={upsert.isPending}
+          className="rounded-lg bg-pine-700 px-3 py-2 text-sm font-medium text-white hover:bg-pine-800 disabled:opacity-50"
+        >
+          Guardar
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditing(false)}
+          className="rounded-lg px-3 py-2 text-sm text-ink/50 hover:bg-slate-100"
+        >
+          Cancelar
+        </button>
+      </div>
     </form>
   )
 }
