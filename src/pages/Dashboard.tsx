@@ -20,7 +20,6 @@ import ApplyRecurringModal from '@/components/services/ApplyRecurringModal'
 import MonthPicker from '@/components/ui/MonthPicker'
 import CategoryBadge from '@/components/ui/CategoryBadge'
 import PageSkeleton from '@/components/ui/PageSkeleton'
-import Skeleton from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
 import { cn, errorMessage } from '@/lib/utils'
 import {
@@ -287,12 +286,7 @@ export default function Dashboard() {
               Gestionar
             </Link>
           </div>
-          {salariesPending ? (
-            <div className="space-y-3">
-              <Skeleton className="h-9" />
-              <Skeleton className="h-9" />
-            </div>
-          ) : salaries.length === 0 ? (
+          {salariesPending ? null : salaries.length === 0 ? (
             <p className="py-8 text-center text-sm text-ink/40">
               Aún no hay salarios registrados
             </p>
@@ -350,13 +344,7 @@ export default function Dashboard() {
             Ver historial
           </Link>
         </div>
-        {surpluses === undefined ? (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <Skeleton className="h-28" />
-            <Skeleton className="h-28" />
-            <Skeleton className="h-28" />
-          </div>
-        ) : monthList.length === 0 ? (
+        {surpluses === undefined ? null : monthList.length === 0 ? (
           <p className="py-8 text-center text-sm text-ink/40">
             Sin movimientos registrados
           </p>
