@@ -4,19 +4,20 @@ import { ArrowDownCircle, ArrowUpCircle, Sparkles, AlertTriangle, Plus } from 'l
 import { useAuth } from '@/hooks/useAuth'
 import { useAddExpense } from '@/hooks/useExpenses'
 import { useCountUp } from '@/hooks/useCountUp'
-import { useApplyRecurring, usePendingRecurring } from '@/hooks/useRecurring'
+import { usePendingRecurring, useRecurringExpenses } from '@/hooks/useRecurring'
 import { useBudgets } from '@/hooks/useCategories'
-import { useExpenses, useSummary } from '@/hooks/useExpenses'
+import { useExpenses, useRunningBalance, useSummary } from '@/hooks/useExpenses'
 import { useHousehold } from '@/hooks/useHousehold'
 import { useMembers, useSalaries } from '@/hooks/useMembers'
 import StatCard from '@/components/ui/StatCard'
 import ExpenseForm from '@/components/expenses/ExpenseForm'
+import ApplyRecurringModal from '@/components/services/ApplyRecurringModal'
 import MonthPicker from '@/components/ui/MonthPicker'
 import CategoryBadge from '@/components/ui/CategoryBadge'
 import Loading from '@/components/ui/Loading'
 import { useToast } from '@/components/ui/Toast'
 import { errorMessage } from '@/lib/utils'
-import { currentMonthKey, formatDate, monthLabel } from '@/lib/dates'
+import { currentMonthKey, formatDate, monthLabel, shiftMonth } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
 export default function Dashboard() {
@@ -47,23 +48,22 @@ export default function Dashboard() {
   const { data: salaries } = useSalaries(month)
   const { data: expenses } = useExpenses(month)
   const { data: budgets } = useBudgets(month)
-  const { totalIncome, totalExpenses, balance } = useSummary(month)
+  const { totalIncome, totalExpenses } = useSummary(month)
+  const { data: runningBalance } = useRunningBalance(month)
   const pendingRecurring = usePendingRecurring(month)
-  const applyRecurring = useApplyRecurring(month)
-  const balanceAnimated = useCountUp(balance)
+  const { data: recurring } = useRecurringExpenses()
+  const balanceAnimated = useCountUp(runningBalance ?? 0)
+  const [applyOpen, setApplyOpen] = useState(false)
 
-  const handleApplyRecurring = async () => {
-    try {
-      const count = await applyRecurring.mutateAsync()
-      toast.success(
-        count > 0
-          ? `${count} gasto${count !== 1 ? 's' : ''} recurrente${count !== 1 ? 's' : ''} aplicado${count !== 1 ? 's' : ''}`
-          : 'No había recurrentes pendientes',
-      )
-    } catch (err) {
-      toast.error(errorMessage(err))
-    }
+  const paidIds = new Set<string>()
+  for (const e of expenses ?? []) {
+    if (e.recurring_id) paidIds.add(e.recurring_id)
   }
+  const nextMonthStart = `${shiftMonth(month, 1).slice(0, 7)}-01`
+  const applyable =
+    recurring?.filter(
+      (r) => r.is_active && r.next_due_date < nextMonthStart && !paidIds.has(r.id),
+    ) ?? []
 
   const byCategory = new Map<
     string,
@@ -120,6 +120,9 @@ export default function Dashboard() {
           <p className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-5xl">
             {formatCurrency(balanceAnimated)}
           </p>
+          <p className="mt-1 text-xs text-[#b3dcca]/80">
+            Incluye el sobrante de meses anteriores
+          </p>
           <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2 text-sm">
             <span className="flex items-center gap-2 text-[#d8ede4]">
               <ArrowUpCircle size={16} className="text-emerald-300" />
@@ -159,11 +162,10 @@ export default function Dashboard() {
             {pendingRecurring !== 1 && 's'} de aplicar este mes.
           </p>
           <button
-            onClick={handleApplyRecurring}
-            disabled={applyRecurring.isPending}
-            className="rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800 disabled:opacity-50"
+            onClick={() => setApplyOpen(true)}
+            className="rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
           >
-            {applyRecurring.isPending ? 'Aplicando…' : 'Aplicar recurrentes'}
+            Aplicar recurrentes
           </button>
         </div>
       )}
@@ -248,12 +250,19 @@ export default function Dashboard() {
             <ul className="space-y-3">
               {salaries.map((s) => (
                 <li
-                  key={s.id}
-                  className="flex items-center justify-between text-sm"
+                  key={s.profile_id}
+                  className="flex items-center justify-between gap-2 text-sm"
                 >
-                  <span className="text-ink/60">
-                    {members?.find((m) => m.id === s.profile_id)?.full_name ||
-                      'Miembro'}
+                  <span className="flex min-w-0 items-center gap-2 text-ink/60">
+                    <span className="truncate">
+                      {members?.find((m) => m.id === s.profile_id)?.full_name ||
+                        'Miembro'}
+                    </span>
+                    {s.source_month !== month && (
+                      <span className="shrink-0 rounded-full bg-pine-50 px-2 py-0.5 text-[11px] font-medium text-pine-600">
+                        Heredado
+                      </span>
+                    )}
                   </span>
                   <span className="font-semibold text-pine-600">
                     +{formatCurrency(Number(s.amount))}
@@ -316,6 +325,13 @@ export default function Dashboard() {
         onClose={() => setQuickOpen(false)}
         busy={addExpense.isPending}
         onSave={handleQuickAdd}
+      />
+
+      <ApplyRecurringModal
+        open={applyOpen}
+        month={month}
+        pending={applyable}
+        onClose={() => setApplyOpen(false)}
       />
     </div>
   )

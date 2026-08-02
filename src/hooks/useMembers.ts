@@ -1,7 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
-import type { Salary } from '@/lib/types'
+import { effectiveSalariesForMonth } from '@/lib/salaries'
+import { errorMessage } from '@/lib/utils'
+import { useToast } from '@/components/ui/Toast'
+import type { EffectiveSalary, Profile, Salary } from '@/lib/types'
 
 export function useMembers() {
   const { profile } = useAuth()
@@ -16,18 +19,56 @@ export function useMembers() {
         .eq('household_id', householdId!)
         .order('full_name')
       if (error) throw error
-      return data
+      return data as Profile[]
     },
     enabled: !!householdId,
   })
 }
 
-export function useSalaries(month: string) {
+export function useAllSalaries() {
   const { profile } = useAuth()
   const householdId = profile?.household_id
 
   return useQuery({
-    queryKey: ['salaries', householdId, month],
+    queryKey: ['salaries', householdId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('salaries')
+        .select('*')
+        .eq('household_id', householdId!)
+        .order('month')
+      if (error) throw error
+      return data as Salary[]
+    },
+    enabled: !!householdId,
+  })
+}
+
+// Salarios efectivos del mes: fila del mes o salario heredado del último
+// mes anterior con registro. Solo los que tienen monto > 0.
+export function useSalaries(month: string) {
+  const { profile } = useAuth()
+  const householdId = profile?.household_id
+  const { data: all } = useAllSalaries()
+  const { data: members } = useMembers()
+
+  return useQuery({
+    queryKey: ['salaries', householdId, month, 'effective'],
+    queryFn: () => {
+      const effective = effectiveSalariesForMonth(all ?? [], members ?? [], month)
+      return effective.filter((s) => s.amount > 0) as EffectiveSalary[]
+    },
+    enabled: !!householdId,
+  })
+}
+
+// Filas crudas de salario del mes (para editar/eliminar la fila exacta)
+export function useSalaryRows(month: string) {
+  const { profile } = useAuth()
+  const householdId = profile?.household_id
+
+  return useQuery({
+    queryKey: ['salaries', householdId, month, 'rows'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('salaries')
@@ -50,10 +91,12 @@ export function useUpsertSalary() {
       amount,
       month,
       profileId,
+      payDate,
     }: {
       amount: number
       month: string
       profileId?: string
+      payDate?: string
     }) => {
       if (!user || !profile?.household_id) throw new Error('Sin hogar')
       const target = profileId ?? user.id
@@ -69,12 +112,13 @@ export function useUpsertSalary() {
         profile_id: target,
         amount,
         month,
+        pay_date: payDate,
       }
 
       if (existing.data) {
         const { error } = await supabase
           .from('salaries')
-          .update({ amount })
+          .update({ amount, pay_date: payDate })
           .eq('id', existing.data.id)
         if (error) throw error
       } else {
@@ -82,9 +126,9 @@ export function useUpsertSalary() {
         if (error) throw error
       }
     },
-    onSuccess: (_data, vars) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['salaries'] })
-      void vars
+      queryClient.invalidateQueries({ queryKey: ['running-balance'] })
     },
   })
 }
@@ -96,7 +140,34 @@ export function useDeleteSalary() {
       const { error } = await supabase.from('salaries').delete().eq('id', id)
       if (error) throw error
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['salaries'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['salaries'] })
+      queryClient.invalidateQueries({ queryKey: ['running-balance'] })
+    },
+  })
+}
+
+// Día de pago de una persona (1-31). Invalida miembros y salarios
+// efectivos porque la fecha de pago heredada depende del día.
+export function useUpdatePayday() {
+  const queryClient = useQueryClient()
+  const toast = useToast()
+
+  return useMutation({
+    mutationFn: async ({ profileId, payday }: { profileId: string; payday: number }) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ payday })
+        .eq('id', profileId)
+      if (error) throw error
+    },
+    onSuccess: (_d, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['members'] })
+      queryClient.invalidateQueries({ queryKey: ['salaries'] })
+      queryClient.invalidateQueries({ queryKey: ['running-balance'] })
+      toast.success(`Día de pago: ${vars.payday}`)
+    },
+    onError: (err) => toast.error(errorMessage(err)),
   })
 }
 

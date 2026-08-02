@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { useSalaries } from '@/hooks/useMembers'
 import type { Expense, ExpenseWithRelations } from '@/lib/types'
-import { shiftMonth } from '@/lib/dates'
+import { daysInMonth, shiftMonth, todayISO } from '@/lib/dates'
 
 const EXPENSE_SELECT = `
   *,
@@ -60,7 +60,10 @@ export function useAddExpense() {
       if (error) throw error
       return data as Expense
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expenses'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] })
+      queryClient.invalidateQueries({ queryKey: ['running-balance'] })
+    },
   })
 }
 
@@ -72,7 +75,10 @@ export function useUpdateExpense() {
       const { error } = await supabase.from('expenses').update(input).eq('id', id)
       if (error) throw error
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expenses'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] })
+      queryClient.invalidateQueries({ queryKey: ['running-balance'] })
+    },
   })
 }
 
@@ -84,7 +90,10 @@ export function useDeleteExpense() {
       const { error } = await supabase.from('expenses').delete().eq('id', id)
       if (error) throw error
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expenses'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] })
+      queryClient.invalidateQueries({ queryKey: ['running-balance'] })
+    },
   })
 }
 
@@ -100,4 +109,29 @@ export function useSummary(month: string) {
   const expenseRatio = totalIncome > 0 ? totalExpenses / totalIncome : 0
 
   return { totalIncome, totalExpenses, balance, expenseRatio }
+}
+
+// Sobrante acumulado del hogar: Σ salarios con pay_date <= fecha −
+// Σ gastos con expense_date <= fecha. En el mes actual se calcula
+// hasta hoy (el salario del mes se suma desde su día de pago); en
+// meses pasados, hasta fin de mes.
+export function useRunningBalance(month: string) {
+  const { profile } = useAuth()
+  const householdId = profile?.household_id
+  const [y, m] = month.slice(0, 7).split('-').map(Number)
+  const lastDay = daysInMonth(y, m - 1)
+  const endOfMonth = `${month.slice(0, 7)}-${String(lastDay).padStart(2, '0')}`
+  const pDate = endOfMonth < todayISO() ? endOfMonth : todayISO()
+
+  return useQuery({
+    queryKey: ['running-balance', householdId, month],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_running_balance', {
+        p_date: pDate,
+      })
+      if (error) throw error
+      return Number(data ?? 0)
+    },
+    enabled: !!householdId,
+  })
 }

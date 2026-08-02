@@ -9,6 +9,7 @@ export interface Profile {
   id: string
   household_id: string | null
   full_name: string
+  payday?: number | null
   created_at: string
 }
 
@@ -18,7 +19,17 @@ export interface Salary {
   profile_id: string
   amount: number
   month: string
+  pay_date: string
   created_at: string
+}
+
+// Salario efectivo de una persona en un mes: la fila del mes si existe,
+// o el último salario registrado en un mes anterior (heredado).
+export interface EffectiveSalary {
+  profile_id: string
+  amount: number
+  source_month: string | null
+  pay_date: string
 }
 
 export interface Category {

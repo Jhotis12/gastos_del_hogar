@@ -140,6 +140,29 @@ await step('saldos entre miembros', async () => {
   await waitForText('2.325.000')
 })
 
+await step('configurar día de pago', async () => {
+  await page.selectOption('select[aria-label="Día de pago"]', '15')
+  await page.waitForTimeout(500)
+  const val = await page.inputValue('select[aria-label="Día de pago"]')
+  if (val !== '15') throw new Error('El día de pago no quedó en 15')
+})
+
+await step('salario heredado al mes siguiente', async () => {
+  await page.click('button[aria-label="Mes siguiente"]')
+  await waitForText('Heredado de')
+  await waitForText('2.500.000')
+  await waitForText('Llega el 15 de')
+  await page.click('button[aria-label="Mes anterior"]')
+  await waitGone('Heredado de')
+})
+
+await step('saldo acumulado en dashboard (sobrante arrastrado)', async () => {
+  await goTo('Dashboard', '/')
+  await waitForText('Saldo disponible')
+  await waitForText('Incluye el sobrante de meses anteriores')
+  await waitForText('2.300.000')
+})
+
 await step('búsqueda y export CSV en gastos', async () => {
   await goTo('Gastos', '/gastos')
   await waitForText('Mercado test')
@@ -216,6 +239,9 @@ await step('aplicar recurrentes desde dashboard', async () => {
   await goTo('Dashboard', '/')
   await waitForText('Aplicar recurrentes')
   await page.click('text=Aplicar recurrentes')
+  await waitForText('Sí, lo pagué')
+  await page.click('text=Sí, lo pagué')
+  await waitGone('Sí, lo pagué')
   await goTo('Gastos', '/gastos')
   await waitForText('Renta test')
 })

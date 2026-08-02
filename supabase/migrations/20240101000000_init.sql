@@ -46,9 +46,11 @@ create table public.expenses (
   category_id uuid references public.categories(id) on delete set null,
   paid_by uuid references public.profiles(id) on delete set null,
   recurring_id uuid,
+  receipt_id uuid references public.receipts(id) on delete set null,
   amount numeric(12, 2) not null check (amount > 0),
   description text not null default '',
   expense_date date not null default current_date,
+  splits uuid[],
   created_at timestamptz not null default now()
 );
 

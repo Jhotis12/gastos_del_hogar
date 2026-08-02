@@ -1,40 +1,59 @@
 import { useState } from 'react'
 import { Copy, Check, Users, User, Pencil, Trash2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { useDeleteSalary, useMembers, useSalaries, useUpsertSalary } from '@/hooks/useMembers'
+import {
+  useDeleteSalary,
+  useMembers,
+  useSalaries,
+  useSalaryRows,
+  useUpdatePayday,
+  useUpsertSalary,
+} from '@/hooks/useMembers'
 import { useExpenses } from '@/hooks/useExpenses'
 import { useHousehold } from '@/hooks/useHousehold'
 import MonthPicker from '@/components/ui/MonthPicker'
+import SelectInput from '@/components/ui/SelectInput'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import Loading from '@/components/ui/Loading'
 import QueryError from '@/components/ui/QueryError'
 import MoneyInput from '@/components/ui/MoneyInput'
 import { useToast } from '@/components/ui/Toast'
 import { errorMessage } from '@/lib/utils'
-import { currentMonthKey } from '@/lib/dates'
+import { payDateForMonth } from '@/lib/salaries'
+import { currentMonthKey, monthLabel, todayISO } from '@/lib/dates'
 import { formatCurrency, parseMoneyInput } from '@/lib/money'
+import type { EffectiveSalary, Profile } from '@/lib/types'
+
+const PAY_DAYS = Array.from({ length: 31 }, (_, i) => i + 1)
 
 function SalaryInput({
   profileId,
   month,
   canEdit,
+  effective,
+  payday,
 }: {
   profileId: string
   month: string
   canEdit: boolean
+  effective?: EffectiveSalary
+  payday?: number | null
 }) {
-  const { data: salaries } = useSalaries(month)
+  const { data: rows } = useSalaryRows(month)
   const upsert = useUpsertSalary()
   const remove = useDeleteSalary()
   const toast = useToast()
-  const salary = salaries?.find((s) => s.profile_id === profileId)
+  const row = rows?.find((s) => s.profile_id === profileId)
+  const inherited = !!effective && effective.source_month !== month
 
   const [editing, setEditing] = useState(false)
-  const [amount, setAmount] = useState(salary ? String(salary.amount) : '')
+  const [amount, setAmount] = useState(row ? String(row.amount) : '')
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   const startEdit = () => {
-    setAmount(salary ? String(salary.amount) : '')
+    setAmount(
+      row ? String(row.amount) : effective ? String(effective.amount) : '',
+    )
     setEditing(true)
   }
 
@@ -43,7 +62,12 @@ function SalaryInput({
     const value = parseMoneyInput(amount)
     if (value === null) return
     try {
-      await upsert.mutateAsync({ profileId, month, amount: value })
+      await upsert.mutateAsync({
+        profileId,
+        month,
+        amount: value,
+        payDate: payDateForMonth(payday, month),
+      })
       toast.success('Salario guardado')
       setEditing(false)
     } catch (err) {
@@ -52,9 +76,9 @@ function SalaryInput({
   }
 
   const handleDelete = async () => {
-    if (!salary) return
+    if (!row) return
     try {
-      await remove.mutateAsync(salary.id)
+      await remove.mutateAsync(row.id)
       toast.success('Salario eliminado')
       setConfirmOpen(false)
     } catch (err) {
@@ -63,11 +87,11 @@ function SalaryInput({
   }
 
   if (!editing) {
-    if (salary) {
+    if (row) {
       return (
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm font-semibold text-pine-600">
-            {formatCurrency(Number(salary.amount))}
+            {formatCurrency(Number(row.amount))}
           </span>
           {canEdit && (
             <div className="flex gap-1">
@@ -90,11 +114,42 @@ function SalaryInput({
           <ConfirmDialog
             open={confirmOpen}
             title="Eliminar salario"
-            message={`¿Eliminar el salario de ${formatCurrency(Number(salary.amount))} de este mes?`}
+            message={`¿Eliminar el salario de ${formatCurrency(Number(row.amount))} de este mes?`}
             onConfirm={handleDelete}
             onCancel={() => setConfirmOpen(false)}
             busy={remove.isPending}
           />
+        </div>
+      )
+    }
+    if (inherited && effective) {
+      return (
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 text-right">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <span className="text-sm font-semibold text-pine-600">
+                {formatCurrency(Number(effective.amount))}
+              </span>
+              <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-medium text-gold-700">
+                Heredado de {monthLabel(effective.source_month ?? month)}
+              </span>
+            </div>
+            {effective.pay_date > todayISO() && (
+              <p className="mt-0.5 text-xs text-ink/40">
+                Llega el {Number(effective.pay_date.slice(-2))} de{' '}
+                {monthLabel(month)}
+              </p>
+            )}
+          </div>
+          {canEdit && (
+            <button
+              onClick={startEdit}
+              className="rounded-lg p-2 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
+              aria-label="Editar salario heredado"
+            >
+              <Pencil size={16} />
+            </button>
+          )}
         </div>
       )
     }
@@ -143,14 +198,15 @@ export default function Members() {
   const [month, setMonth] = useState(currentMonthKey())
   const { data: household } = useHousehold()
   const { data: members, error: membersError } = useMembers()
-  const { data: salaries, error: salariesError } = useSalaries(month)
+  const { data: salaries } = useSalaries(month)
   const { data: expenses, error: expensesError } = useExpenses(month)
+  const updatePayday = useUpdatePayday()
   const [copied, setCopied] = useState(false)
 
   if (!household) return <Loading />
 
-  if (membersError || salariesError || expensesError)
-    return <QueryError error={membersError ?? salariesError ?? expensesError} />
+  if (membersError || expensesError)
+    return <QueryError error={membersError ?? expensesError} />
 
   const totalIncome =
     salaries?.reduce((sum, s) => sum + Number(s.amount), 0) ?? 0
@@ -164,6 +220,10 @@ export default function Members() {
       0
     return { member: m, aportado, pagado, balance: aportado - pagado }
   })
+
+  const handlePaydayChange = (m: Profile) => (e: React.ChangeEvent<HTMLSelectElement>) => {
+    updatePayday.mutate({ profileId: m.id, payday: Number(e.target.value) })
+  }
 
   const copyCode = async () => {
     await navigator.clipboard.writeText(household.invite_code)
@@ -263,37 +323,62 @@ export default function Members() {
           </h2>
         </div>
         <ul className="divide-y divide-slate-100">
-          {members?.map((m) => (
-            <li key={m.id} className="flex items-center justify-between gap-4 px-5 py-4">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-ink/50">
-                  {m.id === user?.id ? (
-                    <User size={18} />
-                  ) : (
-                    <span className="text-sm font-semibold">
-                      {m.full_name.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-ink">
-                    {m.full_name}
-                    {m.id === user?.id && (
-                      <span className="ml-2 rounded-full bg-pine-50 px-2 py-0.5 text-xs font-medium text-pine-600">
-                        Tú
+          {members?.map((m) => {
+            const effective = salaries?.find((s) => s.profile_id === m.id)
+            return (
+              <li key={m.id} className="flex items-center justify-between gap-4 px-5 py-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-ink/50">
+                    {m.id === user?.id ? (
+                      <User size={18} />
+                    ) : (
+                      <span className="text-sm font-semibold">
+                        {m.full_name.charAt(0).toUpperCase()}
                       </span>
                     )}
-                  </p>
-                  <p className="text-xs text-ink/40">Miembro del hogar</p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-ink">
+                      {m.full_name}
+                      {m.id === user?.id && (
+                        <span className="ml-2 rounded-full bg-pine-50 px-2 py-0.5 text-xs font-medium text-pine-600">
+                          Tú
+                        </span>
+                      )}
+                    </p>
+                    {m.id === user?.id ? (
+                      <div className="mt-1 flex items-center gap-2">
+                        <span className="text-xs text-ink/40">Día de pago</span>
+                        <SelectInput
+                          aria-label="Día de pago"
+                          value={m.payday ?? 1}
+                          onChange={handlePaydayChange(m)}
+                          className="w-24"
+                        >
+                          {PAY_DAYS.map((d) => (
+                            <option key={d} value={d}>
+                              {d}
+                            </option>
+                          ))}
+                        </SelectInput>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-ink/40">
+                        Miembro del hogar · paga el día {m.payday ?? 1}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <SalaryInput
-                profileId={m.id}
-                month={month}
-                canEdit={m.id === user?.id}
-              />
-            </li>
-          ))}
+                <SalaryInput
+                  profileId={m.id}
+                  month={month}
+                  canEdit={m.id === user?.id}
+                  effective={effective}
+                  payday={m.payday ?? 1}
+                />
+              </li>
+            )
+          })}
         </ul>
       </div>
     </div>

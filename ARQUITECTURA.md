@@ -85,8 +85,10 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 
 ```
 households          id, name, invite_code (único), created_at
-profiles            id (= auth.users.id), household_id → households, full_name
-salaries            household_id, profile_id, amount (>0), month (YYYY-MM-01)
+profiles            id (= auth.users.id), household_id → households, full_name,
+                    payday (1-31, default 1)  → día de pago de la persona
+salaries            household_id, profile_id, amount (>0), month (YYYY-MM-01),
+                    pay_date (fecha real de la nómina de esa fila; default = día 1)
                     UNIQUE(profile_id, month)   → 1 salario por persona y mes
 categories          household_id, name, color, icon
 category_budgets    household_id, category_id, month, amount (>0)
@@ -101,8 +103,19 @@ savings_goals       household_id, name, target_amount (>0), saved_amount (>=0),
 receipts            household_id, storage_path, uploaded_by, parsed_data (jsonb)
 ```
 
-- **Fondo común:** ingreso del mes = `SUM(salaries.amount)` del hogar;
-  saldo = ingresos − gastos del mes.
+- **Fondo común:** ingreso del mes = `SUM(salaries.amount)` del hogar
+  (salarios efectivos: fila del mes o heredado); saldo = ingresos − gastos
+  del mes.
+- **Salario efectivo del mes** (`src/lib/salaries.ts`): si existe la fila de
+  ese mes se usa su `amount`; si no, se **hereda** el último salario registrado
+  en un mes anterior (badge "Heredado de {mes}"). Su `pay_date` efectiva se
+  calcula con `payDateForMonth(payday, month)`: el día de pago de la persona
+  recortado al último día del mes (p. ej. día 31 en febrero → 28).
+- **Saldo disponible (Dashboard):** RPC `get_running_balance(p_date)` = `SUM`
+  salarios con `pay_date <= p_date` − `SUM` gastos con `expense_date <=
+  p_date`. En el mes actual se calcula hasta hoy (la nómina del mes solo
+  cuenta desde su día de pago); en meses pasados, hasta fin de mes. Así el
+  sobrante de meses anteriores se arrastra al mes siguiente.
 - **Fechas de mes** siempre como `YYYY-MM-01` (primer día).
 
 ---
@@ -125,7 +138,8 @@ recursión infinita en políticas).
 |-----|-----------|
 | `create_household(p_name)` | Crea hogar + código + perfil + 7 categorías por defecto, atómico. Evita `INSERT…RETURNING` (la RLS filtra antes de ser miembro → 403 PGRST106). |
 | `get_household_by_code(p_code)` | Busca hogar por código (solo con sesión). |
-| `apply_recurring_expenses(p_month)` | Materializa servicios vencidos en `expenses` (con `recurring_id`) y avanza `next_due_date` según `frequency` (1/2/3/12 meses). |
+| `apply_recurring_expense(p_recurring_id, p_month)` | Aplica **un** servicio vencido a `expenses` (con guarda anti-duplicados por mes) y avanza su `next_due_date` según `frequency` (1/2/3/12 meses). Se llama por servicio desde el wizard de "Aplicar al mes". |
+| `get_running_balance(p_date)` | Saldo acumulado del hogar a una fecha: Σ salarios (`pay_date <= p_date`) − Σ gastos (`expense_date <= p_date`). Security definer con `auth.uid()`. |
 
 ### Edge Function `analyze-receipt`
 - Deno + `@supabase/supabase-js`. Valida JWT y pertenencia al hogar del path.
@@ -278,8 +292,11 @@ desglose.
 
 ### Servicios (gastos fijos)
 Página Servicios: total fijo del mes, % vs ingreso, estado
-**Pagado/Pendiente** por servicio (vía `expenses.recurring_id`), botón
-"Aplicar al mes" (RPC `apply_recurring_expenses`).
+**Pagado/Pendiente** por servicio (vía `expenses.recurring_id`). El botón
+"Aplicar al mes" (también desde el Dashboard como "Aplicar recurrentes") abre
+un **wizard modal por servicio**: muestra cada pendiente (vencido y sin gasto
+del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
+"Saltar" (queda pendiente, no se descuenta ni avanza su fecha).
 
 ---
 
@@ -295,6 +312,15 @@ Página Servicios: total fijo del mes, % vs ingreso, estado
 | `SUPABASE_ACCESS_TOKEN=… supabase functions deploy analyze-receipt` | Deploy Edge Function |
 | `SUPABASE_ACCESS_TOKEN=… supabase secrets set GEMINI_API_KEY=…` | Secret de Gemini |
 
+> **Entorno local (Supabase CLI + Docker):** `supabase start` levanta la pila
+> en `127.0.0.1:54321` (API), `54322` (Postgres), `54323` (Studio) y `54324`
+> (Mailpit). `.env.local` (gitignored por `*.local`) apunta el dev server al
+> local; Vercel usa sus variables del dashboard, por lo que el deploy de
+> producción nunca ve el `.env.local`. La anon key del local es un JWT firmado
+> con el secret por defecto de `config.toml`. El entorno local se siembra con
+> un backup de producción (`supabase db dump --linked -p … --data-only` +
+> `psql`) para probar contra datos reales.
+
 > ⚠️ **Trampa operativa:** tras ediciones masivas de archivos, el watcher de
 > Vite puede servir transformaciones obsoletas. Si el dev server se comporta
 > raro: reiniciarlo con `rm -rf node_modules/.vite`.
@@ -303,9 +329,10 @@ Página Servicios: total fijo del mes, % vs ingreso, estado
 
 ## 9. Testing
 
-- Suite e2e de 34 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios,
-  gastos, calendario, saldos, presupuestos, servicios, metas, escaneo de
-  facturas (con fixture + Gemini real).
+- Suite e2e de 38 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios
+  (día de pago + herencia al mes siguiente), gastos, calendario, saldos,
+  saldo acumulado, presupuestos, servicios, metas, escaneo de facturas
+  (con fixture + Gemini real).
 - Usa **navegación SPA** (clics en el sidebar, no `page.goto` a rutas
   protegidas), esperas por selector y `data-testid="confirm-dialog-confirm"`
   para los diálogos.
