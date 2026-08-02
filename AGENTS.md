@@ -25,6 +25,12 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
   Dashboard una vez).
 - **Fecha/meses TZ-seguros**: usar `src/lib/dates.ts` (mediodía local), no
   `Date.UTC` con getters locales.
+- **Siempre local primero**: cualquier cambio, prueba o borrado de datos se
+  hace SOLO en el entorno local (Supabase local + `docker exec`). NUNCA se
+  toca producción (datos, usuarios, esquema, migraciones, deploys) hasta que
+  el usuario lo pida explícitamente ("súbelo", "manda la migración", etc.).
+  Los commits son locales; el `git push` y el `supabase db push` esperan
+  orden.
 
 ## Comandos
 
@@ -38,4 +44,4 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
 
 ## Verificación antes de terminar
 
-`pnpm build` + `pnpm lint` + suite e2e completa (30 pasos).
+`pnpm build` + `pnpm lint` + suite e2e completa (40 pasos).
