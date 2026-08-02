@@ -70,7 +70,7 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 │   │   └── categories/     #   BudgetModal (presupuestos por categoría)
 │   └── pages/              # 1 página por ruta
 ├── tests/
-│   ├── e2e-flow.mjs         # Suite e2e de 39 pasos (navegación SPA)
+│   ├── e2e-flow.mjs         # Suite e2e de 40 pasos (navegación SPA)
 │   ├── e2e-realtime.mjs     # Sincronización en tiempo real entre 2 miembros
 │   ├── check-mobile.mjs     # Verificación móvil (375px, sin overflow)
 │   ├── reset-sandbox.sh     # Reinicia el usuario sandbox (requiere SUPABASE_SERVICE_ROLE)
@@ -338,11 +338,11 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
 
 ## 9. Testing
 
-- Suite e2e de 39 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios
+- Suite e2e de 40 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios
   (día de pago + herencia al mes siguiente), gastos, calendario, saldos,
   saldo acumulado, sobrantes por mes (tarjeta Dashboard + `/historial`),
-  presupuestos, servicios, metas, escaneo de facturas
-  (con fixture + Gemini real).
+  recarga de página con salarios visibles, presupuestos, servicios, metas,
+  escaneo de facturas (con fixture + Gemini real).
 - Usa **navegación SPA** (clics en el sidebar, no `page.goto` a rutas
   protegidas), esperas por selector y `data-testid="confirm-dialog-confirm"`
   para los diálogos.
@@ -365,3 +365,9 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
 6. **`useCountUp` tras early-return** en Dashboard — violación de reglas de
    hooks → mover hooks arriba.
 7. **Vite sirviendo caché vieja** tras seds masivos → `rm -rf node_modules/.vite`.
+8. **Salarios que "aparecen después de un rato" al recargar la página** —
+   `useSalaries` era una query cuyo `queryFn` leía otras dos queries
+   (`useAllSalaries` + `useMembers`); al cargar se cacheaba `[]` antes de que
+   llegaran y nada la volvía a ejecutar → ahora es una **derivación en
+   memoria** (`useMemo` sobre las dos fuentes), con estado `isPending` propio
+   para no mostrar "Aún no hay salarios" mientras carga.

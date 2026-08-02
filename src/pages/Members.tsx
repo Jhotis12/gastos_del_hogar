@@ -198,7 +198,7 @@ export default function Members() {
   const [month, setMonth] = useState(currentMonthKey())
   const { data: household } = useHousehold()
   const { data: members, error: membersError } = useMembers()
-  const { data: salaries } = useSalaries(month)
+  const { salaries } = useSalaries(month)
   const { data: expenses, error: expensesError } = useExpenses(month)
   const updatePayday = useUpdatePayday()
   const [copied, setCopied] = useState(false)

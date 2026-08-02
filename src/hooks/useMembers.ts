@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
@@ -46,20 +47,25 @@ export function useAllSalaries() {
 
 // Salarios efectivos del mes: fila del mes o salario heredado del último
 // mes anterior con registro. Solo los que tienen monto > 0.
+// Derivación en memoria (no una query): un queryFn que leyera los datos de
+// useAllSalaries/useMembers causaba una carrera al recargar la página — se
+// cacheaba [] antes de que llegaran esos datos y la tarjeta del Dashboard
+// quedaba vacía hasta un refetch posterior.
 export function useSalaries(month: string) {
   const { profile } = useAuth()
   const householdId = profile?.household_id
-  const { data: all } = useAllSalaries()
-  const { data: members } = useMembers()
+  const { data: all, isPending: allPending } = useAllSalaries()
+  const { data: members, isPending: membersPending } = useMembers()
 
-  return useQuery({
-    queryKey: ['salaries', householdId, month, 'effective'],
-    queryFn: () => {
-      const effective = effectiveSalariesForMonth(all ?? [], members ?? [], month)
-      return effective.filter((s) => s.amount > 0) as EffectiveSalary[]
-    },
-    enabled: !!householdId,
-  })
+  const salaries = useMemo(
+    () =>
+      effectiveSalariesForMonth(all ?? [], members ?? [], month).filter(
+        (s) => s.amount > 0,
+      ) as EffectiveSalary[],
+    [all, members, month],
+  )
+
+  return { salaries, isPending: !householdId || allPending || membersPending }
 }
 
 // Filas crudas de salario del mes (para editar/eliminar la fila exacta)

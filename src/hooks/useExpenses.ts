@@ -101,7 +101,7 @@ export function useDeleteExpense() {
 }
 
 export function useSummary(month: string) {
-  const { data: salaries } = useSalaries(month)
+  const { salaries } = useSalaries(month)
   const { data: expenses } = useExpenses(month)
 
   const totalIncome =

@@ -179,6 +179,14 @@ await step('historial completo por mes', async () => {
   await goTo('Dashboard', '/')
 })
 
+await step('recargar página: salarios visibles de inmediato (sin carrera)', async () => {
+  await page.reload()
+  await waitForText('Salarios del mes')
+  const card = page.locator('.card:has-text("Salarios del mes")')
+  await card.locator('text=2.500.000').waitFor({ timeout: 8000 })
+  await waitGone('Aún no hay salarios registrados')
+})
+
 await step('búsqueda y export CSV en gastos', async () => {
   await goTo('Gastos', '/gastos')
   await waitForText('Mercado test')

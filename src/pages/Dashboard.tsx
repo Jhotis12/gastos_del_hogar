@@ -56,7 +56,7 @@ export default function Dashboard() {
   }
   const { data: household } = useHousehold()
   const { data: members } = useMembers()
-  const { data: salaries } = useSalaries(month)
+  const { salaries, isPending: salariesPending } = useSalaries(month)
   const { data: expenses } = useExpenses(month)
   const { data: budgets } = useBudgets(month)
   const { totalIncome, totalExpenses } = useSummary(month)
@@ -270,7 +270,11 @@ export default function Dashboard() {
               Gestionar
             </Link>
           </div>
-          {!salaries || salaries.length === 0 ? (
+          {salariesPending ? (
+            <p className="py-8 text-center text-sm text-ink/40">
+              Cargando salarios…
+            </p>
+          ) : salaries.length === 0 ? (
             <p className="py-8 text-center text-sm text-ink/40">
               Aún no hay salarios registrados
             </p>

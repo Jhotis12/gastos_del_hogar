@@ -21,7 +21,7 @@ export default function Recurring() {
   const [month, setMonth] = useState(currentMonthKey())
   const { data: recurring, isLoading, error } = useRecurringExpenses()
   const { data: expenses } = useExpenses(month)
-  const { data: salaries } = useSalaries(month)
+  const { salaries } = useSalaries(month)
   const toggle = useToggleRecurring()
   const remove = useDeleteRecurring()
   const toast = useToast()
