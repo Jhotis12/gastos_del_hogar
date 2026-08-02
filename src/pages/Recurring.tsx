@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Plus, Trash2, Repeat, Pencil, CheckCircle2, Clock } from 'lucide-react'
-import { useApplyRecurring, useDeleteRecurring, useRecurringExpenses, useToggleRecurring } from '@/hooks/useRecurring'
+import { useDeleteRecurring, useRecurringExpenses, useToggleRecurring } from '@/hooks/useRecurring'
 import { useExpenses } from '@/hooks/useExpenses'
 import { useSalaries } from '@/hooks/useMembers'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
@@ -9,6 +9,7 @@ import Loading from '@/components/ui/Loading'
 import QueryError from '@/components/ui/QueryError'
 import MonthPicker from '@/components/ui/MonthPicker'
 import ServiceForm from '@/components/services/ServiceForm'
+import ApplyRecurringModal from '@/components/services/ApplyRecurringModal'
 import { useToast } from '@/components/ui/Toast'
 import type { RecurringExpenseWithRelations } from '@/lib/types'
 import { errorMessage } from '@/lib/utils'
@@ -21,13 +22,13 @@ export default function Recurring() {
   const { data: recurring, isLoading, error } = useRecurringExpenses()
   const { data: expenses } = useExpenses(month)
   const { data: salaries } = useSalaries(month)
-  const applyRecurring = useApplyRecurring(month)
   const toggle = useToggleRecurring()
   const remove = useDeleteRecurring()
   const toast = useToast()
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<RecurringExpenseWithRelations | null>(null)
   const [deleting, setDeleting] = useState<RecurringExpenseWithRelations | null>(null)
+  const [applyOpen, setApplyOpen] = useState(false)
 
   const monthStart = `${month.slice(0, 7)}-01`
   const nextMonthStart = `${shiftMonth(month, 1).slice(0, 7)}-01`
@@ -72,18 +73,14 @@ export default function Recurring() {
     }
   }
 
-  const handleApply = async () => {
-    try {
-      const count = await applyRecurring.mutateAsync()
-      toast.success(
-        count > 0
-          ? `${count} servicio${count !== 1 ? 's' : ''} aplicado${count !== 1 ? 's' : ''} a los gastos del mes`
-          : 'No había servicios pendientes para este mes',
-      )
-    } catch (err) {
-      toast.error(errorMessage(err))
-    }
-  }
+  const applyable = useMemo(() => {
+    const paid = paidIds
+    return (
+      recurring?.filter(
+        (r) => r.is_active && r.next_due_date < nextMonthStart && !paid.has(r.id),
+      ) ?? []
+    )
+  }, [recurring, nextMonthStart, paidIds])
 
   return (
     <div className="space-y-6">
@@ -140,11 +137,10 @@ export default function Recurring() {
           </div>
           {pendingCount > 0 && (
             <button
-              onClick={handleApply}
-              disabled={applyRecurring.isPending}
-              className="mt-3 rounded-lg bg-pine-700 px-3 py-2 text-sm font-medium text-white hover:bg-pine-800 disabled:opacity-50"
+              onClick={() => setApplyOpen(true)}
+              className="mt-3 rounded-lg bg-pine-700 px-3 py-2 text-sm font-medium text-white hover:bg-pine-800"
             >
-              {applyRecurring.isPending ? 'Aplicando…' : 'Aplicar al mes'}
+              Aplicar al mes
             </button>
           )}
         </div>
@@ -252,6 +248,13 @@ export default function Recurring() {
         open={formOpen}
         initial={editing}
         onClose={() => setFormOpen(false)}
+      />
+
+      <ApplyRecurringModal
+        open={applyOpen}
+        month={month}
+        pending={applyable}
+        onClose={() => setApplyOpen(false)}
       />
 
       <ConfirmDialog

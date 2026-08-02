@@ -97,18 +97,19 @@ export function useDeleteRecurring() {
   })
 }
 
-export function useApplyRecurring(month: string) {
+export function useApplyRecurringOne(month: string) {
   const { profile } = useAuth()
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (recurringId: string) => {
       if (!profile?.household_id) throw new Error('Sin hogar')
-      const { data, error } = await supabase.rpc('apply_recurring_expenses', {
+      const { data, error } = await supabase.rpc('apply_recurring_expense', {
+        p_recurring_id: recurringId,
         p_month: `${month.slice(0, 7)}-01`,
       })
       if (error) throw error
-      return data as number
+      return (data ?? 0) as number
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] })
