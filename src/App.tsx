@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import Layout from '@/components/layout/Layout'
-import Loading from '@/components/ui/Loading'
+import PageSkeleton from '@/components/ui/PageSkeleton'
 
 // Lazy loading: cada página se carga solo cuando se navega a ella
 const Login = lazy(() => import('@/pages/Login'))
@@ -20,7 +20,7 @@ const Profile = lazy(() => import('@/pages/Profile'))
 
 function RequireAuth() {
   const { user, loading } = useAuth()
-  if (loading) return <Loading />
+  if (loading) return <PageSkeleton />
   if (!user) return <Navigate to="/login" replace />
   return <Outlet />
 }
@@ -28,25 +28,25 @@ function RequireAuth() {
 // Si ya hay sesión, no mostrar el login (redirección declarativa)
 function RequireGuest() {
   const { user, loading } = useAuth()
-  if (loading) return <Loading />
+  if (loading) return <PageSkeleton />
   if (user) return <Navigate to="/" replace />
   return <Outlet />
 }
 
 function RequireHousehold() {
   const { user, loading, profile, profileLoading, profileLoaded } = useAuth()
-  if (loading) return <Loading />
+  if (loading) return <PageSkeleton />
   if (!user) return <Navigate to="/login" replace />
-  if (profileLoading || !profileLoaded) return <Loading />
+  if (profileLoading || !profileLoaded) return <PageSkeleton />
   if (!profile || !profile.household_id) return <Navigate to="/setup" replace />
   return <Outlet />
 }
 
 function RequireSetup() {
   const { user, profile, profileLoading, profileLoaded, loading } = useAuth()
-  if (loading) return <Loading />
+  if (loading) return <PageSkeleton />
   if (!user) return <Navigate to="/login" replace />
-  if (profileLoading || !profileLoaded) return <Loading />
+  if (profileLoading || !profileLoaded) return <PageSkeleton />
   if (profile?.household_id) return <Navigate to="/" replace />
   return <Outlet />
 }
@@ -54,7 +54,7 @@ function RequireSetup() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Suspense fallback={<Loading />}>
+      <Suspense fallback={<PageSkeleton />}>
       <Routes>
         <Route element={<RequireGuest />}>
           <Route path="/login" element={<Login />} />

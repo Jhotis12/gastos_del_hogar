@@ -155,6 +155,7 @@
   --animate-pulse-soft: pulse-soft 2.4s ease-in-out infinite;
   --animate-scan-sweep: scan-sweep 1.8s ease-in-out infinite;
   --animate-dot: dot-bounce 1s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
 
   @keyframes fade-up {
     from {
@@ -226,6 +227,14 @@
     40% {
       transform: translateY(-3px);
       opacity: 1;
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
     }
   }
 }

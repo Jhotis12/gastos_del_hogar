@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Plus, Trash2, Pencil, PiggyBank, ArrowDownToLine, ArrowUpFromLine, CheckCircle2, Target } from 'lucide-react'
 import { useDeleteSavingsGoal, useSavingsGoals } from '@/hooks/useSavings'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import Loading from '@/components/ui/Loading'
+import PageSkeleton from '@/components/ui/PageSkeleton'
 import QueryError from '@/components/ui/QueryError'
 import GoalForm from '@/components/savings/GoalForm'
 import AdjustGoalModal from '@/components/savings/AdjustGoalModal'
@@ -82,7 +82,7 @@ export default function Savings() {
       </div>
 
       {isLoading ? (
-        <Loading />
+        <PageSkeleton />
       ) : error ? (
         <QueryError error={error} />
       ) : !goals || goals.length === 0 ? (

@@ -3,7 +3,7 @@ import { Plus, Zap, CalendarDays } from 'lucide-react'
 import { useAddExpense, useExpenses } from '@/hooks/useExpenses'
 import { useRecurringExpenses } from '@/hooks/useRecurring'
 import MonthPicker from '@/components/ui/MonthPicker'
-import Loading from '@/components/ui/Loading'
+import PageSkeleton from '@/components/ui/PageSkeleton'
 import QueryError from '@/components/ui/QueryError'
 import Modal from '@/components/ui/Modal'
 import ExpenseForm from '@/components/expenses/ExpenseForm'
@@ -124,7 +124,7 @@ export default function Calendar() {
       </div>
 
       {isLoading ? (
-        <Loading />
+        <PageSkeleton />
       ) : error ? (
         <QueryError error={error} />
       ) : (

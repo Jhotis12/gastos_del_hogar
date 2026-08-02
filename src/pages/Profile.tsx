@@ -5,7 +5,7 @@ import { useHousehold } from '@/hooks/useHousehold'
 import { useMembers } from '@/hooks/useMembers'
 import { useDeleteHousehold, useLeaveHousehold, useUpdateProfile } from '@/hooks/useMembers'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import Loading from '@/components/ui/Loading'
+import PageSkeleton from '@/components/ui/PageSkeleton'
 import { useToast } from '@/components/ui/Toast'
 import AppLogo from '@/components/ui/AppLogo'
 import { errorMessage } from '@/lib/utils'
@@ -27,7 +27,7 @@ export default function Profile() {
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
-  if (!profile) return <Loading />
+  if (!profile) return <PageSkeleton />
 
   const saveName = async (e: React.FormEvent) => {
     e.preventDefault()

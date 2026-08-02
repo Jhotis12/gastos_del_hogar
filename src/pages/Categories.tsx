@@ -4,7 +4,7 @@ import { useAddCategory, useBudgets, useCategories, useDeleteCategory } from '@/
 import Modal from '@/components/ui/Modal'
 import BudgetModal from '@/components/categories/BudgetModal'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import Loading from '@/components/ui/Loading'
+import PageSkeleton from '@/components/ui/PageSkeleton'
 import QueryError from '@/components/ui/QueryError'
 import { useToast } from '@/components/ui/Toast'
 import type { Category } from '@/lib/types'
@@ -82,7 +82,7 @@ export default function Categories() {
       </div>
 
       {isLoading ? (
-        <Loading />
+        <PageSkeleton />
       ) : error ? (
         <QueryError error={error} />
       ) : !categories || categories.length === 0 ? (

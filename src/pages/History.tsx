@@ -1,7 +1,7 @@
 import { ArrowDownCircle, ArrowUpCircle, Wallet } from 'lucide-react'
 import { useMonthlySurpluses } from '@/hooks/useExpenses'
 import StatCard from '@/components/ui/StatCard'
-import Loading from '@/components/ui/Loading'
+import PageSkeleton from '@/components/ui/PageSkeleton'
 import { cn } from '@/lib/utils'
 import { monthLabel } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
@@ -21,7 +21,7 @@ export default function History() {
   const totalExpenses = rows.reduce((sum, r) => sum + r.expenses, 0)
   const finalAccumulated = rows.length > 0 ? rows[rows.length - 1].accumulated : 0
 
-  if (isLoading) return <Loading />
+  if (isLoading) return <PageSkeleton />
 
   return (
     <div className="space-y-6">

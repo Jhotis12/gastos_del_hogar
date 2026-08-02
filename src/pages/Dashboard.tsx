@@ -19,7 +19,8 @@ import ExpenseForm from '@/components/expenses/ExpenseForm'
 import ApplyRecurringModal from '@/components/services/ApplyRecurringModal'
 import MonthPicker from '@/components/ui/MonthPicker'
 import CategoryBadge from '@/components/ui/CategoryBadge'
-import Loading from '@/components/ui/Loading'
+import PageSkeleton from '@/components/ui/PageSkeleton'
+import Skeleton from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
 import { cn, errorMessage } from '@/lib/utils'
 import {
@@ -107,7 +108,7 @@ export default function Dashboard() {
     currentSurplus && prevSurplus ? currentSurplus.surplus - prevSurplus.surplus : null
 
   if (!profile?.household_id) return null
-  if (!household) return <Loading />
+  if (!household) return <PageSkeleton />
 
   return (
     <div className="space-y-6">
@@ -138,9 +139,13 @@ export default function Dashboard() {
         <div className="pointer-events-none absolute -bottom-14 left-1/3 h-40 w-40 rounded-full bg-pine-400/20 blur-2xl" />
         <div className="relative">
           <p className="text-sm font-medium text-[#b3dcca]">Saldo disponible · {monthLabel(month)}</p>
-          <p className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-5xl">
-            {formatCurrency(balanceAnimated)}
-          </p>
+          {runningBalance === undefined ? (
+            <Skeleton tone="onDark" className="mt-2 h-9 w-52 sm:h-12" />
+          ) : (
+            <p className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-5xl">
+              {formatCurrency(balanceAnimated)}
+            </p>
+          )}
           <p className="mt-1 text-xs text-[#b3dcca]/80">
             Incluye el sobrante de meses anteriores
           </p>
@@ -271,9 +276,10 @@ export default function Dashboard() {
             </Link>
           </div>
           {salariesPending ? (
-            <p className="py-8 text-center text-sm text-ink/40">
-              Cargando salarios…
-            </p>
+            <div className="space-y-3">
+              <Skeleton className="h-9" />
+              <Skeleton className="h-9" />
+            </div>
           ) : salaries.length === 0 ? (
             <p className="py-8 text-center text-sm text-ink/40">
               Aún no hay salarios registrados
@@ -332,7 +338,13 @@ export default function Dashboard() {
             Ver historial
           </Link>
         </div>
-        {monthList.length === 0 ? (
+        {surpluses === undefined ? (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
+          </div>
+        ) : monthList.length === 0 ? (
           <p className="py-8 text-center text-sm text-ink/40">
             Sin movimientos registrados
           </p>

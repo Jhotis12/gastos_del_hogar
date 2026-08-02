@@ -14,7 +14,7 @@ import { useHousehold } from '@/hooks/useHousehold'
 import MonthPicker from '@/components/ui/MonthPicker'
 import SelectInput from '@/components/ui/SelectInput'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import Loading from '@/components/ui/Loading'
+import PageSkeleton from '@/components/ui/PageSkeleton'
 import QueryError from '@/components/ui/QueryError'
 import MoneyInput from '@/components/ui/MoneyInput'
 import { useToast } from '@/components/ui/Toast'
@@ -203,7 +203,7 @@ export default function Members() {
   const updatePayday = useUpdatePayday()
   const [copied, setCopied] = useState(false)
 
-  if (!household) return <Loading />
+  if (!household) return <PageSkeleton />
 
   if (membersError || expensesError)
     return <QueryError error={membersError ?? expensesError} />

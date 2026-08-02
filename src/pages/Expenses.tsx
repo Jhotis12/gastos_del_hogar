@@ -5,7 +5,7 @@ import ExpenseForm from '@/components/expenses/ExpenseForm'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import CategoryBadge from '@/components/ui/CategoryBadge'
 import MonthPicker from '@/components/ui/MonthPicker'
-import Loading from '@/components/ui/Loading'
+import PageSkeleton from '@/components/ui/PageSkeleton'
 import QueryError from '@/components/ui/QueryError'
 import ReceiptCapture from '@/components/expenses/ReceiptCapture'
 import ReceiptResult from '@/components/expenses/ReceiptResult'
@@ -182,7 +182,7 @@ export default function Expenses() {
       </div>
 
       {isLoading ? (
-        <Loading />
+        <PageSkeleton />
       ) : error ? (
         <QueryError error={error} />
       ) : !searched || searched.length === 0 ? (

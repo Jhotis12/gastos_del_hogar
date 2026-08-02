@@ -5,7 +5,7 @@ import { useExpenses } from '@/hooks/useExpenses'
 import { useSalaries } from '@/hooks/useMembers'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import CategoryBadge from '@/components/ui/CategoryBadge'
-import Loading from '@/components/ui/Loading'
+import PageSkeleton from '@/components/ui/PageSkeleton'
 import QueryError from '@/components/ui/QueryError'
 import MonthPicker from '@/components/ui/MonthPicker'
 import ServiceForm from '@/components/services/ServiceForm'
@@ -147,7 +147,7 @@ export default function Recurring() {
       </div>
 
       {isLoading ? (
-        <Loading />
+        <PageSkeleton />
       ) : error ? (
         <QueryError error={error} />
       ) : !recurring || recurring.length === 0 ? (
