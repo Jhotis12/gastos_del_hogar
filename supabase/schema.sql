@@ -45,7 +45,7 @@ create table public.expenses (
   household_id uuid not null references public.households(id) on delete cascade,
   category_id uuid references public.categories(id) on delete set null,
   paid_by uuid references public.profiles(id) on delete set null,
-  recurring_id uuid references public.recurring_expenses(id) on delete set null,
+  recurring_id uuid,
   amount numeric(12, 2) not null check (amount > 0),
   description text not null default '',
   expense_date date not null default current_date,
@@ -65,6 +65,10 @@ create table public.recurring_expenses (
   is_active boolean not null default true,
   created_at timestamptz not null default now()
 );
+
+alter table public.expenses
+  add constraint expenses_recurring_id_fkey
+  foreign key (recurring_id) references public.recurring_expenses(id) on delete set null;
 
 create table public.category_budgets (
   id uuid primary key default gen_random_uuid(),
@@ -172,11 +176,13 @@ as $$
     and auth.uid() is not null
 $$;
 
--- ---------- FUNCIÓN: aplicar gastos recurrentes ----------
--- Copia los gastos recurrentes activos vencidos (next_due_date <= fin del mes
+-- ---------- FUNCIÓN: aplicar un gasto recurrente ----------
+-- Aplica UN servicio activo y vencido (next_due_date <= fin del mes
 -- seleccionado) a la tabla expenses (con vínculo recurring_id para el
 -- historial por servicio) y avanza su next_due_date según la frecuencia.
-create or replace function public.apply_recurring_expenses(p_month date)
+-- Devuelve 1 si aplicó, 0 si no era aplicable (fuera del mes, inactivo,
+-- pertenencia a otro hogar o ya existe un gasto del servicio en el mes).
+create or replace function public.apply_recurring_expense(p_recurring_id uuid, p_month date)
 returns int
 language plpgsql
 security definer
@@ -185,35 +191,50 @@ as $$
 declare
   hh uuid := (select household_id from public.profiles where id = auth.uid());
   r record;
-  applied int := 0;
   first_day date := date_trunc('month', p_month)::date;
   last_day date := (date_trunc('month', p_month) + interval '1 month' - interval '1 day')::date;
+  already_applied boolean;
 begin
   if hh is null then
     return 0;
   end if;
 
-  for r in
-    select * from public.recurring_expenses
+  select * into r
+  from public.recurring_expenses
+  where id = p_recurring_id
+    and household_id = hh
+    and is_active = true
+    and next_due_date <= last_day;
+
+  if r.id is null then
+    return 0;
+  end if;
+
+  select exists(
+    select 1 from public.expenses
     where household_id = hh
-      and is_active = true
-      and next_due_date <= last_day
-  loop
-    insert into public.expenses (household_id, category_id, paid_by, amount, description, expense_date, recurring_id)
-    values (hh, r.category_id, r.paid_by, r.amount, r.description, greatest(r.next_due_date, first_day), r.id);
+      and recurring_id = r.id
+      and expense_date >= first_day
+      and expense_date <= last_day
+  ) into already_applied;
 
-    update public.recurring_expenses
-    set next_due_date = case r.frequency
-      when 'bimonthly' then (date_trunc('month', p_month) + interval '2 months')::date
-      when 'quarterly' then (date_trunc('month', p_month) + interval '3 months')::date
-      when 'yearly' then (date_trunc('month', p_month) + interval '1 year')::date
-      else (date_trunc('month', p_month) + interval '1 month')::date
-    end
-    where id = r.id;
-    applied := applied + 1;
-  end loop;
+  if already_applied then
+    return 0;
+  end if;
 
-  return applied;
+  insert into public.expenses (household_id, category_id, paid_by, amount, description, expense_date, recurring_id)
+  values (hh, r.category_id, r.paid_by, r.amount, r.description, greatest(r.next_due_date, first_day), r.id);
+
+  update public.recurring_expenses
+  set next_due_date = case r.frequency
+    when 'bimonthly' then (date_trunc('month', p_month) + interval '2 months')::date
+    when 'quarterly' then (date_trunc('month', p_month) + interval '3 months')::date
+    when 'yearly' then (date_trunc('month', p_month) + interval '1 year')::date
+    else (date_trunc('month', p_month) + interval '1 month')::date
+  end
+  where id = r.id;
+
+  return 1;
 end;
 $$;
 
@@ -385,6 +406,34 @@ create policy "savings: eliminar del hogar"
   on public.savings_goals for delete
   using (public.is_household_member(household_id));
 
+-- receipts
+create table public.receipts (
+  id uuid primary key default gen_random_uuid(),
+  household_id uuid not null references public.households(id) on delete cascade,
+  storage_path text not null,
+  uploaded_by uuid references public.profiles(id) on delete set null,
+  parsed_data jsonb,
+  created_at timestamptz not null default now()
+);
+
+alter table public.receipts enable row level security;
+
+create policy "receipts: ver del hogar"
+  on public.receipts for select
+  using (public.is_household_member(household_id));
+
+create policy "receipts: crear del hogar"
+  on public.receipts for insert
+  with check (public.is_household_member(household_id));
+
+create policy "receipts: editar del hogar"
+  on public.receipts for update
+  using (public.is_household_member(household_id));
+
+create policy "receipts: eliminar del hogar"
+  on public.receipts for delete
+  using (public.is_household_member(household_id));
+
 -- Realtime: publicar los cambios de las tablas del hogar (sincronización entre miembros)
 do $$
 declare
@@ -400,3 +449,9 @@ begin
     end if;
   end loop;
 end $$;
+
+-- Grants base (los mismos que Supabase aplica por defecto en proyectos reales)
+grant select on all tables in schema public to anon;
+grant select, insert, update, delete on all tables in schema public to authenticated;
+grant usage, select on all sequences in schema public to authenticated;
+grant execute on all functions in schema public to authenticated;
