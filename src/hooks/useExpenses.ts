@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { useSalaries } from '@/hooks/useMembers'
 import type { Expense, ExpenseWithRelations } from '@/lib/types'
-import { daysInMonth, shiftMonth, todayISO } from '@/lib/dates'
+import { daysInMonth, shiftMonth } from '@/lib/dates'
 
 const EXPENSE_SELECT = `
   *,
@@ -114,23 +114,24 @@ export function useSummary(month: string) {
   return { totalIncome, totalExpenses, balance, expenseRatio }
 }
 
-// Sobrante acumulado del hogar: Σ salarios con pay_date <= fecha −
-// Σ gastos con expense_date <= fecha. En el mes actual se calcula
-// hasta hoy (el salario del mes se suma desde su día de pago); en
-// meses pasados, hasta fin de mes.
+// Sobrante acumulado del hogar a FIN de mes: Σ salarios (pay_date <= fin
+// de mes) − Σ gastos (expense_date <= fin de mes). Se calcula a fin de mes
+// (no hasta hoy) para que el saldo del mes actual coincida siempre con el
+// sobrante del mes + los sobrantes anteriores; el día de pago no resta el
+// salario aún no recibido (antes excluía los salarios con pay_date futuro
+// y el saldo mostraba una suma menor a la esperada).
 export function useRunningBalance(month: string) {
   const { profile } = useAuth()
   const householdId = profile?.household_id
   const [y, m] = month.slice(0, 7).split('-').map(Number)
   const lastDay = daysInMonth(y, m - 1)
   const endOfMonth = `${month.slice(0, 7)}-${String(lastDay).padStart(2, '0')}`
-  const pDate = endOfMonth < todayISO() ? endOfMonth : todayISO()
 
   return useQuery({
     queryKey: ['running-balance', householdId, month],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_running_balance', {
-        p_date: pDate,
+        p_date: endOfMonth,
       })
       if (error) throw error
       return Number(data ?? 0)

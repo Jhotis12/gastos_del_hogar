@@ -113,9 +113,10 @@ receipts            household_id, storage_path, uploaded_by, parsed_data (jsonb)
   recortado al último día del mes (p. ej. día 31 en febrero → 28).
 - **Saldo disponible (Dashboard):** RPC `get_running_balance(p_date)` = `SUM`
   salarios con `pay_date <= p_date` − `SUM` gastos con `expense_date <=
-  p_date`. En el mes actual se calcula hasta hoy (la nómina del mes solo
-  cuenta desde su día de pago); en meses pasados, hasta fin de mes. Así el
-  sobrante de meses anteriores se arrastra al mes siguiente.
+  p_date`. El frontend siempre la llama con **fin de mes** (nunca "hasta
+  hoy"): así el saldo del mes actual coincide con el sobrante del mes + los
+  sobrantes anteriores (el día de pago no resta el salario aún no recibido;
+  antes, un salario con `pay_date` futuro bajaba la suma sin explicación).
 - **Sobrantes por mes (Dashboard + `/historial`):** RPC
   `get_monthly_surpluses()` devuelve una fila por mes desde el primer mes con
   actividad hasta el actual: `(month, income, expenses, surplus)`, donde
@@ -371,3 +372,8 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
    llegaran y nada la volvía a ejecutar → ahora es una **derivación en
    memoria** (`useMemo` sobre las dos fuentes), con estado `isPending` propio
    para no mostrar "Aún no hay salarios" mientras carga.
+9. **"Saldo disponible" mostraba una suma menor a la esperada** — se calculaba
+   "hasta hoy" y excluía los salarios con `pay_date` futuro (p. ej. salario
+   con día de pago 24 registrado el 1: solo contaba el del día 1) → ahora
+   `useRunningBalance` usa **fin de mes** y el saldo coincide con el sobrante
+   del mes + sobrantes anteriores.
