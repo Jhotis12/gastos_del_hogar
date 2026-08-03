@@ -85,6 +85,22 @@ export interface ExpenseWithRelations extends Expense {
   receipt: Receipt | null
 }
 
+// Dinero extra: ingreso que no es nómina (venta, regalo, reembolso…).
+// Se suma al fondo común como ingreso; member_id (quién recibió) es opcional.
+export interface Income {
+  id: string
+  household_id: string
+  member_id: string | null
+  amount: number
+  description: string
+  income_date: string
+  created_at: string
+}
+
+export interface IncomeWithRelations extends Income {
+  member: Pick<Profile, 'id' | 'full_name'> | null
+}
+
 export type Frequency = 'monthly' | 'bimonthly' | 'quarterly' | 'yearly'
 
 export interface RecurringExpense {

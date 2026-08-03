@@ -92,11 +92,22 @@ create table public.savings_goals (
   created_at timestamptz not null default now()
 );
 
+create table public.incomes (
+  id uuid primary key default gen_random_uuid(),
+  household_id uuid not null references public.households(id) on delete cascade,
+  member_id uuid references public.profiles(id) on delete set null,
+  amount numeric(12, 2) not null check (amount > 0),
+  description text not null default '',
+  income_date date not null default current_date,
+  created_at timestamptz not null default now()
+);
+
 -- ---------- ÍNDICES ----------
 
 create index if not exists expenses_household_date_idx on public.expenses (household_id, expense_date);
 create index if not exists expenses_recurring_idx on public.expenses (recurring_id);
 create index if not exists salaries_household_month_idx on public.salaries (household_id, month);
+create index if not exists incomes_household_date_idx on public.incomes (household_id, income_date);
 create index if not exists categories_household_idx on public.categories (household_id);
 create index if not exists recurring_household_due_idx on public.recurring_expenses (household_id, next_due_date);
 create index if not exists budgets_household_month_idx on public.category_budgets (household_id, month);
@@ -351,6 +362,25 @@ create policy "expenses: eliminar del hogar"
   on public.expenses for delete
   using (public.is_household_member(household_id));
 
+-- incomes
+alter table public.incomes enable row level security;
+
+create policy "incomes: ver del hogar"
+  on public.incomes for select
+  using (public.is_household_member(household_id));
+
+create policy "incomes: crear del hogar"
+  on public.incomes for insert
+  with check (public.is_household_member(household_id));
+
+create policy "incomes: editar del hogar"
+  on public.incomes for update
+  using (public.is_household_member(household_id));
+
+create policy "incomes: eliminar del hogar"
+  on public.incomes for delete
+  using (public.is_household_member(household_id));
+
 -- recurring_expenses
 alter table public.recurring_expenses enable row level security;
 
@@ -441,7 +471,7 @@ do $$
 declare
   t text;
 begin
-  foreach t in array array['expenses','salaries','categories','category_budgets','recurring_expenses','savings_goals','receipts','profiles','households']
+  foreach t in array array['expenses','salaries','categories','category_budgets','recurring_expenses','savings_goals','receipts','profiles','households','incomes']
   loop
     if not exists (
       select 1 from pg_publication_tables
@@ -457,3 +487,27 @@ grant select on all tables in schema public to anon;
 grant select, insert, update, delete on all tables in schema public to authenticated;
 grant usage, select on all sequences in schema public to authenticated;
 grant execute on all functions in schema public to authenticated;
+
+-- Storage: bucket privado receipts, rutas {household_id}/{uuid}.jpg
+insert into storage.buckets (id, name, public)
+values ('receipts', 'receipts', false)
+on conflict (id) do nothing;
+
+create policy "receipts storage: subir del hogar"
+  on storage.objects for insert
+  to authenticated
+  with check (
+    bucket_id = 'receipts'
+    and (storage.foldername(name))[1] =
+      (select household_id::text from public.profiles where id = auth.uid())
+  );
+
+create policy "receipts storage: leer del hogar"
+  on storage.objects for select
+  to authenticated
+  using (
+    bucket_id = 'receipts'
+    and (storage.foldername(name))[1] in (
+      select household_id::text from public.profiles where id = auth.uid()
+    )
+  );

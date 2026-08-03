@@ -19,6 +19,7 @@ const TABLES: RealtimeTable[] = [
   { table: 'recurring_expenses', filter: (id) => `household_id=eq.${id}`, invalidate: [['recurring'], ['expenses']] },
   { table: 'savings_goals', filter: (id) => `household_id=eq.${id}`, invalidate: [['savings']] },
   { table: 'receipts', filter: (id) => `household_id=eq.${id}`, invalidate: [['receipts'], ['expenses']] },
+  { table: 'incomes', filter: (id) => `household_id=eq.${id}`, invalidate: [['incomes'], ['running-balance'], ['monthly-surpluses']] },
   { table: 'profiles', filter: (id) => `household_id=eq.${id}`, invalidate: [['members']], refreshProfile: true },
   { table: 'households', filter: (id) => `id=eq.${id}`, invalidate: [['household']], refreshProfile: true },
 ]
@@ -33,30 +34,58 @@ export function useRealtimeSync(householdId: string | null | undefined) {
   const refreshProfileRef = useRef(refreshProfile)
   refreshProfileRef.current = refreshProfile
 
+  // Sin red el socket no puede conectar: se desconecta el cliente (evita
+  // encadenar intentos de reconexión fallidos) y se resuscribe al volver.
+  const offlineRef = useRef(!navigator.onLine)
+
   useEffect(() => {
     if (!householdId) return
 
-    const channel = supabase.channel(`household-${householdId}`)
+    const createChannel = () => {
+      const channel = supabase.channel(`household-${householdId}`)
 
-    for (const t of TABLES) {
-      channel.on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: t.table, filter: t.filter(householdId) },
-        () => {
-          for (const key of t.invalidate) {
-            queryClient.invalidateQueries({ queryKey: key })
-          }
-          if (t.refreshProfile) {
-            void refreshProfileRef.current()
-          }
-        },
-      )
+      for (const t of TABLES) {
+        channel.on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: t.table, filter: t.filter(householdId) },
+          () => {
+            for (const key of t.invalidate) {
+              queryClient.invalidateQueries({ queryKey: key })
+            }
+            if (t.refreshProfile) {
+              void refreshProfileRef.current()
+            }
+          },
+        )
+      }
+
+      channel.subscribe()
+      return channel
     }
 
-    channel.subscribe()
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    if (!offlineRef.current) channel = createChannel()
+
+    const onOffline = () => {
+      offlineRef.current = true
+      if (channel) {
+        supabase.removeChannel(channel)
+        channel = null
+      }
+      supabase.realtime.disconnect()
+    }
+    const onOnline = () => {
+      offlineRef.current = false
+      if (!channel) channel = createChannel()
+    }
+
+    window.addEventListener('offline', onOffline)
+    window.addEventListener('online', onOnline)
 
     return () => {
-      supabase.removeChannel(channel)
+      window.removeEventListener('offline', onOffline)
+      window.removeEventListener('online', onOnline)
+      if (channel) supabase.removeChannel(channel)
     }
   }, [householdId, queryClient])
 

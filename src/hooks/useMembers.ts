@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase'
 import { effectiveSalariesForMonth } from '@/lib/salaries'
 import { errorMessage } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
+import { runWithOfflineFallback, invalidateIfOnline } from '@/lib/offline/offlineSafe'
+import { enqueueSalaryUpsert, enqueueSalaryDelete } from '@/lib/offline/optimistic'
 import type { EffectiveSalary, Profile, Salary } from '@/lib/types'
 
 export function useMembers() {
@@ -93,7 +95,7 @@ export function useUpsertSalary() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({
+    mutationFn: ({
       amount,
       month,
       profileId,
@@ -103,39 +105,54 @@ export function useUpsertSalary() {
       month: string
       profileId?: string
       payDate?: string
-    }) => {
-      if (!user || !profile?.household_id) throw new Error('Sin hogar')
-      const target = profileId ?? user.id
-      const existing = await supabase
-        .from('salaries')
-        .select('id')
-        .eq('profile_id', target)
-        .eq('month', month)
-        .maybeSingle()
+    }) =>
+      runWithOfflineFallback(
+        async () => {
+          if (!user || !profile?.household_id) throw new Error('Sin hogar')
+          const target = profileId ?? user.id
+          const existing = await supabase
+            .from('salaries')
+            .select('id')
+            .eq('profile_id', target)
+            .eq('month', month)
+            .maybeSingle()
 
-      const payload = {
-        household_id: profile.household_id,
-        profile_id: target,
-        amount,
-        month,
-        pay_date: payDate,
-      }
+          const payload = {
+            household_id: profile.household_id,
+            profile_id: target,
+            amount,
+            month,
+            pay_date: payDate,
+          }
 
-      if (existing.data) {
-        const { error } = await supabase
-          .from('salaries')
-          .update({ amount, pay_date: payDate })
-          .eq('id', existing.data.id)
-        if (error) throw error
-      } else {
-        const { error } = await supabase.from('salaries').insert(payload)
-        if (error) throw error
-      }
-    },
+          if (existing.data) {
+            const { error } = await supabase
+              .from('salaries')
+              .update({ amount, pay_date: payDate })
+              .eq('id', existing.data.id)
+            if (error) throw error
+          } else {
+            const { error } = await supabase.from('salaries').insert(payload)
+            if (error) throw error
+          }
+        },
+        () => {
+          if (!user || !profile?.household_id) throw new Error('Sin hogar')
+          const target = profileId ?? user.id
+          enqueueSalaryUpsert(queryClient, profile.household_id, {
+            amount,
+            month,
+            profileId: target,
+            payDate: payDate ?? '',
+          })
+        },
+      ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['salaries'] })
-      queryClient.invalidateQueries({ queryKey: ['running-balance'] })
-      queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
+      invalidateIfOnline(queryClient, [
+        ['salaries'],
+        ['running-balance'],
+        ['monthly-surpluses'],
+      ])
     },
   })
 }
@@ -143,14 +160,20 @@ export function useUpsertSalary() {
 export function useDeleteSalary() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('salaries').delete().eq('id', id)
-      if (error) throw error
-    },
+    mutationFn: (id: string) =>
+      runWithOfflineFallback(
+        async () => {
+          const { error } = await supabase.from('salaries').delete().eq('id', id)
+          if (error) throw error
+        },
+        () => enqueueSalaryDelete(queryClient, id),
+      ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['salaries'] })
-      queryClient.invalidateQueries({ queryKey: ['running-balance'] })
-      queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
+      invalidateIfOnline(queryClient, [
+        ['salaries'],
+        ['running-balance'],
+        ['monthly-surpluses'],
+      ])
     },
   })
 }

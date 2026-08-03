@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { CheckCircle2, XCircle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -22,6 +22,21 @@ export function useToast() {
   return useContext(ToastContext)
 }
 
+// Emisor de toasts fuera del árbol de React (colas offline, sync, etc.).
+type ToastListener = (type: ToastItem['type'], message: string) => void
+const toastListeners = new Set<ToastListener>()
+
+export function subscribeToasts(listener: ToastListener): () => void {
+  toastListeners.add(listener)
+  return () => {
+    toastListeners.delete(listener)
+  }
+}
+
+export function emitToast(type: ToastItem['type'], message: string): void {
+  for (const listener of toastListeners) listener(type, message)
+}
+
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([])
 
@@ -37,6 +52,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     },
     [remove],
   )
+
+  useEffect(() => subscribeToasts((type, message) => push(type, message)), [push])
 
   const success = useCallback((message: string) => push('success', message), [push])
   const error = useCallback((message: string) => push('error', message), [push])

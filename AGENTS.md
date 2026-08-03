@@ -44,4 +44,4 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
 
 ## Verificación antes de terminar
 
-`pnpm build` + `pnpm lint` + suite e2e completa (41 pasos).
+`pnpm build` + `pnpm lint` + suite e2e completa (43 pasos).

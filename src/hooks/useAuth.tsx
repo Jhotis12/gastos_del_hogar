@@ -1,7 +1,10 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { isAuthRetryableFetchError } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { Session, User } from '@supabase/supabase-js'
 import type { Profile } from '@/lib/types'
+import { clearPersistedCache } from '@/lib/offline/persister'
 
 interface AuthContextValue {
   user: User | null
@@ -23,16 +26,58 @@ const AuthContext = createContext<AuthContextValue>({
   refreshProfile: async () => {},
 })
 
+// Boot sin red: getSession() puede colgarse intentando refrescar el token.
+// Si no responde a tiempo, leemos la sesión que supabase-js dejó en
+// localStorage (claves "sb-*-auth-token"). Al volver a estar en línea,
+// syncNow() restaura la sesión en memoria antes de drenar.
+function readStoredSession(): Session | null {
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (!key || !key.startsWith('sb-') || !key.endsWith('-auth-token')) continue
+    try {
+      const raw = JSON.parse(localStorage.getItem(key) ?? '')
+      if (raw?.access_token && raw?.user) {
+        return {
+          access_token: raw.access_token,
+          refresh_token: raw.refresh_token ?? null,
+          expires_in: raw.expires_in ?? 3600,
+          expires_at: raw.expires_at ?? null,
+          token_type: raw.token_type ?? 'bearer',
+          user: raw.user,
+        } as Session
+      }
+    } catch {
+      /* clave corrupta — se ignora */
+    }
+  }
+  return null
+}
+
+async function bootSession(): Promise<Session | null> {
+  try {
+    const { data } = await Promise.race([
+      supabase.auth.getSession(),
+      new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('timeout')), 2500)
+      }),
+    ])
+    if (data.session) return data.session
+  } catch {
+    /* sin red — cae al respaldo local */
+  }
+  return readStoredSession()
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [profileLoading, setProfileLoading] = useState(false)
-  const [profileLoaded, setProfileLoaded] = useState(false)
   const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
+    let active = true
+    void bootSession().then((s) => {
+      if (!active) return
+      setSession(s)
       setLoading(false)
     })
 
@@ -43,81 +88,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      active = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   const userId = session?.user?.id
 
-  useEffect(() => {
-    if (!userId) {
-      setProfile(null)
-      return
-    }
-    let active = true
-    setProfileLoading(true)
-    setProfileLoaded(false)
-
-    const fetchProfile = async (attempt: number) => {
-      // Valida que el usuario siga existiendo: si la cuenta fue eliminada,
-      // la sesión es obsoleta → cerrar sesión para ir al login.
-      const { data: userData } = await supabase.auth.getUser()
-      if (!active) return
-      if (!userData.user) {
-        await supabase.auth.signOut()
-        if (!active) return
-        setProfile(null)
-        setProfileLoading(false)
-        setProfileLoaded(true)
-        return
+  // El perfil es una query persistida (networkMode offlineFirst): sin red
+  // se sirve el último perfil conocido de IndexedDB y los guards no se
+  // quedan cargando para siempre.
+  const {
+    data: profile,
+    isPending: profileLoading,
+    isFetched: profileFetched,
+    refetch,
+  } = useQuery({
+    queryKey: ['profile', userId],
+    queryFn: async () => {
+      // Valida que el usuario siga existiendo. Un fallo de RED
+      // (AuthRetryableFetchError) NO cierra la sesión: sin validación se
+      // continúa y la query se pausa (offlineFirst) hasta reconectar.
+      const { data: userData, error: userError } = await supabase.auth
+        .getUser()
+        .catch(() => ({ data: { user: null }, error: null }))
+      if (!userData.user && userError && !isAuthRetryableFetchError(userError)) {
+        // Sesión obsoleta confirmada por el servidor → ir al login.
+        await supabase.auth.signOut().catch(() => {})
+        return null
       }
-      supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single()
-        .then(({ data, error }) => {
-          if (!active) return
-          if (!error && data) {
-            setProfile(data)
-            setProfileLoading(false)
-            setProfileLoaded(true)
-          } else {
-            if (attempt < 2) {
-              setTimeout(() => fetchProfile(attempt + 1), 1200)
-            } else {
-              setProfileLoading(false)
-              setProfileLoaded(true)
-            }
-          }
-        })
-    }
-    fetchProfile(0)
+      if (error) throw error
+      return data as Profile
+    },
+    enabled: !!userId,
+    retry: 1,
+  })
 
-    return () => {
-      active = false
-    }
-  }, [userId])
+  const profileLoaded = profileFetched || profile !== undefined || !userId
 
   const refreshProfile = async () => {
-    const user = (await supabase.auth.getUser()).data.user
-    if (!user) {
-      setProfile(null)
-      return
-    }
-    const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-    if (data) setProfile(data)
+    await refetch()
   }
 
   const signOut = async () => {
     await supabase.auth.signOut()
-    setProfile(null)
+    setSession(null)
+    queryClient.clear()
+    await clearPersistedCache()
   }
 
   return (
     <AuthContext.Provider
       value={{
         user: session?.user ?? null,
-        profile,
+        profile: profile ?? null,
         profileLoading,
         profileLoaded,
         loading,

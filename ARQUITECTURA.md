@@ -65,12 +65,13 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 │   │   │                   #   MoneyInput, SelectInput, DateInput, MonthPicker,
 │   │   │                   #   CategoryBadge, StatCard, AppLogo, ThemeToggle, SessionSync
 │   │   ├── expenses/       #   Gastos: ExpenseForm + ReceiptCapture/Result/Viewer (facturas)
+│   │   ├── members/        #   IncomeSection (dinero extra: registrar/editar/eliminar)
 │   │   ├── services/       #   ServiceForm (gastos fijos)
 │   │   ├── savings/        #   GoalForm + AdjustGoalModal (metas de ahorro)
 │   │   └── categories/     #   BudgetModal (presupuestos por categoría)
 │   └── pages/              # 1 página por ruta
 ├── tests/
-│   ├── e2e-flow.mjs         # Suite e2e de 41 pasos (navegación SPA)
+│   ├── e2e-flow.mjs         # Suite e2e de 43 pasos (navegación SPA)
 │   ├── e2e-realtime.mjs     # Sincronización en tiempo real entre 2 miembros
 │   ├── check-mobile.mjs     # Verificación móvil (375px, sin overflow)
 │   ├── reset-sandbox.sh     # Reinicia el usuario sandbox (requiere SUPABASE_SERVICE_ROLE)
@@ -95,6 +96,9 @@ category_budgets    household_id, category_id, month, amount (>0)
                     UNIQUE(category_id, month)  → límite mensual por categoría
 expenses            household_id, category_id, paid_by, recurring_id (servicio),
                     receipt_id (factura), amount, description, expense_date
+incomes             household_id, member_id (opcional), amount (>0), description,
+                    income_date → dinero extra fuera de nómina (venta, regalo,
+                    reembolso…); se suma al fondo común como ingreso
 recurring_expenses  household_id, category_id, paid_by, amount, description,
                     frequency (monthly|bimonthly|quarterly|yearly),
                     next_due_date, is_active
@@ -103,9 +107,12 @@ savings_goals       household_id, name, target_amount (>0), saved_amount (>=0),
 receipts            household_id, storage_path, uploaded_by, parsed_data (jsonb)
 ```
 
-- **Fondo común:** ingreso del mes = `SUM(salaries.amount)` del hogar
-  (salarios efectivos: fila del mes o heredado); saldo = ingresos − gastos
-  del mes.
+- **Fondo común:** ingreso del mes = `SUM(salaries.amount)` + `SUM(incomes.amount)`
+  del hogar (salarios efectivos: fila del mes o heredado); saldo = ingresos −
+  gastos del mes. El dinero extra (`incomes`) es la única vía de ingreso que no
+  es nómina: se registra desde la sección "Otros ingresos del mes" en Miembros
+  (monto, descripción, fecha y, opcionalmente, quién recibió — si tiene dueño
+  suma en su "Aportado" de los saldos del mes).
 - **Salario efectivo del mes** (`src/lib/salaries.ts`): toda fila cuyo
   `pay_date` (fecha REAL de llegada del dinero) cae dentro del mes — puede
   haber varias por persona si un pago atrasado de otro mes llegó aquí. Para
@@ -155,8 +162,8 @@ recursión infinita en políticas).
 | `create_household(p_name)` | Crea hogar + código + perfil + 7 categorías por defecto, atómico. Evita `INSERT…RETURNING` (la RLS filtra antes de ser miembro → 403 PGRST106). |
 | `get_household_by_code(p_code)` | Busca hogar por código (solo con sesión). |
 | `apply_recurring_expense(p_recurring_id, p_month)` | Aplica **un** servicio vencido a `expenses` (con guarda anti-duplicados por mes) y avanza su `next_due_date` según `frequency` (1/2/3/12 meses). Se llama por servicio desde el wizard de "Aplicar al mes". |
-| `get_running_balance(p_date)` | Saldo acumulado del hogar a una fecha: Σ salarios (`pay_date <= p_date`) − Σ gastos (`expense_date <= p_date`). Security definer con `auth.uid()`. |
-| `get_monthly_surpluses()` | Sobrantes por mes desde el primer mes con actividad hasta el actual: `(month, income, expenses, surplus)` (pay_date/expense_date agrupados por mes). Suma acumulada = saldo disponible. |
+| `get_running_balance(p_date)` | Saldo acumulado del hogar a una fecha: Σ salarios (`pay_date <= p_date`) + Σ incomes (`income_date <= p_date`) − Σ gastos (`expense_date <= p_date`). Security definer con `auth.uid()`. |
+| `get_monthly_surpluses()` | Sobrantes por mes desde el primer mes con actividad hasta el actual: `(month, income, expenses, surplus)` — ingreso del mes = salarios + dinero extra (agrupados por pay_date/income_date/expense_date). Suma acumulada = saldo disponible. |
 
 ### Edge Function `analyze-receipt`
 - Deno + `@supabase/supabase-js`. Valida JWT y pertenencia al hogar del path.
@@ -289,6 +296,63 @@ Skill de referencia: `mobile-app-ui-design` (`.agents/skills/`).
 - **Caché**: TanStack Query con `staleTime: 30s`, `gcTime: 30min` y
   `refetchOnWindowFocus`; los cambios remotos invalidan por dominio.
 
+### Modo offline (PWA)
+La app funciona sin conexión para **registrar** gastos, dinero extra y
+salarios (crear/editar/eliminar) y para **ver los últimos datos** cargados.
+Nada de esto requiere cambios en la BD: es todo frontend.
+
+- **Caché de lecturas**: `persister` por query en `main.tsx`
+  (`@tanstack/query-persist-client-core` + `idb`, `src/lib/offline/persister.ts`):
+  cada query exitosa se guarda en IndexedDB y se sirve en un arranque sin red
+  (últimos datos conocidos). `networkMode: 'offlineFirst'` hace que sin red las
+  queries sirvan la caché y **se pausen** (no marcan error); al reconectar
+  reintentan solas.
+- **Cola de escrituras** (`src/lib/offline/queue.ts`): outbox FIFO en
+  IndexedDB. Las mutaciones de gastos/incomes/salarios van envueltas en
+  `runWithOfflineFallback` (`offlineSafe.ts`): si fallan por error de red,
+  se encolan + **actualización optimista** de la caché (la fila aparece al
+  instante; Ingresos/Gastos del mes se recalculan solos porque son client-side)
+  + toast "Guardado sin conexión". El id de las filas nuevas se genera en el
+  cliente (`crypto.randomUUID()`), así el replay no duplica y el realtime
+  converge en sitio (mismo id).
+- **Sincronización** (`src/lib/offline/sync.ts`): al reconectar se drena la
+  cola en orden FIFO y se notifica ("N cambios sincronizados"); el ícono de
+  esquina (o un toque sobre él) dispara sync manual + heartbeat cada 15s si
+  hay pendientes. Tras un sync exitoso se invalidan todas las queries para
+  traer datos frescos. Replay **idempotente** (at-least-once): un insert con
+  PK ya aplicada (23505) o un update/delete sin filas se descartan como ya
+  sincronizados. Los salarios se rehacen con su upsert por profile+mes.
+  Errores reales (RLS/validación) descartan el ítem con aviso.
+- **Notificaciones**: sin toast al caer la red (el ícono es suficiente);
+  "De vuelta en línea" y "N cambios sincronizados" sí se emiten desde
+  `sync.ts` vía `emitToast` (emisor de módulo en `Toast.tsx`; el
+  `ToastProvider` se suscribe).
+- **Boot sin red** (`useAuth.tsx`): `getSession()` puede colgarse intentando
+  refrescar el token → se limita a 2.5s y se cae a la sesión persistida en
+  localStorage (`sb-*-auth-token`). El perfil es una query persistida
+  (`['profile', userId]`): sin red se sirve el último perfil conocido y los
+  guards no se quedan cargando. Primera vez sin red ni datos → pantalla
+  `OfflineGate` en vez de skeleton infinito. Al volver en línea, `syncNow()`
+  restaura la sesión en memoria antes de drenar.
+- **Indicador** (`OfflineBanner.tsx`): ícono discreto (antena wifi roja) en
+  la esquina inferior derecha cuando no hay conexión; badge con el conteo si
+  hay cambios pendientes y spinner mientras sincroniza. Un toque dispara
+  `syncNow()`. Sin red se omiten las invalidaciones de mutaciones
+  (`invalidateIfOnline`) y el refetch por foco.
+- **Silencio offline**: `supabase.ts` envuelve el fetch global: sin red
+  rechaza al instante con `TypeError("Network request failed")` en vez de
+  intentar (los intentos bloqueados aparecen como errores CORS en consola y
+  disparan backoff de reintentos de postgrest/auth). `useRealtimeSync` se
+  desconecta sin red (el socket encadena reconexiones fallidas) y se
+  resuscribe al volver. En dev, todas las páginas lazy se pre-cargan al boot
+  (no hay SW) para que navegar sin red no falle con "error loading
+  dynamically imported module".
+- **Alcance**: fotos de facturas (storage + Edge Function), metas,
+  presupuestos, categorías y servicios siguen requiriendo red. Conflictos
+  multi-dispositivo: último en escribir gana.
+- **El shell ya estaba cubierto**: el SW precachea todos los estáticos y
+  `navigateFallback` sirve la app sin internet; faltaba la capa de datos.
+
 ---
 
 ## 7. Flujos clave
@@ -306,6 +370,15 @@ ticket** (comercio, items, TOTAL) → "Crear gasto" crea **1 gasto** con el
 total y el nombre de la tienda, vinculado a la factura → el selector de mes
 salta al mes de la factura → icono "Ver factura" en la fila muestra la foto +
 desglose.
+
+### Dinero extra (ingresos fuera de nómina)
+Miembros → tarjeta "Otros ingresos del mes" → "+ Registrar dinero extra":
+monto + descripción + fecha + (opcional) quién recibió. Cada fila crea un
+`incomes` del hogar. El dinero extra entra automáticamente a: saldo disponible
+(hero), "Ingresos del mes", sobrantes por mes, historial y "Ingreso unificado"
+de Miembros (los RPCs suman `incomes` como ingreso). Si tiene dueño, suma en
+su "Aportado" de los Saldos del mes. Editar/eliminar inline con ConfirmDialog;
+el Realtime propaga el cambio a los demás miembros al instante.
 
 ### Servicios (gastos fijos)
 Página Servicios: total fijo del mes, % vs ingreso, estado
@@ -325,7 +398,8 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
 | `pnpm build` | `tsc -b` + Vite build |
 | `pnpm lint` | oxlint |
 | `node tests/e2e-flow.mjs` | Suite e2e (requiere dev server arriba) |
-| `SUPABASE_SERVICE_ROLE=… bash tests/reset-sandbox.sh` | Reinicia usuario sandbox |
+| `SUPABASE_SERVICE_ROLE=… bash tests/reset-sandbox.sh` | Reinicia usuario sandbox (proyecto del `.env`) |
+| `SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE=<key local> bash tests/reset-sandbox.sh` | Reinicia el sandbox en el entorno LOCAL (`supabase start`) |
 | `SUPABASE_ACCESS_TOKEN=… supabase functions deploy analyze-receipt` | Deploy Edge Function |
 | `SUPABASE_ACCESS_TOKEN=… supabase secrets set GEMINI_API_KEY=…` | Secret de Gemini |
 
@@ -334,9 +408,20 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
 > (Mailpit). `.env.local` (gitignored por `*.local`) apunta el dev server al
 > local; Vercel usa sus variables del dashboard, por lo que el deploy de
 > producción nunca ve el `.env.local`. La anon key del local es un JWT firmado
-> con el secret por defecto de `config.toml`. El entorno local se siembra con
-> un backup de producción (`supabase db dump --linked -p … --data-only` +
-> `psql`) para probar contra datos reales.
+> con el secret por defecto de `config.toml` (sin `jwt_secret` definido, la
+> service role local se deriva del mismo secret: rol `service_role`, mismos
+> `iat`/`exp`). El entorno local se siembra con un backup de producción
+> (`supabase db dump --linked -p … --data-only` + `psql`) para probar contra
+> datos reales.
+>
+> **E2e contra local (local == desplegado):** con `.env.local` presente y el
+> dev server reiniciado, `node tests/e2e-flow.mjs` corre los 43 pasos contra
+> el stack local (`supabase db push --local` aplica las migraciones pendientes;
+> `reset-sandbox.sh` acepta `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE` como
+> overrides). La Edge Function `analyze-receipt` no se sirve local sin
+> `supabase functions serve` (requiere Docker): el paso de facturas detecta el
+> backend local y verifica el flujo de error (la subida y el análisis reales
+> se cubren en el e2e contra producción).
 
 > ⚠️ **Trampa operativa:** tras ediciones masivas de archivos, el watcher de
 > Vite puede servir transformaciones obsoletas. Si el dev server se comporta
@@ -346,7 +431,7 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
 
 ## 9. Testing
 
-- Suite e2e de 41 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios
+- Suite e2e de 43 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios
   (día de pago + herencia al mes siguiente), gastos, calendario, saldos,
   saldo acumulado, sobrantes por mes (tarjeta Dashboard + `/historial`),
   recarga de página con salarios visibles, presupuestos, servicios, metas,

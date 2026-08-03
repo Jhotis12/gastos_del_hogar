@@ -10,7 +10,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
+// Sin red, los fetch a Supabase fallan en el navegador como "CORS request
+// did not succeed" (no hay respuesta) → ruido en consola + ráfagas de
+// reintentos de postgrest/auth (backoff 1s/2s/4s) por cada query. Mejor no
+// intentar: rechazar al instante con un error de red, que es exactamente lo
+// que runWithOfflineFallback y el networkMode offlineFirst esperan.
+const offlineAwareFetch: typeof fetch = (input, init) => {
+  if (!navigator.onLine) {
+    return Promise.reject(new TypeError('Network request failed'))
+  }
+  return fetch(input, init)
+}
+
 export const supabase = createClient(
   supabaseUrl ?? 'https://placeholder.supabase.co',
   supabaseAnonKey ?? 'placeholder',
+  { global: { fetch: offlineAwareFetch } },
 )

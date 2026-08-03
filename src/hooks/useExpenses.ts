@@ -2,6 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { useSalaries } from '@/hooks/useMembers'
+import { useIncomes } from '@/hooks/useIncomes'
+import { runWithOfflineFallback, invalidateIfOnline } from '@/lib/offline/offlineSafe'
+import {
+  enqueueExpenseAdd,
+  enqueueExpenseUpdate,
+  enqueueExpenseDelete,
+} from '@/lib/offline/optimistic'
 import type { Expense, ExpenseWithRelations } from '@/lib/types'
 import { daysInMonth, shiftMonth, todayISO } from '@/lib/dates'
 
@@ -50,20 +57,29 @@ export function useAddExpense() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (input: ExpenseInput) => {
-      if (!profile?.household_id) throw new Error('Sin hogar')
-      const { data, error } = await supabase
-        .from('expenses')
-        .insert({ ...input, household_id: profile.household_id })
-        .select()
-        .single()
-      if (error) throw error
-      return data as Expense
-    },
+    mutationFn: (input: ExpenseInput) =>
+      runWithOfflineFallback(
+        async () => {
+          if (!profile?.household_id) throw new Error('Sin hogar')
+          const { data, error } = await supabase
+            .from('expenses')
+            .insert({ ...input, id: crypto.randomUUID(), household_id: profile.household_id })
+            .select()
+            .single()
+          if (error) throw error
+          return data as Expense
+        },
+        () => {
+          if (!profile?.household_id) throw new Error('Sin hogar')
+          enqueueExpenseAdd(queryClient, profile.household_id, input)
+        },
+      ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] })
-      queryClient.invalidateQueries({ queryKey: ['running-balance'] })
-      queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
+      invalidateIfOnline(queryClient, [
+        ['expenses'],
+        ['running-balance'],
+        ['monthly-surpluses'],
+      ])
     },
   })
 }
@@ -72,14 +88,20 @@ export function useUpdateExpense() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, ...input }: ExpenseInput & { id: string }) => {
-      const { error } = await supabase.from('expenses').update(input).eq('id', id)
-      if (error) throw error
-    },
+    mutationFn: ({ id, ...input }: ExpenseInput & { id: string }) =>
+      runWithOfflineFallback(
+        async () => {
+          const { error } = await supabase.from('expenses').update(input).eq('id', id)
+          if (error) throw error
+        },
+        () => enqueueExpenseUpdate(queryClient, id, input),
+      ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] })
-      queryClient.invalidateQueries({ queryKey: ['running-balance'] })
-      queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
+      invalidateIfOnline(queryClient, [
+        ['expenses'],
+        ['running-balance'],
+        ['monthly-surpluses'],
+      ])
     },
   })
 }
@@ -88,14 +110,20 @@ export function useDeleteExpense() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('expenses').delete().eq('id', id)
-      if (error) throw error
-    },
+    mutationFn: (id: string) =>
+      runWithOfflineFallback(
+        async () => {
+          const { error } = await supabase.from('expenses').delete().eq('id', id)
+          if (error) throw error
+        },
+        () => enqueueExpenseDelete(queryClient, id),
+      ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] })
-      queryClient.invalidateQueries({ queryKey: ['running-balance'] })
-      queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
+      invalidateIfOnline(queryClient, [
+        ['expenses'],
+        ['running-balance'],
+        ['monthly-surpluses'],
+      ])
     },
   })
 }
@@ -103,9 +131,11 @@ export function useDeleteExpense() {
 export function useSummary(month: string) {
   const { salaries } = useSalaries(month)
   const { data: expenses } = useExpenses(month)
+  const { data: incomes } = useIncomes(month)
 
   const totalIncome =
-    salaries?.reduce((sum, s) => sum + Number(s.amount), 0) ?? 0
+    (salaries?.reduce((sum, s) => sum + Number(s.amount), 0) ?? 0) +
+    (incomes?.reduce((sum, i) => sum + Number(i.amount), 0) ?? 0)
   const totalExpenses =
     expenses?.reduce((sum, e) => sum + Number(e.amount), 0) ?? 0
   const balance = totalIncome - totalExpenses

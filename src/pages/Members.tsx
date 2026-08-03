@@ -10,7 +10,9 @@ import {
   useUpsertSalary,
 } from '@/hooks/useMembers'
 import { useExpenses } from '@/hooks/useExpenses'
+import { useIncomes } from '@/hooks/useIncomes'
 import { useHousehold } from '@/hooks/useHousehold'
+import IncomeSection from '@/components/members/IncomeSection'
 import MonthPicker from '@/components/ui/MonthPicker'
 import SelectInput from '@/components/ui/SelectInput'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
@@ -221,6 +223,7 @@ export default function Members() {
   const { data: members, error: membersError } = useMembers()
   const { salaries } = useSalaries(month)
   const { data: expenses, error: expensesError } = useExpenses(month)
+  const { data: incomes } = useIncomes(month)
   const updatePayday = useUpdatePayday()
   const [copied, setCopied] = useState(false)
 
@@ -230,12 +233,17 @@ export default function Members() {
     return <QueryError error={membersError ?? expensesError} />
 
   const totalIncome =
-    salaries?.reduce((sum, s) => sum + Number(s.amount), 0) ?? 0
+    (salaries?.reduce((sum, s) => sum + Number(s.amount), 0) ?? 0) +
+    (incomes?.reduce((sum, i) => sum + Number(i.amount), 0) ?? 0)
 
   const balances = (members ?? []).map((m) => {
     const aportado =
-      salaries?.filter((s) => s.profile_id === m.id).reduce((sum, s) => sum + Number(s.amount), 0) ??
-      0
+      (salaries?.filter((s) => s.profile_id === m.id).reduce((sum, s) => sum + Number(s.amount), 0) ??
+        0) +
+      (incomes
+        ?.filter((i) => i.member_id === m.id)
+        .reduce((sum, i) => sum + Number(i.amount), 0) ??
+        0)
     const pagado =
       expenses?.filter((e) => e.paid_by === m.id).reduce((sum, e) => sum + Number(e.amount), 0) ??
       0
@@ -272,7 +280,8 @@ export default function Members() {
           <p className="text-sm font-medium text-pine-800">
             Ingreso unificado del mes
           </p>
-          <p className="text-2xl font-bold text-pine-700">
+          <p className="text-xs text-pine-600/70">Salarios + dinero extra</p>
+          <p className="mt-1 text-2xl font-bold text-pine-700">
             {formatCurrency(totalIncome)}
           </p>
         </div>
@@ -297,7 +306,7 @@ export default function Members() {
         <div className="border-b border-slate-100 px-5 py-4">
           <h2 className="text-sm font-semibold text-ink">Saldos del mes</h2>
           <p className="mt-0.5 text-xs text-ink/40">
-            Aportado (salario) − pagado (gastos que abonó) = saldo por persona
+            Aportado (salario + dinero extra) − pagado (gastos que abonó) = saldo por persona
           </p>
         </div>
         <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -402,6 +411,8 @@ export default function Members() {
           })}
         </ul>
       </div>
+
+      <IncomeSection month={month} members={members} />
     </div>
   )
 }

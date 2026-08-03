@@ -1,8 +1,10 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { useOfflineStatus } from '@/hooks/useOffline'
 import Layout from '@/components/layout/Layout'
 import PageSkeleton from '@/components/ui/PageSkeleton'
+import OfflineGate from '@/components/ui/OfflineGate'
 
 // Lazy loading: cada página se carga solo cuando se navega a ella
 const Login = lazy(() => import('@/pages/Login'))
@@ -18,9 +20,45 @@ const Savings = lazy(() => import('@/pages/Savings'))
 const Categories = lazy(() => import('@/pages/Categories'))
 const Profile = lazy(() => import('@/pages/Profile'))
 
+// Dev: no hay service worker, así que navegar a una ruta lazy sin red
+// falla (chunk no precacheado). Se pre-cargan todas las páginas al boot
+// para que la navegación offline también funcione en desarrollo. En
+// producción el SW precachea todos los chunks (generateSW → precache).
+if (import.meta.env.DEV) {
+  void Promise.allSettled([
+    import('@/pages/Login'),
+    import('@/pages/Setup'),
+    import('@/pages/AuthConfirm'),
+    import('@/pages/Dashboard'),
+    import('@/pages/Calendar'),
+    import('@/pages/History'),
+    import('@/pages/Members'),
+    import('@/pages/Expenses'),
+    import('@/pages/Recurring'),
+    import('@/pages/Savings'),
+    import('@/pages/Categories'),
+    import('@/pages/Profile'),
+  ])
+}
+
+// Espera con skeleton; si tras unos segundos no hay red ni datos guardados,
+// muestra una pantalla clara en vez de quedarse cargando para siempre.
+function OfflineWait() {
+  const { isOnline } = useOfflineStatus()
+  const [waited, setWaited] = useState(false)
+
+  useEffect(() => {
+    const t = setTimeout(() => setWaited(true), 3000)
+    return () => clearTimeout(t)
+  }, [])
+
+  if (!isOnline && waited) return <OfflineGate />
+  return <PageSkeleton />
+}
+
 function RequireAuth() {
   const { user, loading } = useAuth()
-  if (loading) return <PageSkeleton />
+  if (loading) return <OfflineWait />
   if (!user) return <Navigate to="/login" replace />
   return <Outlet />
 }
@@ -28,25 +66,25 @@ function RequireAuth() {
 // Si ya hay sesión, no mostrar el login (redirección declarativa)
 function RequireGuest() {
   const { user, loading } = useAuth()
-  if (loading) return <PageSkeleton />
+  if (loading) return <OfflineWait />
   if (user) return <Navigate to="/" replace />
   return <Outlet />
 }
 
 function RequireHousehold() {
   const { user, loading, profile, profileLoading, profileLoaded } = useAuth()
-  if (loading) return <PageSkeleton />
+  if (loading) return <OfflineWait />
   if (!user) return <Navigate to="/login" replace />
-  if (profileLoading || !profileLoaded) return <PageSkeleton />
+  if (profileLoading || !profileLoaded) return <OfflineWait />
   if (!profile || !profile.household_id) return <Navigate to="/setup" replace />
   return <Outlet />
 }
 
 function RequireSetup() {
   const { user, profile, profileLoading, profileLoaded, loading } = useAuth()
-  if (loading) return <PageSkeleton />
+  if (loading) return <OfflineWait />
   if (!user) return <Navigate to="/login" replace />
-  if (profileLoading || !profileLoaded) return <PageSkeleton />
+  if (profileLoading || !profileLoaded) return <OfflineWait />
   if (profile?.household_id) return <Navigate to="/" replace />
   return <Outlet />
 }
