@@ -21,7 +21,7 @@ export default function Calendar() {
   const [formDate, setFormDate] = useState<string | null>(null)
   const toast = useToast()
 
-  const { data: expenses, isLoading, error } = useExpenses(month)
+  const { data: expenses, isLoading, error, refetch } = useExpenses(month)
   const { data: recurring } = useRecurringExpenses()
   const addExpense = useAddExpense()
 
@@ -126,7 +126,7 @@ export default function Calendar() {
       {isLoading ? (
         <PageSkeleton />
       ) : error ? (
-        <QueryError error={error} />
+        <QueryError error={error} onRetry={refetch} />
       ) : (
         <div className="overflow-hidden card">
           <div className="grid grid-cols-7 border-b border-slate-100">

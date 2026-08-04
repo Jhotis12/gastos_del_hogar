@@ -83,7 +83,10 @@ export default function Profile() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               className={inputClass}
-              enterKeyHint="done" placeholder="Tu nombre"
+              autoComplete="name"
+              autoCapitalize="words"
+              enterKeyHint="done"
+              placeholder="Tu nombre"
             />
           </div>
           <button

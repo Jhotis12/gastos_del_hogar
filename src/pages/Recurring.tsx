@@ -19,7 +19,7 @@ import { formatCurrency } from '@/lib/money'
 
 export default function Recurring() {
   const [month, setMonth] = useState(currentMonthKey())
-  const { data: recurring, isLoading, error } = useRecurringExpenses()
+  const { data: recurring, isLoading, error, refetch } = useRecurringExpenses()
   const { data: expenses } = useExpenses(month)
   const { salaries } = useSalaries(month)
   const toggle = useToggleRecurring()
@@ -149,7 +149,7 @@ export default function Recurring() {
       {isLoading ? (
         <PageSkeleton />
       ) : error ? (
-        <QueryError error={error} />
+        <QueryError error={error} onRetry={refetch} />
       ) : !recurring || recurring.length === 0 ? (
         <div className="card border-2 border-dashed border-ink/10 py-16 text-center">
           <p className="text-sm text-ink/40">

@@ -28,7 +28,7 @@ export default function Expenses() {
   const [viewExpense, setViewExpense] = useState<ExpenseWithRelations | null>(null)
   const toast = useToast()
 
-  const { data: expenses, isLoading, error } = useExpenses(month)
+  const { data: expenses, isLoading, error, refetch } = useExpenses(month)
   const addExpense = useAddExpense()
   const updateExpense = useUpdateExpense()
   const deleteExpense = useDeleteExpense()
@@ -184,7 +184,7 @@ export default function Expenses() {
       {isLoading ? (
         <PageSkeleton />
       ) : error ? (
-        <QueryError error={error} />
+        <QueryError error={error} onRetry={refetch} />
       ) : !searched || searched.length === 0 ? (
         <div className="card border-2 border-dashed border-ink/10 py-16 text-center">
           <p className="text-sm text-ink/40">

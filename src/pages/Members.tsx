@@ -220,9 +220,9 @@ export default function Members() {
   const { user } = useAuth()
   const [month, setMonth] = useState(currentMonthKey())
   const { data: household } = useHousehold()
-  const { data: members, error: membersError } = useMembers()
+  const { data: members, error: membersError, refetch: refetchMembers } = useMembers()
   const { salaries } = useSalaries(month)
-  const { data: expenses, error: expensesError } = useExpenses(month)
+  const { data: expenses, error: expensesError, refetch: refetchExpenses } = useExpenses(month)
   const { data: incomes } = useIncomes(month)
   const updatePayday = useUpdatePayday()
   const [copied, setCopied] = useState(false)
@@ -230,7 +230,15 @@ export default function Members() {
   if (!household) return <PageSkeleton />
 
   if (membersError || expensesError)
-    return <QueryError error={membersError ?? expensesError} />
+    return (
+      <QueryError
+        error={membersError ?? expensesError}
+        onRetry={() => {
+          void refetchMembers()
+          void refetchExpenses()
+        }}
+      />
+    )
 
   const totalIncome =
     (salaries?.reduce((sum, s) => sum + Number(s.amount), 0) ?? 0) +

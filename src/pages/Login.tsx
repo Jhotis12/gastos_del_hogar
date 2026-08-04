@@ -143,6 +143,8 @@ export default function Login() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={inputClass}
+                  autoComplete="name"
+                  autoCapitalize="words"
                   placeholder="Tu nombre"
                 />
               </div>
@@ -158,7 +160,11 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={inputClass}
-                enterKeyHint="next" placeholder="correo@ejemplo.com"
+                autoComplete="email"
+                autoCapitalize="none"
+                inputMode="email"
+                enterKeyHint="next"
+                placeholder="correo@ejemplo.com"
               />
             </div>
 
@@ -173,13 +179,16 @@ export default function Login() {
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`${inputClass} pr-12`}
-                  enterKeyHint="done" placeholder="••••••••"
+                  className={`${inputClass} pr-14`}
+                  autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                  autoCapitalize="none"
+                  enterKeyHint="done"
+                  placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-ink/40 hover:text-ink/70"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-2.5 text-ink/40 hover:text-ink/70"
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}

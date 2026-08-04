@@ -87,6 +87,8 @@ export default function Setup() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className={inputClass}
+                autoComplete="organization"
+                autoCapitalize="words"
                 placeholder="Ej. Casa de la familia"
               />
             </div>
@@ -101,6 +103,9 @@ export default function Setup() {
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 className={`${inputClass} uppercase tracking-widest`}
+                autoCapitalize="characters"
+                autoCorrect="off"
+                spellCheck={false}
                 placeholder="ABC123"
               />
             </div>

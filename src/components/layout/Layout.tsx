@@ -122,7 +122,7 @@ export default function Layout() {
 
       {/* Contenido */}
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-pine-950/5 bg-cream/80 px-4 py-3 backdrop-blur lg:hidden">
+        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-pine-950/5 bg-cream/80 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur lg:hidden">
           <div className="flex items-center gap-2">
             <AppLogo size={36} />
             <p className="font-display text-sm font-semibold text-ink">Gastos del Hogar</p>
@@ -184,7 +184,7 @@ export default function Layout() {
       {moreOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={closeMore} />
-          <div className="animate-fade-up absolute inset-x-0 bottom-0 rounded-t-3xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl">
+          <div className="animate-fade-up absolute inset-x-0 bottom-0 max-h-[80dvh] overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl">
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-ink/10" />
             <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-ink/40">
               Más opciones

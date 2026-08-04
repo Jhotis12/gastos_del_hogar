@@ -61,7 +61,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ success, error }}>
       {children}
-      <div className="pointer-events-none fixed right-4 top-4 z-[100] flex w-full max-w-xs flex-col gap-2">
+      <div className="pointer-events-none fixed right-4 top-[calc(env(safe-area-inset-top)+1rem)] z-[100] flex w-full max-w-xs flex-col gap-2">
         {toasts.map((t) => (
           <div
             key={t.id}
@@ -79,7 +79,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <p className="flex-1 text-sm text-ink/80">{t.message}</p>
             <button
               onClick={() => remove(t.id)}
-              className="shrink-0 rounded p-0.5 text-ink/40 hover:text-ink/55"
+              className="shrink-0 rounded p-1.5 text-ink/40 hover:text-ink/55"
               aria-label="Cerrar notificación"
             >
               <X size={14} />

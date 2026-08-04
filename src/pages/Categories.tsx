@@ -14,7 +14,7 @@ import { currentMonthKey } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
 export default function Categories() {
-  const { data: categories, isLoading, error } = useCategories()
+  const { data: categories, isLoading, error, refetch } = useCategories()
   const add = useAddCategory()
   const remove = useDeleteCategory()
   const toast = useToast()
@@ -84,7 +84,7 @@ export default function Categories() {
       {isLoading ? (
         <PageSkeleton />
       ) : error ? (
-        <QueryError error={error} />
+        <QueryError error={error} onRetry={refetch} />
       ) : !categories || categories.length === 0 ? (
         <div className="card border-2 border-dashed border-ink/10 py-16 text-center">
           <p className="text-sm text-ink/40">No hay categorías todavía</p>
@@ -145,7 +145,7 @@ export default function Categories() {
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-pine-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-base focus:border-pine-500 focus:outline-none"
               placeholder="Ej. Educación"
             />
           </div>

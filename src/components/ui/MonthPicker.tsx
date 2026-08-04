@@ -17,7 +17,7 @@ export default function MonthPicker({ month, onChange }: MonthPickerProps) {
     <div className="flex items-center gap-2">
       <button
         onClick={() => onChange(shiftMonth(month, -1))}
-        className="rounded-lg border border-slate-200 p-2 text-ink/50 hover:bg-cream"
+        className="rounded-lg border border-slate-200 p-2.5 text-ink/50 hover:bg-cream"
         aria-label="Mes anterior"
       >
         <ChevronLeft size={18} />
@@ -29,11 +29,11 @@ export default function MonthPicker({ month, onChange }: MonthPickerProps) {
         onChange={(e) => {
           if (e.target.value) onChange(`${e.target.value}-01`)
         }}
-        className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-ink/70 focus:border-pine-500 focus:outline-none"
+        className="rounded-lg border border-slate-200 px-3 py-2 text-base font-medium text-ink/70 focus:border-pine-500 focus:outline-none"
       />
       <button
         onClick={() => onChange(shiftMonth(month, 1))}
-        className="rounded-lg border border-slate-200 p-2 text-ink/50 hover:bg-cream"
+        className="rounded-lg border border-slate-200 p-2.5 text-ink/50 hover:bg-cream"
         aria-label="Mes siguiente"
       >
         <ChevronRight size={18} />

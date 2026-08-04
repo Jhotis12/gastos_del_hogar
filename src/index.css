@@ -242,6 +242,7 @@
 body {
   background-color: var(--cream);
   color: var(--ink);
+  overscroll-behavior: none;
 }
 
 /* Tarjeta base con elevación al hover */
@@ -289,11 +290,23 @@ button:not(:disabled):active {
   }
 }
 
-/* Inputs y montos: dígitos tabulares y 16px mínimo (evita el zoom de iOS al enfocar) */
+/* Inputs y montos: dígitos tabulares y 16px mínimo real (evita el zoom de
+   iOS al enfocar cualquier input/select/textarea). max(1rem, inherit) anula
+   tamaños heredados menores (text-sm) sin tocar los que ya son >= 16px. */
 input,
 select,
 textarea {
+  font-size: max(1rem, inherit);
   font-variant-numeric: tabular-nums;
+}
+
+/* Toques táctiles: sin delay ni resalte gris; sin selección accidental */
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+button {
+  touch-action: manipulation;
 }
 
 .font-display {

@@ -12,7 +12,7 @@ import { cn, errorMessage } from '@/lib/utils'
 import { formatCurrency } from '@/lib/money'
 
 export default function Savings() {
-  const { data: goals, isLoading, error } = useSavingsGoals()
+  const { data: goals, isLoading, error, refetch } = useSavingsGoals()
   const remove = useDeleteSavingsGoal()
   const toast = useToast()
 
@@ -84,7 +84,7 @@ export default function Savings() {
       {isLoading ? (
         <PageSkeleton />
       ) : error ? (
-        <QueryError error={error} />
+        <QueryError error={error} onRetry={refetch} />
       ) : !goals || goals.length === 0 ? (
         <div className="card animate-fade-up border-2 border-dashed border-ink/10 py-16 text-center">
           <Target size={32} className="mx-auto text-ink/20" />
