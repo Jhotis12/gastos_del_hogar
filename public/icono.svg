@@ -1,38 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="512" height="512">
   <defs>
-    <!-- Background Gradient (Dark Slate/Fintech Blue) -->
+    <!-- Background Gradient (pine oscuro, neutro para ambos temas) -->
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e293b"/>
-      <stop offset="100%" stop-color="#020617"/>
+      <stop offset="0%" stop-color="#143a30"/>
+      <stop offset="100%" stop-color="#0a211b"/>
     </linearGradient>
 
-    <!-- Card 1 Gradient (Expenses - Pink/Purple) -->
+    <!-- Card 1 Gradient (Expenses - Coral) -->
     <linearGradient id="card1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ec4899"/>
-      <stop offset="100%" stop-color="#be185d"/>
+      <stop offset="0%" stop-color="#ef7759"/>
+      <stop offset="100%" stop-color="#cc3d26"/>
     </linearGradient>
 
-    <!-- Card 2 Gradient (Blue/Teal) -->
+    <!-- Card 2 Gradient (Pine) -->
     <linearGradient id="card2" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#3b82f6"/>
-      <stop offset="100%" stop-color="#1e40af"/>
+      <stop offset="0%" stop-color="#4fa387"/>
+      <stop offset="100%" stop-color="#1b5745"/>
     </linearGradient>
 
     <!-- Gold Gradient for Coins (Savings) -->
     <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fde047"/>
-      <stop offset="50%" stop-color="#eab308"/>
-      <stop offset="100%" stop-color="#854d0e"/>
+      <stop offset="0%" stop-color="#f5cf6f"/>
+      <stop offset="50%" stop-color="#d99a1e"/>
+      <stop offset="100%" stop-color="#945b15"/>
     </linearGradient>
     <linearGradient id="goldLight" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#fef08a"/>
-      <stop offset="100%" stop-color="#ca8a04"/>
+      <stop offset="0%" stop-color="#fae4a8"/>
+      <stop offset="100%" stop-color="#d99a1e"/>
     </linearGradient>
 
-    <!-- Plant Gradient (Growth) -->
+    <!-- Plant Gradient (Crecimiento, verde pine) -->
     <linearGradient id="leaf" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#34d399"/>
-      <stop offset="100%" stop-color="#059669"/>
+      <stop offset="0%" stop-color="#4fa387"/>
+      <stop offset="100%" stop-color="#206c55"/>
     </linearGradient>
 
     <!-- Shadows for depth (Glassmorphism/Modern style) -->
@@ -56,24 +56,24 @@
   <rect x="11" y="11" width="98" height="98" rx="21" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.5"/>
 
   <!-- Graphic Group: Expenses (Cards) -->
-  <!-- Back Card -->
+  <!-- Back Card (coral) -->
   <g transform="translate(25, 45) rotate(-12)" filter="url(#shadowSm)">
     <rect x="0" y="0" width="42" height="26" rx="5" fill="url(#card1)"/>
-    <rect x="4" y="4" width="7" height="5" rx="1.5" fill="#fbcfe8" opacity="0.4"/>
-    <line x1="4" y1="17" x2="20" y2="17" stroke="#fbcfe8" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+    <rect x="4" y="4" width="7" height="5" rx="1.5" fill="#fde8e2" opacity="0.4"/>
+    <line x1="4" y1="17" x2="20" y2="17" stroke="#fde8e2" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
   </g>
-  
-  <!-- Front Card -->
+
+  <!-- Front Card (pine) -->
   <g transform="translate(16, 56)" filter="url(#shadowLg)">
     <rect x="0" y="0" width="46" height="28" rx="5" fill="url(#card2)"/>
-    <rect x="5" y="5" width="8" height="6" rx="1.5" fill="#fef08a"/>
+    <rect x="5" y="5" width="8" height="6" rx="1.5" fill="#fae4a8"/>
     <!-- Contactless waves -->
-    <path d="M 40 6 A 4 4 0 0 1 40 12 M 37 7.5 A 2 2 0 0 1 37 10.5" fill="none" stroke="#93c5fd" stroke-width="1" stroke-linecap="round"/>
-    <line x1="5" y1="17" x2="22" y2="17" stroke="#bfdbfe" stroke-width="2" stroke-linecap="round"/>
-    <line x1="5" y1="22" x2="28" y2="22" stroke="#bfdbfe" stroke-width="2" stroke-linecap="round"/>
-    <!-- Logo detail -->
-    <circle cx="38" cy="20" r="4.5" fill="#ef4444" opacity="0.8"/>
-    <circle cx="33" cy="20" r="4.5" fill="#f59e0b" opacity="0.8"/>
+    <path d="M 40 6 A 4 4 0 0 1 40 12 M 37 7.5 A 2 2 0 0 1 37 10.5" fill="none" stroke="#b3dcca" stroke-width="1" stroke-linecap="round"/>
+    <line x1="5" y1="17" x2="22" y2="17" stroke="#b3dcca" stroke-width="2" stroke-linecap="round"/>
+    <line x1="5" y1="22" x2="28" y2="22" stroke="#b3dcca" stroke-width="2" stroke-linecap="round"/>
+    <!-- Logo detail: monedas del fondo común -->
+    <circle cx="38" cy="20" r="4.5" fill="#e2553a" opacity="0.8"/>
+    <circle cx="33" cy="20" r="4.5" fill="#d99a1e" opacity="0.8"/>
   </g>
 
   <!-- Graphic Group: Savings & Growth (Coins and Plant) -->
@@ -82,7 +82,7 @@
     <ellipse cx="16" cy="30" rx="18" ry="7" fill="#713f12"/>
     <path d="M -2 30 v 5 a 18 7 0 0 0 36 0 v -5 z" fill="#854d0e"/>
     <ellipse cx="16" cy="30" rx="18" ry="7" fill="url(#gold)"/>
-    
+
     <!-- Middle Coin -->
     <ellipse cx="16" cy="22" rx="18" ry="7" fill="#713f12"/>
     <path d="M -2 22 v 5 a 18 7 0 0 0 36 0 v -5 z" fill="#854d0e"/>
@@ -92,18 +92,18 @@
     <ellipse cx="16" cy="14" rx="18" ry="7" fill="#713f12"/>
     <path d="M -2 14 v 5 a 18 7 0 0 0 36 0 v -5 z" fill="#854d0e"/>
     <ellipse cx="16" cy="14" rx="18" ry="7" fill="url(#goldLight)"/>
-    
+
     <!-- Coin Center Detail -->
-    <ellipse cx="16" cy="14" rx="12" ry="4.5" fill="none" stroke="#ca8a04" stroke-width="1"/>
+    <ellipse cx="16" cy="14" rx="12" ry="4.5" fill="none" stroke="#d99a1e" stroke-width="1"/>
     <!-- Financial symbol inside top coin -->
-    <path d="M 16 11 v 6" stroke="#ca8a04" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="M 13 12 c 6 -2, 6 4, 0 6" fill="none" stroke="#ca8a04" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M 16 11 v 6" stroke="#d99a1e" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M 13 12 c 6 -2, 6 4, 0 6" fill="none" stroke="#d99a1e" stroke-width="1.5" stroke-linecap="round"/>
   </g>
 
   <!-- Plant (Growth) springing from the coins -->
   <g transform="translate(64, 52)" filter="url(#shadowSm)">
     <!-- Stem -->
-    <path d="M 16 11 Q 14 -4 24 -15" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M 16 11 Q 14 -4 24 -15" fill="none" stroke="#2f876b" stroke-width="2.5" stroke-linecap="round"/>
     <!-- Left Leaf -->
     <path d="M 15 1 C 4 -1, -1 -12, 7 -15 C 12 -16, 17 -8, 15 1 Z" fill="url(#leaf)"/>
     <!-- Right Leaf -->
@@ -112,8 +112,8 @@
 
   <!-- Floating Sparkles -->
   <g>
-    <path d="M 28 28 Q 28 32 24 32 Q 28 32 28 36 Q 28 32 32 32 Q 28 32 28 28 Z" fill="#60a5fa" opacity="0.9"/>
-    <path d="M 90 32 Q 90 35 87 35 Q 90 35 90 38 Q 90 35 93 35 Q 90 35 90 32 Z" fill="#fde047" opacity="0.8"/>
+    <path d="M 28 28 Q 28 32 24 32 Q 28 32 28 36 Q 28 32 32 32 Q 28 32 28 28 Z" fill="#f5cf6f" opacity="0.9"/>
+    <path d="M 90 32 Q 90 35 87 35 Q 90 35 90 38 Q 90 35 93 35 Q 90 35 90 32 Z" fill="#d99a1e" opacity="0.8"/>
     <path d="M 45 20 Q 45 22 43 22 Q 45 22 45 24 Q 45 22 47 22 Q 45 22 45 20 Z" fill="#ffffff" opacity="0.5"/>
   </g>
 </svg>
