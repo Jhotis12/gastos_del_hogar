@@ -159,14 +159,14 @@ export default function Savings() {
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => setAdjusting({ goal: g, mode: 'deposit' })}
-                    className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-pine-50 px-3 py-2 text-xs font-medium text-pine-700 hover:bg-pine-100"
+                    className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-pine-50 px-3 py-2 text-xs font-medium text-pine-600 hover:bg-pine-100"
                   >
                     <ArrowDownToLine size={14} />
                     Depositar
                   </button>
                   <button
                     onClick={() => setAdjusting({ goal: g, mode: 'withdraw' })}
-                    className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-gold-100/60 px-3 py-2 text-xs font-medium text-gold-700 hover:bg-gold-200/60"
+                    className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-gold-100/60 px-3 py-2 text-xs font-medium text-gold-600 hover:bg-gold-100"
                   >
                     <ArrowUpFromLine size={14} />
                     Retirar

@@ -123,15 +123,15 @@ export default function Recurring() {
           </p>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
             <div
-              className={`h-full rounded-full ${fixedRatio > 0.5 ? 'hover:bg-coral-100/700' : fixedRatio > 0.3 ? 'bg-gold-100/600' : 'bg-pine-500'}`}
+              className={`h-full rounded-full ${fixedRatio > 0.5 ? 'bg-coral-500' : fixedRatio > 0.3 ? 'bg-gold-500' : 'bg-pine-500'}`}
               style={{ width: `${Math.min(100, fixedRatio * 100)}%` }}
             />
           </div>
         </div>
         <div className="flex flex-col justify-between rounded-2xl border border-pine-200 bg-pine-50 p-5">
           <div>
-            <p className="text-sm font-medium text-pine-800">Pendientes este mes</p>
-            <p className="mt-2 text-2xl font-bold tracking-tight text-indigo-900">
+            <p className="text-sm font-medium text-pine-600">Pendientes este mes</p>
+            <p className="mt-2 text-2xl font-bold tracking-tight text-pine-600">
               {pendingCount}
             </p>
           </div>

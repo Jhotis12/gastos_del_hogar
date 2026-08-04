@@ -190,8 +190,8 @@ export default function Categories() {
                   key={c}
                   onClick={() => setColor(c)}
                   className={cn(
-                    'h-10 w-10 rounded-full ring-2 ring-offset-2',
-                    color === c ? 'ring-indigo-600' : 'ring-transparent',
+                    'h-10 w-10 rounded-full ring-2 ring-offset-2 ring-offset-surface',
+                    color === c ? 'ring-ink' : 'ring-transparent',
                   )}
                   style={{ backgroundColor: c }}
                   aria-label={`Color ${c}`}

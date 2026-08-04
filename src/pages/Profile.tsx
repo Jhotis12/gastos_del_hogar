@@ -154,7 +154,7 @@ export default function Profile() {
           <button
             onClick={() => setConfirmDelete(true)}
             disabled={!household || deleteHousehold.isPending}
-            className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-coral-600 px-4 text-sm font-medium text-white hover:bg-coral-700 disabled:opacity-50"
+            className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-coral-600 px-4 text-sm font-medium text-cream hover:bg-coral-700 disabled:opacity-50"
           >
             <Trash2 size={16} />
             Eliminar hogar

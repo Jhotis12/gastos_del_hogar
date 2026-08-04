@@ -153,7 +153,7 @@ export default function Calendar() {
                   onClick={() => setSelectedDay(iso)}
                   className={cn(
                     'flex min-h-16 flex-col items-stretch gap-1 border border-slate-100 p-1 text-left transition-colors hover:bg-pine-50/60 sm:min-h-20 sm:p-1.5',
-                    due > 0 && 'border-gold-200 bg-gold-100/60/40',
+                    due > 0 && 'border-gold-200 bg-gold-100/60',
                   )}
                 >
                   <span
@@ -195,14 +195,14 @@ export default function Calendar() {
 
             {selectedServices.length > 0 && (
               <div className="rounded-xl border border-gold-200 bg-gold-100/60 p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gold-700">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gold-600">
                   Vencen este día
                 </p>
                 <ul className="mt-1 space-y-1">
                   {selectedServices.map((s) => (
                     <li key={s.id} className="flex items-center justify-between text-sm">
                       <span className="flex items-center gap-1.5 text-ink/70">
-                        <Zap size={12} className="text-amber-500" />
+                        <Zap size={12} className="text-gold-600" />
                         {s.description || 'Sin nombre'}
                       </span>
                       <span className="font-medium text-ink/70">

@@ -145,7 +145,7 @@ function SalaryInput({
               <span className="text-sm font-semibold text-pine-600">
                 {formatCurrency(Number(effective.amount))}
               </span>
-              <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-medium text-gold-700">
+              <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-medium text-gold-600">
                 Heredado de {monthLabel(effective.source_month ?? month)}
               </span>
             </div>
@@ -285,11 +285,11 @@ export default function Members() {
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-pine-200 bg-pine-50 p-4">
         <div>
-          <p className="text-sm font-medium text-pine-800">
+          <p className="text-sm font-medium text-pine-600">
             Ingreso unificado del mes
           </p>
           <p className="text-xs text-pine-600/70">Salarios + dinero extra</p>
-          <p className="mt-1 text-2xl font-bold text-pine-700">
+          <p className="mt-1 text-2xl font-bold text-pine-600">
             {formatCurrency(totalIncome)}
           </p>
         </div>
@@ -324,7 +324,7 @@ export default function Members() {
               className={`rounded-xl border p-4 ${
                 balance >= 0
                   ? 'border-pine-200 bg-pine-50/50'
-                  : 'border-coral-200 hover:bg-coral-100/70/50'
+                  : 'border-coral-200 hover:bg-coral-100/70'
               }`}
             >
               <p className="text-sm font-medium text-ink">{member.full_name}</p>

@@ -52,7 +52,7 @@ export default function Setup() {
             }}
             className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl border px-4 py-3 text-sm font-semibold transition-all ${
               mode === 'create'
-                ? 'border-pine-600 bg-pine-50 text-pine-700'
+                ? 'border-pine-600 bg-pine-50 text-pine-600'
                 : 'border-slate-200 bg-surface text-ink/55 hover:bg-cream'
             }`}
           >
@@ -66,7 +66,7 @@ export default function Setup() {
             }}
             className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl border px-4 py-3 text-sm font-semibold transition-all ${
               mode === 'join'
-                ? 'border-pine-600 bg-pine-50 text-pine-700'
+                ? 'border-pine-600 bg-pine-50 text-pine-600'
                 : 'border-slate-200 bg-surface text-ink/55 hover:bg-cream'
             }`}
           >
@@ -112,7 +112,7 @@ export default function Setup() {
           )}
 
           {error && (
-            <p className="mt-4 rounded-xl bg-coral-100/60 px-4 py-3 text-sm text-coral-700">
+            <p className="mt-4 rounded-xl bg-coral-100/60 px-4 py-3 text-sm text-coral-600">
               {error}
             </p>
           )}

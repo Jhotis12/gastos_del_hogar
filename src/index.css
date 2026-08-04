@@ -35,6 +35,7 @@
 }
 
 :root {
+  color-scheme: light;
   --cream: #f6f5f0;
   --ink: #16231e;
   --surface: #ffffff;
@@ -86,7 +87,9 @@
 }
 
 /* Refuerzo de contraste del texto en modo oscuro: las opacidades bajas de ink
-   sobre fondos oscuros no llegan a 4.5:1, se sustituyen por grises explícitos. */
+   sobre fondos oscuros no llegan a 4.5:1, se sustituyen por grises explícitos.
+   NOTA: no aplican dentro de .force-light (Login/Setup/Confirmación), donde
+   el fondo vuelve a ser claro y los grises oscuros originales sí funcionan. */
 .dark .text-ink\/30 {
   color: #7c8983;
 }
@@ -98,6 +101,18 @@
 }
 .dark .text-ink\/50 {
   color: #a5b2ab;
+}
+.force-light .text-ink\/30 {
+  color: rgb(22 35 30 / 0.3);
+}
+.force-light .text-ink\/40 {
+  color: rgb(22 35 30 / 0.4);
+}
+.force-light .text-ink\/45 {
+  color: rgb(22 35 30 / 0.45);
+}
+.force-light .text-ink\/50 {
+  color: rgb(22 35 30 / 0.5);
 }
 
 /* Páginas previas al login (Login, Setup, Confirmación): siempre en claro,
@@ -263,6 +278,19 @@ body {
   box-shadow:
     0 2px 4px rgb(22 35 30 / 0.05),
     0 14px 30px -10px rgb(22 35 30 / 0.14);
+}
+
+/* En oscuro la sombra clara se pierde sobre el fondo negro: se usa una
+   sombra negra con más opacidad y un borde más presente para la elevación. */
+.dark .card {
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.45),
+    0 4px 14px -6px rgb(0 0 0 / 0.55);
+}
+.dark .card-hover:hover {
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 0.5),
+    0 14px 30px -10px rgb(0 0 0 / 0.65);
 }
 
 /* Micro-interacción en botones */

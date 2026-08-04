@@ -113,7 +113,7 @@ export default function Expenses() {
           <MonthPicker month={month} onChange={setMonth} />
           <button
             onClick={() => setCaptureOpen(true)}
-            className="hidden min-h-12 items-center gap-2 rounded-lg bg-gold-500 px-4 py-2 text-sm font-medium text-[#16231e] hover:bg-gold-600 lg:inline-flex"
+            className="hidden min-h-12 items-center gap-2 rounded-lg bg-gold-500 px-4 py-2 text-sm font-medium text-pine-950 hover:bg-gold-600 lg:inline-flex"
           >
             <ScanLine size={16} />
             Escanear factura
@@ -146,7 +146,7 @@ export default function Expenses() {
           onClick={() => setCategoryFilter('all')}
           className={`rounded-full px-3.5 py-2 text-xs font-medium ${
             categoryFilter === 'all'
-              ? 'bg-slate-900 text-white'
+              ? 'bg-ink text-cream'
               : 'bg-surface text-ink/55 ring-1 ring-ink/10 hover:bg-cream'
           }`}
         >
@@ -162,7 +162,7 @@ export default function Expenses() {
                 onClick={() => setCategoryFilter(cat.id)}
                 className={`rounded-full px-3.5 py-2 text-xs font-medium ${
                   categoryFilter === cat.id
-                    ? 'bg-slate-900 text-white'
+                    ? 'bg-ink text-cream'
                     : 'bg-surface text-ink/55 ring-1 ring-ink/10 hover:bg-cream'
                 }`}
               >

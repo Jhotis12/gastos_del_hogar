@@ -71,7 +71,7 @@ export default function ReceiptCapture({ open, onClose, onAnalyzed }: ReceiptCap
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <button
               onClick={() => cameraRef.current?.click()}
-              className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-pine-300 bg-pine-50/50 p-6 text-pine-700 transition-colors hover:bg-pine-100/60"
+              className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-pine-300 bg-pine-50/50 p-6 text-pine-600 transition-colors hover:bg-pine-100/60"
             >
               <Camera size={28} />
               <span className="text-sm font-medium">Tomar foto</span>
@@ -79,7 +79,7 @@ export default function ReceiptCapture({ open, onClose, onAnalyzed }: ReceiptCap
             </button>
             <button
               onClick={() => galleryRef.current?.click()}
-              className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-gold-300 bg-gold-100/50 p-6 text-gold-700 transition-colors hover:bg-gold-200/60"
+              className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-gold-300 bg-gold-100/50 p-6 text-gold-600 transition-colors hover:bg-gold-100"
             >
               <ImagePlus size={28} />
               <span className="text-sm font-medium">Subir de galería</span>
@@ -139,7 +139,7 @@ export default function ReceiptCapture({ open, onClose, onAnalyzed }: ReceiptCap
               </div>
               <div className="animate-scan-sweep absolute inset-x-0 h-10 bg-gradient-to-b from-transparent via-pine-300/40 to-pine-500/70" />
             </div>
-            <p className="text-sm font-medium text-pine-700">
+            <p className="text-sm font-medium text-pine-600">
               Analizando factura
               <span className="animate-dot inline-block">.</span>
               <span className="animate-dot inline-block" style={{ animationDelay: '150ms' }}>.</span>
@@ -150,7 +150,7 @@ export default function ReceiptCapture({ open, onClose, onAnalyzed }: ReceiptCap
         )}
 
         {error && (
-          <p className="rounded-lg bg-coral-100/60 px-3 py-2 text-sm text-coral-700">{error}</p>
+          <p className="rounded-lg bg-coral-100/60 px-3 py-2 text-sm text-coral-600">{error}</p>
         )}
 
         {preview && !analyzing && (

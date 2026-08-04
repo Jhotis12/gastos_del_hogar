@@ -145,14 +145,14 @@ export default function Dashboard() {
         <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-400/20 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-14 left-1/3 h-40 w-40 rounded-full bg-pine-400/20 blur-2xl" />
         <div className="relative">
-          <p className="text-sm font-medium text-[#b3dcca]">Saldo disponible · {monthLabel(month)}</p>
+          <p className="text-sm font-medium text-pine-200">Saldo disponible · {monthLabel(month)}</p>
           <p
             data-testid="hero-saldo"
             className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-5xl"
           >
             {runningBalance === undefined ? '$ —' : formatCurrency(balanceAnimated)}
           </p>
-          <p className="mt-1 text-xs text-[#b3dcca]/80">
+          <p className="mt-1 text-xs text-pine-200/80">
             Incluye el sobrante de meses anteriores
           </p>
           {pendingLabel && (
@@ -161,11 +161,11 @@ export default function Dashboard() {
             </p>
           )}
           <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2 text-sm">
-            <span className="flex items-center gap-2 text-[#d8ede4]">
+            <span className="flex items-center gap-2 text-pine-100">
               <ArrowUpCircle size={16} className="text-emerald-300" />
               Ingresos {formatCurrency(totalIncome)}
             </span>
-            <span className="flex items-center gap-2 text-[#d8ede4]">
+            <span className="flex items-center gap-2 text-pine-100">
               <ArrowDownCircle size={16} className="text-coral-300" />
               Gastos {formatCurrency(totalExpenses)}
             </span>
@@ -199,7 +199,7 @@ export default function Dashboard() {
 
       {pendingRecurring > 0 && (
         <div className="animate-fade-up flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold-200 bg-gold-100/60 p-4">
-          <p className="text-sm text-gold-700">
+          <p className="text-sm text-gold-600">
             <Sparkles size={16} className="mr-1 inline animate-pulse-soft" />
             Tienes {pendingRecurring} gasto{pendingRecurring !== 1 && 's'} fijo
             {pendingRecurring !== 1 && 's'} pendiente
@@ -288,7 +288,7 @@ export default function Dashboard() {
             <h2 className="font-display text-sm font-semibold text-ink">Salarios del mes</h2>
             <Link
               to="/miembros"
-              className="inline-flex min-h-11 items-center text-sm font-medium text-pine-600 hover:text-pine-700"
+              className="inline-flex min-h-11 items-center text-sm font-medium text-pine-600 hover:text-ink"
             >
               Gestionar
             </Link>
@@ -352,7 +352,7 @@ export default function Dashboard() {
           </div>
           <Link
             to="/historial"
-            className="inline-flex min-h-11 shrink-0 items-center text-sm font-medium text-pine-600 hover:text-pine-700"
+            className="inline-flex min-h-11 shrink-0 items-center text-sm font-medium text-pine-600 hover:text-ink"
           >
             Ver historial
           </Link>
@@ -419,7 +419,7 @@ export default function Dashboard() {
           <h2 className="font-display text-sm font-semibold text-ink">Gastos recientes</h2>
           <Link
             to="/gastos"
-            className="inline-flex min-h-11 items-center text-sm font-medium text-pine-600 hover:text-pine-700"
+            className="inline-flex min-h-11 items-center text-sm font-medium text-pine-600 hover:text-ink"
           >
             Ver todos
           </Link>

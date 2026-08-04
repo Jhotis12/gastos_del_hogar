@@ -200,8 +200,8 @@ export default function Login() {
               <p
                 className={`rounded-xl px-4 py-3 text-sm ${
                   error.startsWith('Revisa tu correo')
-                    ? 'bg-pine-50 text-pine-700'
-                    : 'bg-coral-100/60 text-coral-700'
+                    ? 'bg-pine-50 text-pine-600'
+                    : 'bg-coral-100/60 text-coral-600'
                 }`}
               >
                 {error}

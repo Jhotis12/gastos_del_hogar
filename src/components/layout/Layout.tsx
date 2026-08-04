@@ -64,7 +64,7 @@ function SidebarNav() {
             cn(
               'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
               isActive
-                ? 'bg-pine-50 text-pine-700 shadow-sm shadow-pine-900/5'
+                ? 'bg-pine-50 text-pine-600 shadow-sm shadow-pine-900/5'
                 : 'text-ink/55 hover:bg-cream hover:text-ink',
             )
           }
@@ -91,7 +91,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-cream">
       {/* Sidebar (desktop) */}
-      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-pine-950/5 bg-surface/70 backdrop-blur lg:block">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-ink/10 bg-surface/70 backdrop-blur lg:block">
         <div className="flex h-full flex-col">
           <div className="px-6 py-5">
             <Brand />
@@ -111,7 +111,7 @@ export default function Layout() {
             <ThemeToggle />
             <button
               onClick={signOut}
-              className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-ink/55 hover:bg-coral-100/60 hover:text-coral-700"
+              className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-ink/55 hover:bg-coral-100/60 hover:text-coral-600"
             >
               <LogOut size={18} />
               Cerrar sesión
@@ -122,7 +122,7 @@ export default function Layout() {
 
       {/* Contenido */}
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-pine-950/5 bg-cream/80 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur lg:hidden">
+        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-ink/10 bg-cream/80 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur lg:hidden">
           <div className="flex items-center gap-2">
             <AppLogo size={36} />
             <p className="font-display text-sm font-semibold text-ink">Gastos del Hogar</p>
@@ -144,7 +144,7 @@ export default function Layout() {
       <div
         role="navigation"
         aria-label="Navegación principal"
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-pine-950/5 bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-ink/10 bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
       >
         <div className="mx-auto grid max-w-md grid-cols-5">
           {BOTTOM_NAV.map((item) => (
@@ -154,7 +154,7 @@ export default function Layout() {
               className={({ isActive }) =>
                 cn(
                   'flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium transition-colors',
-                  isActive ? 'text-pine-700' : 'text-ink/45',
+                  isActive ? 'text-pine-600' : 'text-ink/45',
                 )
               }
             >
@@ -170,7 +170,7 @@ export default function Layout() {
             onClick={() => setMoreOpen(true)}
             className={cn(
               'flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium transition-colors',
-              moreOpen ? 'text-pine-700' : 'text-ink/45',
+              moreOpen ? 'text-pine-600' : 'text-ink/45',
             )}
             aria-label="Más opciones"
           >
@@ -198,7 +198,7 @@ export default function Layout() {
                   className={({ isActive }) =>
                     cn(
                       'flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors',
-                      isActive ? 'bg-pine-50 text-pine-700' : 'text-ink/70 hover:bg-cream',
+                      isActive ? 'bg-pine-50 text-pine-600' : 'text-ink/70 hover:bg-cream',
                     )
                   }
                 >
