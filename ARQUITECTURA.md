@@ -252,8 +252,12 @@ Skill de referencia: `mobile-app-ui-design` (`.agents/skills/`).
   desktop permanece intacto (la barra inferior usa `role="navigation"`, no
   `<nav>`, para no colisionar con los selectores del test e2e).
 - **Login/Registro**: split en desktop (panel de marca en gradiente pine con
-  features) y móvil centrado; segmented control, toggle de mostrar/ocultar
-  contraseña, inputs y CTAs con `min-h-12` (44px+ de área táctil).
+  features) y móvil centrado; el **login es el apartado principal** y el
+  registro se alcanza con un enlace ("Crea una aquí") que alterna la vista con
+  animación (`animate-form-in`); validación por campo (nombre sin números,
+  correo válido, contraseña ≥6) con `animate-shake` en inválidos; toggle de
+  mostrar/ocultar contraseña, inputs y CTAs con `min-h-12` (44px+ de área
+  táctil).
 - **Formularios = bottom-sheets en móvil**: el `Modal` compartido se ancla
   abajo a ancho completo en móvil (con safe-area y `max-h-[92dvh]`) y queda
   centrado desde `sm:` — un solo punto de cambio para todos los forms.
