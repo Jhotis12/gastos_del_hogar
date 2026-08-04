@@ -161,11 +161,11 @@ export default function Dashboard() {
             </p>
           )}
           <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2 text-sm">
-            <span className="flex items-center gap-2 text-pine-100">
+            <span className="flex items-center gap-2 text-white">
               <ArrowUpCircle size={16} className="text-emerald-300" />
               Ingresos {formatCurrency(totalIncome)}
             </span>
-            <span className="flex items-center gap-2 text-pine-100">
+            <span className="flex items-center gap-2 text-white">
               <ArrowDownCircle size={16} className="text-coral-300" />
               Gastos {formatCurrency(totalExpenses)}
             </span>
