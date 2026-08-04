@@ -307,6 +307,22 @@ button:not(:disabled):active {
   transform: scale(0.97);
 }
 
+/* Transición suave al alternar tema: se activa solo durante el cambio
+   (clase theme-switching en <html>, gestionada por useTheme) para no animar
+   al cargar la página. Debe quedar ANTES del bloque prefers-reduced-motion
+   para que ese lo desactive con su !important. */
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease,
+    fill 0.35s ease,
+    stroke 0.35s ease,
+    box-shadow 0.35s ease !important;
+}
+
 /* Respeto a usuarios con movimiento reducido */
 @media (prefers-reduced-motion: reduce) {
   *,
