@@ -16,6 +16,32 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Gastos del Hogar" />
     <title>Gastos del Hogar</title>
+    <!-- Tema aplicado antes del primer paint: evita el pantallazo blanco al
+         recargar en modo oscuro (el bundle JS corre al final del body). -->
+    <script>
+      ;(function () {
+        try {
+          var saved = localStorage.getItem('theme')
+          var dark = saved
+            ? saved === 'dark'
+            : window.matchMedia('(prefers-color-scheme: dark)').matches
+          if (dark) document.documentElement.classList.add('dark')
+        } catch (e) {}
+      })()
+    </script>
+    <style>
+      /* Fondo de arranque antes de que cargue el CSS (dev): con el mismo
+         valor que --cream en cada tema para que no haya parpadeo claro. */
+      html {
+        background-color: #f6f5f0;
+      }
+      html.dark {
+        background-color: #0c1210;
+      }
+      html.dark .force-light {
+        background-color: #f6f5f0;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
