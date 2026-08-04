@@ -64,7 +64,8 @@ export default function History() {
             Aún no hay movimientos registrados
           </p>
         ) : (
-          <div className="divide-y divide-slate-100 md:hidden">
+          <>
+            <div className="divide-y divide-slate-100 md:hidden">
             {rows.map((r) => {
               const ratio = r.income > 0 ? r.surplus / r.income : 0
               return (
@@ -179,6 +180,7 @@ export default function History() {
               </tfoot>
             </table>
           </div>
+          </>
         )}
       </div>
     </div>
