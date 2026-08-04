@@ -254,11 +254,23 @@ Skill de referencia: `mobile-app-ui-design` (`.agents/skills/`).
 - **Login/Registro**: split en desktop (panel de marca en gradiente pine con
   features) y móvil centrado; segmented control, toggle de mostrar/ocultar
   contraseña, inputs y CTAs con `min-h-12` (44px+ de área táctil).
-- **Touch targets**: botones de icono en filas `p-2` mínimo; CTAs `min-h-12`.
-- **Safe area**: `pb-[env(safe-area-inset-bottom)]` en la barra inferior y
-  contenido con `pb-28 lg:pb-6` para que nada quede oculto.
+- **Formularios = bottom-sheets en móvil**: el `Modal` compartido se ancla
+  abajo a ancho completo en móvil (con safe-area y `max-h-[92dvh]`) y queda
+  centrado desde `sm:` — un solo punto de cambio para todos los forms.
+- **FAB de gasto**: Dashboard y Gastos tienen un botón flotante 56px sobre la
+  barra inferior (`lg:hidden`); en Gastos abre un action-sheet (Nuevo gasto /
+  Escanear factura). Los CTAs del header quedan solo para desktop (`lg:`).
+- **Historial responsive**: cards apiladas por mes en móvil (`md:hidden`), la
+  tabla de 6 columnas solo desde `md:` — sin scroll horizontal a 375px.
+- **Touch targets**: botones de icono en filas `p-2.5` mínimo (44px); CTAs
+  `min-h-11/12`; toggle de servicios 28×48px; chips de filtro `py-2`.
+- **Safe area**: `viewport-fit=cover` en el index (sin él, `env(safe-area-*)`
+  resuelve a 0), header móvil con `pt-[calc(env(safe-area-inset-top)+…)]`,
+  `pb-[env(safe-area-inset-bottom)]` en barra inferior, sheets y modales.
+- **Inputs ≥16px**: regla global `input/select/textarea { font-size:
+  max(1rem, inherit) }` + `touch-action: manipulation` (evita zoom de iOS).
 - Regla de oro: **sin overflow horizontal a 375px** (verificado por
-  `tests/check-mobile.mjs`).
+  `tests/check-mobile.mjs`, que recorre las 9 rutas y los modales/sheets).
 
 ### Modo oscuro
 - Tokens temáticos como variables CSS (`@theme inline`): `cream`, `ink`,
@@ -398,6 +410,7 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
 | `pnpm build` | `tsc -b` + Vite build |
 | `pnpm lint` | oxlint |
 | `node tests/e2e-flow.mjs` | Suite e2e (requiere dev server arriba) |
+| `node tests/check-mobile.mjs` | Verificación mobile 375px: 9 rutas + modales sin overflow |
 | `SUPABASE_SERVICE_ROLE=… bash tests/reset-sandbox.sh` | Reinicia usuario sandbox (proyecto del `.env`) |
 | `SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE=<key local> bash tests/reset-sandbox.sh` | Reinicia el sandbox en el entorno LOCAL (`supabase start`) |
 | `SUPABASE_ACCESS_TOKEN=… supabase functions deploy analyze-receipt` | Deploy Edge Function |
