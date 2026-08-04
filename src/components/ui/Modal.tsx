@@ -12,11 +12,17 @@ interface ModalProps {
 export default function Modal({ open, title, onClose, children }: ModalProps) {
   const closeRef = useRef<HTMLButtonElement>(null)
   const previousFocus = useRef<HTMLElement | null>(null)
+  // onClose cambia de identidad en cada render del formulario padre (p. ej.
+  // al escribir en un input): se guarda en un ref para que el efecto de foco
+  // y scroll-lock corra solo cuando el modal se abre/cierra, no en cada
+  // render (eso movía el foco al botón X al teclear).
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
 
   useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') onCloseRef.current()
     }
     // Scroll-lock del fondo: la página deja de desplazarse mientras el
     // modal esté abierto (patrón esperado en móvil).
@@ -35,7 +41,7 @@ export default function Modal({ open, title, onClose, children }: ModalProps) {
       document.body.style.paddingRight = paddingRight
       previousFocus.current?.focus()
     }
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
 
