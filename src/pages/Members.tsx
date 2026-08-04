@@ -112,14 +112,14 @@ function SalaryInput({
             <div className="flex gap-1">
               <button
                 onClick={startEdit}
-                className="rounded-lg p-2 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
+                className="rounded-lg p-2.5 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
                 aria-label="Editar salario"
               >
                 <Pencil size={16} />
               </button>
               <button
                 onClick={() => setConfirmOpen(true)}
-                className="rounded-lg p-2 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
+                className="rounded-lg p-2.5 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
                 aria-label="Eliminar salario"
               >
                 <Trash2 size={16} />
@@ -159,7 +159,7 @@ function SalaryInput({
           {canEdit && (
             <button
               onClick={startEdit}
-              className="rounded-lg p-2 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
+              className="rounded-lg p-2.5 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
               aria-label="Editar salario heredado"
             >
               <Pencil size={16} />
@@ -174,7 +174,7 @@ function SalaryInput({
     return (
       <button
         onClick={startEdit}
-        className="rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-sm text-ink/40 hover:border-pine-400 hover:text-pine-600"
+        className="inline-flex min-h-10 items-center rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-ink/40 hover:border-pine-400 hover:text-pine-600"
       >
         + Registrar salario
       </button>
@@ -200,14 +200,14 @@ function SalaryInput({
         <button
           type="submit"
           disabled={upsert.isPending}
-          className="rounded-lg bg-pine-700 px-3 py-2 text-sm font-medium text-white hover:bg-pine-800 disabled:opacity-50"
+          className="inline-flex min-h-11 items-center rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800 disabled:opacity-50"
         >
           Guardar
         </button>
         <button
           type="button"
           onClick={() => setEditing(false)}
-          className="rounded-lg px-3 py-2 text-sm text-ink/50 hover:bg-slate-100"
+          className="inline-flex min-h-11 items-center rounded-lg px-4 py-2 text-sm text-ink/50 hover:bg-slate-100"
         >
           Cancelar
         </button>
@@ -299,7 +299,7 @@ export default function Members() {
           </p>
           <button
             onClick={copyCode}
-            className="mt-1 inline-flex items-center gap-2 rounded-lg bg-surface px-3 py-1.5 text-sm font-semibold text-ink/70 shadow-sm hover:bg-cream"
+            className="mt-1 inline-flex min-h-10 items-center gap-2 rounded-lg bg-surface px-3 py-2 text-sm font-semibold text-ink/70 shadow-sm hover:bg-cream"
           >
             {copied ? <Check size={16} className="text-pine-600" /> : <Copy size={16} />}
             {household.invite_code}

@@ -136,14 +136,14 @@ export default function IncomeSection({ month, members }: IncomeSectionProps) {
                 </span>
                 <button
                   onClick={() => startEdit(i)}
-                  className="rounded-lg p-2 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
+                  className="rounded-lg p-2.5 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
                   aria-label="Editar dinero extra"
                 >
                   <Pencil size={16} />
                 </button>
                 <button
                   onClick={() => setConfirmId(i.id)}
-                  className="rounded-lg p-2 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
+                  className="rounded-lg p-2.5 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
                   aria-label="Eliminar dinero extra"
                 >
                   <Trash2 size={16} />
@@ -220,14 +220,14 @@ export default function IncomeSection({ month, members }: IncomeSectionProps) {
             <button
               type="button"
               onClick={() => setDraft(null)}
-              className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-ink/70 hover:bg-cream"
+              className="inline-flex min-h-11 items-center rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-ink/70 hover:bg-cream"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={addIncome.isPending || updateIncome.isPending}
-              className="rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800 disabled:opacity-50"
+              className="inline-flex min-h-11 items-center rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800 disabled:opacity-50"
             >
               {draft.id ? 'Guardar cambios' : 'Guardar'}
             </button>

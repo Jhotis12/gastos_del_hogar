@@ -134,7 +134,7 @@ export default function Dashboard() {
             onClick={() => setQuickOpen(true)}
             aria-label="Agregar gasto rápido"
             title="Agregar gasto rápido"
-            className="flex h-10 w-10 items-center justify-center rounded-lg bg-pine-700 text-white shadow-md shadow-pine-900/20 transition-transform hover:bg-pine-800 active:scale-95"
+            className="flex h-11 w-11 items-center justify-center rounded-lg bg-pine-700 text-white shadow-md shadow-pine-900/20 transition-transform hover:bg-pine-800 active:scale-95"
           >
             <Plus size={20} />
           </button>
@@ -207,7 +207,7 @@ export default function Dashboard() {
           </p>
           <button
             onClick={() => setApplyOpen(true)}
-            className="rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+            className="inline-flex min-h-11 items-center rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
           >
             Aplicar recurrentes
           </button>
@@ -220,9 +220,16 @@ export default function Dashboard() {
             Gastos por categoría
           </h2>
           {categoriesSorted.length === 0 ? (
-            <p className="py-8 text-center text-sm text-ink/40">
-              Sin gastos registrados este mes
-            </p>
+            <div className="py-6 text-center">
+              <p className="text-sm text-ink/40">Sin gastos registrados este mes</p>
+              <button
+                onClick={() => setQuickOpen(true)}
+                className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+              >
+                <Plus size={16} />
+                Agregar gasto
+              </button>
+            </div>
           ) : (
             <div className="space-y-3">
               {categoriesSorted.map((c) => {
@@ -281,15 +288,21 @@ export default function Dashboard() {
             <h2 className="font-display text-sm font-semibold text-ink">Salarios del mes</h2>
             <Link
               to="/miembros"
-              className="text-sm font-medium text-pine-600 hover:text-pine-700"
+              className="inline-flex min-h-11 items-center text-sm font-medium text-pine-600 hover:text-pine-700"
             >
               Gestionar
             </Link>
           </div>
           {salariesPending ? null : salaries.length === 0 ? (
-            <p className="py-8 text-center text-sm text-ink/40">
-              Aún no hay salarios registrados
-            </p>
+            <div className="py-6 text-center">
+              <p className="text-sm text-ink/40">Aún no hay salarios registrados</p>
+              <Link
+                to="/miembros"
+                className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+              >
+                Registrar salario
+              </Link>
+            </div>
           ) : (
             <ul className="space-y-3">
               {salaries.map((s) => (
@@ -303,7 +316,7 @@ export default function Dashboard() {
                         'Miembro'}
                     </span>
                     {s.source_month !== month && (
-                      <span className="shrink-0 rounded-full bg-pine-50 px-2 py-0.5 text-[11px] font-medium text-pine-600">
+                      <span className="shrink-0 rounded-full bg-pine-50 px-2 py-0.5 text-xs font-medium text-pine-600">
                         Heredado
                       </span>
                     )}
@@ -339,7 +352,7 @@ export default function Dashboard() {
           </div>
           <Link
             to="/historial"
-            className="shrink-0 text-sm font-medium text-pine-600 hover:text-pine-700"
+            className="inline-flex min-h-11 shrink-0 items-center text-sm font-medium text-pine-600 hover:text-pine-700"
           >
             Ver historial
           </Link>
@@ -406,15 +419,22 @@ export default function Dashboard() {
           <h2 className="font-display text-sm font-semibold text-ink">Gastos recientes</h2>
           <Link
             to="/gastos"
-            className="text-sm font-medium text-pine-600 hover:text-pine-700"
+            className="inline-flex min-h-11 items-center text-sm font-medium text-pine-600 hover:text-pine-700"
           >
             Ver todos
           </Link>
         </div>
         {!expenses || expenses.length === 0 ? (
-          <p className="py-8 text-center text-sm text-ink/40">
-            Sin gastos este mes
-          </p>
+          <div className="py-6 text-center">
+            <p className="text-sm text-ink/40">Sin gastos este mes</p>
+            <button
+              onClick={() => setQuickOpen(true)}
+              className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+            >
+              <Plus size={16} />
+              Agregar gasto
+            </button>
+          </div>
         ) : (
           <ul className="divide-y divide-slate-100">
             {expenses.slice(0, 6).map((e) => (

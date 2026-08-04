@@ -60,7 +60,7 @@ export default function ReceiptViewer({ expense, onClose }: ReceiptViewerProps) 
                   onLoad={() => setImgLoaded(true)}
                   className="max-h-56 w-full bg-cream object-contain"
                 />
-                <span className="absolute right-2 top-2 rounded-lg bg-black/60 p-1.5 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                <span className="absolute right-2 top-2 rounded-lg bg-black/60 p-1.5 text-white opacity-0 transition-opacity group-hover:opacity-100 max-lg:opacity-100">
                   <Maximize2 size={14} />
                 </span>
               </button>

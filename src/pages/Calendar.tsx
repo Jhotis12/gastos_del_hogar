@@ -165,13 +165,13 @@ export default function Calendar() {
                     {day}
                   </span>
                   {dayExpenses.length > 0 && (
-                    <p className="truncate text-[11px] font-semibold text-ink/70">
+                    <p className="truncate text-xs font-semibold text-ink/70">
                       -{formatCurrency(dayTotal(iso))}
                     </p>
                   )}
                   {due > 0 && (
-                    <p className="flex items-center gap-0.5 text-[10px] font-medium text-gold-600">
-                      <Zap size={10} />
+                    <p className="flex items-center gap-0.5 text-xs font-medium text-gold-600">
+                      <Zap size={12} />
                       {due} servicio{due !== 1 && 's'}
                     </p>
                   )}
@@ -246,7 +246,7 @@ export default function Calendar() {
 
             <button
               onClick={() => setFormDate(selectedDay)}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
             >
               <Plus size={16} />
               Agregar gasto de este día

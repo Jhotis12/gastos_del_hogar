@@ -153,7 +153,7 @@ export default function Layout() {
               to={item.to}
               className={({ isActive }) =>
                 cn(
-                  'flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors',
+                  'flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium transition-colors',
                   isActive ? 'text-pine-700' : 'text-ink/45',
                 )
               }
@@ -169,7 +169,7 @@ export default function Layout() {
           <button
             onClick={() => setMoreOpen(true)}
             className={cn(
-              'flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition-colors',
+              'flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium transition-colors',
               moreOpen ? 'text-pine-700' : 'text-ink/45',
             )}
             aria-label="Más opciones"

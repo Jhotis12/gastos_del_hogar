@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 
@@ -7,6 +7,7 @@ export default function AuthConfirm() {
   const navigate = useNavigate()
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
+  const doneRef = useRef(false)
 
   useEffect(() => {
     const tokenHash = params.get('token_hash')
@@ -18,15 +19,26 @@ export default function AuthConfirm() {
       return
     }
 
+    let active = true
+    const timer = setTimeout(() => {
+      if (active && !doneRef.current) setError('La confirmación está tardando. Revisa tu conexión e intenta de nuevo.')
+    }, 12000)
+
     supabase.auth
       .verifyOtp({ token_hash: tokenHash, type: type as 'email' | 'sms' | 'email_change' })
       .then(({ error: verifyError }) => {
+        clearTimeout(timer)
         if (verifyError) {
           setError('El enlace de confirmación no es válido o ya fue usado.')
           return
         }
+        doneRef.current = true
         setDone(true)
         navigate(next, { replace: true })
+      })
+      .finally(() => {
+        active = false
+        clearTimeout(timer)
       })
   }, [params, navigate])
 
@@ -49,7 +61,7 @@ export default function AuthConfirm() {
             <p className="mt-2 text-sm text-coral-600">{error}</p>
             <Link
               to="/login"
-              className="mt-6 inline-block rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+              className="mt-6 inline-flex min-h-12 items-center justify-center rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
             >
               Ir a iniciar sesión
             </Link>

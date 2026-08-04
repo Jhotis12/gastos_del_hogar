@@ -53,7 +53,7 @@ export default function Savings() {
             setEditing(null)
             setFormOpen(true)
           }}
-          className="inline-flex items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+          className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
         >
           <Plus size={16} />
           Nueva meta
@@ -91,6 +91,16 @@ export default function Savings() {
           <p className="mt-3 text-sm text-ink/40">
             Sin metas todavía. Crea la primera y empieza a ahorrar.
           </p>
+          <button
+            onClick={() => {
+              setEditing(null)
+              setFormOpen(true)
+            }}
+            className="mt-4 inline-flex min-h-12 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+          >
+            <Plus size={16} />
+            Nueva meta
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -149,14 +159,14 @@ export default function Savings() {
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => setAdjusting({ goal: g, mode: 'deposit' })}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-pine-50 px-3 py-1.5 text-xs font-medium text-pine-700 hover:bg-pine-100"
+                    className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-pine-50 px-3 py-2 text-xs font-medium text-pine-700 hover:bg-pine-100"
                   >
                     <ArrowDownToLine size={14} />
                     Depositar
                   </button>
                   <button
                     onClick={() => setAdjusting({ goal: g, mode: 'withdraw' })}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-gold-100/60 px-3 py-1.5 text-xs font-medium text-gold-700 hover:bg-gold-200/60"
+                    className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-gold-100/60 px-3 py-2 text-xs font-medium text-gold-700 hover:bg-gold-200/60"
                   >
                     <ArrowUpFromLine size={14} />
                     Retirar
@@ -167,14 +177,14 @@ export default function Savings() {
                         setEditing(g)
                         setFormOpen(true)
                       }}
-                      className="rounded-lg p-2 text-ink/40 hover:bg-cream hover:text-ink/70"
+                      className="rounded-lg p-2.5 text-ink/40 hover:bg-cream hover:text-ink/70"
                       aria-label="Editar meta"
                     >
                       <Pencil size={16} />
                     </button>
                     <button
                       onClick={() => setDeleting(g)}
-                      className="rounded-lg p-2 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
+                      className="rounded-lg p-2.5 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
                       aria-label="Eliminar meta"
                     >
                       <Trash2 size={16} />

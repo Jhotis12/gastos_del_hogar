@@ -26,7 +26,7 @@ export default function ConfirmDialog({
         <button
           onClick={onCancel}
           disabled={busy}
-          className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-ink/70 hover:bg-cream disabled:opacity-50"
+          className="inline-flex min-h-12 items-center rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-ink/70 hover:bg-cream disabled:opacity-50"
         >
           Cancelar
         </button>
@@ -34,7 +34,7 @@ export default function ConfirmDialog({
           data-testid="confirm-dialog-confirm"
           onClick={onConfirm}
           disabled={busy}
-          className="rounded-lg bg-coral-600 px-4 py-2 text-sm font-medium text-white hover:bg-coral-700 disabled:opacity-50"
+          className="inline-flex min-h-12 items-center rounded-lg bg-coral-600 px-4 py-2 text-sm font-medium text-white hover:bg-coral-700 disabled:opacity-50"
         >
           {busy ? 'Procesando…' : confirmLabel}
         </button>

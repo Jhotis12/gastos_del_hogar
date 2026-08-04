@@ -112,7 +112,7 @@ export default function Expenses() {
           <MonthPicker month={month} onChange={setMonth} />
           <button
             onClick={() => setCaptureOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-gold-500 px-4 py-2 text-sm font-medium text-[#16231e] hover:bg-gold-600"
+            className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-gold-500 px-4 py-2 text-sm font-medium text-[#16231e] hover:bg-gold-600"
           >
             <ScanLine size={16} />
             Escanear factura
@@ -122,7 +122,7 @@ export default function Expenses() {
               setEditing(null)
               setFormOpen(true)
             }}
-            className="inline-flex items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+            className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
           >
             <Plus size={16} />
             Nuevo gasto
@@ -143,7 +143,7 @@ export default function Expenses() {
         </div>
         <button
           onClick={() => setCategoryFilter('all')}
-          className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+          className={`rounded-full px-3.5 py-2 text-xs font-medium ${
             categoryFilter === 'all'
               ? 'bg-slate-900 text-white'
               : 'bg-surface text-ink/55 ring-1 ring-ink/10 hover:bg-cream'
@@ -159,7 +159,7 @@ export default function Expenses() {
               <button
                 key={cat.id}
                 onClick={() => setCategoryFilter(cat.id)}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+                className={`rounded-full px-3.5 py-2 text-xs font-medium ${
                   categoryFilter === cat.id
                     ? 'bg-slate-900 text-white'
                     : 'bg-surface text-ink/55 ring-1 ring-ink/10 hover:bg-cream'
@@ -173,7 +173,7 @@ export default function Expenses() {
         {searched.length > 0 && (
           <button
             onClick={exportCSV}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-surface px-3 py-1.5 text-xs font-medium text-ink/55 hover:bg-cream"
+            className="ml-auto inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-surface px-3 py-2 text-xs font-medium text-ink/55 hover:bg-cream"
           >
             <Download size={14} />
             Exportar CSV
@@ -192,6 +192,18 @@ export default function Expenses() {
               ? 'Sin resultados con los filtros actuales'
               : 'No hay gastos para este mes. Crea el primero.'}
           </p>
+          {!query && categoryFilter === 'all' && (
+            <button
+              onClick={() => {
+                setEditing(null)
+                setFormOpen(true)
+              }}
+              className="mt-4 inline-flex min-h-12 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+            >
+              <Plus size={16} />
+              Nuevo gasto
+            </button>
+          )}
         </div>
       ) : (
         <div className="overflow-hidden card">
@@ -225,7 +237,7 @@ export default function Expenses() {
                     {e.receipt && (
                       <button
                         onClick={() => setViewExpense(e)}
-                        className="rounded-lg p-2 text-gold-600 hover:bg-gold-100/60"
+                        className="rounded-lg p-2.5 text-gold-600 hover:bg-gold-100/60"
                         aria-label="Ver factura"
                         title="Ver factura"
                       >
@@ -237,14 +249,14 @@ export default function Expenses() {
                         setEditing(e)
                         setFormOpen(true)
                       }}
-                      className="rounded-lg p-2 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
+                      className="rounded-lg p-2.5 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
                       aria-label="Editar"
                     >
                       <Pencil size={16} />
                     </button>
                     <button
                       onClick={() => setDeleting(e)}
-                      className="rounded-lg p-2 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
+                      className="rounded-lg p-2.5 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
                       aria-label="Eliminar"
                     >
                       <Trash2 size={16} />

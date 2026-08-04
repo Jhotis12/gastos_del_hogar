@@ -14,7 +14,7 @@ import { useToast } from '@/components/ui/Toast'
 import type { RecurringExpenseWithRelations } from '@/lib/types'
 import { errorMessage } from '@/lib/utils'
 import { FREQUENCY_LABELS } from '@/lib/constants'
-import { currentMonthKey, shiftMonth } from '@/lib/dates'
+import { currentMonthKey, formatDate, shiftMonth } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
 export default function Recurring() {
@@ -101,7 +101,7 @@ export default function Recurring() {
               setEditing(null)
               setFormOpen(true)
             }}
-            className="inline-flex items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+            className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
           >
             <Plus size={16} />
             Nuevo servicio
@@ -138,7 +138,7 @@ export default function Recurring() {
           {pendingCount > 0 && (
             <button
               onClick={() => setApplyOpen(true)}
-              className="mt-3 rounded-lg bg-pine-700 px-3 py-2 text-sm font-medium text-white hover:bg-pine-800"
+              className="mt-3 inline-flex min-h-11 items-center rounded-lg bg-pine-700 px-3 py-2 text-sm font-medium text-white hover:bg-pine-800"
             >
               Aplicar al mes
             </button>
@@ -155,6 +155,16 @@ export default function Recurring() {
           <p className="text-sm text-ink/40">
             No hay servicios registrados. Agrega el primero.
           </p>
+          <button
+            onClick={() => {
+              setEditing(null)
+              setFormOpen(true)
+            }}
+            className="mt-4 inline-flex min-h-12 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+          >
+            <Plus size={16} />
+            Nuevo servicio
+          </button>
         </div>
       ) : (
         <div className="overflow-hidden card">
@@ -198,7 +208,7 @@ export default function Recurring() {
                       )}
                       <span>{r.payer?.full_name || 'Sin asignar'}</span>
                       <span>· {FREQUENCY_LABELS[r.frequency] ?? r.frequency}</span>
-                      <span>· vence {r.next_due_date}</span>
+                      <span>· vence {formatDate(r.next_due_date)}</span>
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
@@ -210,7 +220,7 @@ export default function Recurring() {
                         setEditing(r)
                         setFormOpen(true)
                       }}
-                      className="rounded-lg p-2 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
+                      className="rounded-lg p-2.5 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
                       aria-label="Editar servicio"
                     >
                       <Pencil size={16} />
@@ -218,20 +228,16 @@ export default function Recurring() {
                     <button
                       onClick={() => handleToggle(r)}
                       disabled={toggle.isPending}
-                      className={`relative h-6 w-11 rounded-full transition-colors ${
-                        r.is_active ? 'bg-pine-700' : 'bg-slate-300'
+                      className={`flex h-7 w-12 items-center rounded-full p-0.5 transition-colors ${
+                        r.is_active ? 'justify-end bg-pine-700' : 'justify-start bg-slate-300'
                       }`}
                       aria-label={r.is_active ? 'Desactivar' : 'Activar'}
                     >
-                      <span
-                        className={`absolute top-0.5 h-5 w-5 rounded-full bg-surface shadow transition-all ${
-                          r.is_active ? 'left-[22px]' : 'left-0.5'
-                        }`}
-                      />
+                      <span className="h-6 w-6 rounded-full bg-surface shadow" />
                     </button>
                     <button
                       onClick={() => setDeleting(r)}
-                      className="rounded-lg p-2 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
+                      className="rounded-lg p-2.5 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
                       aria-label="Eliminar"
                     >
                       <Trash2 size={16} />

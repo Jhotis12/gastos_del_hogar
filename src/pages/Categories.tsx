@@ -74,7 +74,7 @@ export default function Categories() {
         </div>
         <button
           onClick={() => setFormOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+          className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
         >
           <Plus size={16} />
           Nueva categoría
@@ -88,6 +88,13 @@ export default function Categories() {
       ) : !categories || categories.length === 0 ? (
         <div className="card border-2 border-dashed border-ink/10 py-16 text-center">
           <p className="text-sm text-ink/40">No hay categorías todavía</p>
+          <button
+            onClick={() => setFormOpen(true)}
+            className="mt-4 inline-flex min-h-12 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+          >
+            <Plus size={16} />
+            Nueva categoría
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -110,7 +117,7 @@ export default function Categories() {
                     <p className="truncate text-sm font-medium text-ink">{c.name}</p>
                     <button
                       onClick={() => openBudget(c)}
-                      className="mt-0.5 flex items-center gap-1 text-xs text-ink/40 hover:text-pine-600"
+                      className="mt-0.5 inline-flex min-h-8 items-center gap-1 text-xs text-ink/40 hover:text-pine-600"
                       aria-label="Editar presupuesto"
                     >
                       <Wallet size={12} />
@@ -122,7 +129,7 @@ export default function Categories() {
                 </div>
                 <button
                   onClick={() => setDeleting(c.id)}
-                  className="rounded-lg p-2 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
+                  className="rounded-lg p-2.5 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
                   aria-label="Eliminar categoría"
                 >
                   <Trash2 size={16} />
@@ -161,7 +168,7 @@ export default function Categories() {
                     key={key}
                     onClick={() => setIcon(key)}
                     className={cn(
-                      'flex h-10 items-center justify-center rounded-lg border',
+                      'flex h-11 items-center justify-center rounded-lg border',
                       icon === key
                         ? 'border-pine-700 bg-pine-50 text-pine-600'
                         : 'border-slate-200 text-ink/50 hover:bg-cream',
@@ -183,7 +190,7 @@ export default function Categories() {
                   key={c}
                   onClick={() => setColor(c)}
                   className={cn(
-                    'h-8 w-8 rounded-full ring-2 ring-offset-2',
+                    'h-10 w-10 rounded-full ring-2 ring-offset-2',
                     color === c ? 'ring-indigo-600' : 'ring-transparent',
                   )}
                   style={{ backgroundColor: c }}
@@ -197,14 +204,14 @@ export default function Categories() {
             <button
               type="button"
               onClick={() => setFormOpen(false)}
-              className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-ink/70 hover:bg-cream"
+              className="inline-flex min-h-11 items-center rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-ink/70 hover:bg-cream"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={add.isPending}
-              className="rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800 disabled:opacity-50"
+              className="inline-flex min-h-11 items-center rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800 disabled:opacity-50"
             >
               {add.isPending ? 'Guardando…' : 'Crear'}
             </button>

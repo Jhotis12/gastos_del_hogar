@@ -25,17 +25,17 @@ export default function OfflineBanner() {
       aria-label={label}
       title={label}
       onClick={() => void syncNow()}
-      className="fixed bottom-20 right-3 z-50 flex h-8 w-8 items-center justify-center rounded-full bg-surface shadow-sm ring-1 ring-red-200 transition-transform active:scale-95 lg:bottom-6"
+      className="fixed bottom-20 right-3 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-surface shadow-md ring-1 ring-red-200 transition-transform active:scale-95 lg:bottom-6"
     >
       {syncing ? (
-        <RefreshCw size={15} className="animate-spin text-red-500" />
+        <RefreshCw size={18} className="animate-spin text-red-500" />
       ) : (
-        <WifiOff size={15} className="text-red-500" />
+        <WifiOff size={18} className="text-red-500" />
       )}
       {!syncing && pending > 0 && (
         <span
           className={cn(
-            'absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold leading-none text-white',
+            'absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[11px] font-semibold leading-none text-white',
             isOnline ? 'bg-pine-600' : 'bg-red-500',
           )}
         >
