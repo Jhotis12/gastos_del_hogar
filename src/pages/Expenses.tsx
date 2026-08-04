@@ -26,6 +26,7 @@ export default function Expenses() {
   const [captureOpen, setCaptureOpen] = useState(false)
   const [resultReceipt, setResultReceipt] = useState<Receipt | null>(null)
   const [viewExpense, setViewExpense] = useState<ExpenseWithRelations | null>(null)
+  const [fabOpen, setFabOpen] = useState(false)
   const toast = useToast()
 
   const { data: expenses, isLoading, error, refetch } = useExpenses(month)
@@ -112,7 +113,7 @@ export default function Expenses() {
           <MonthPicker month={month} onChange={setMonth} />
           <button
             onClick={() => setCaptureOpen(true)}
-            className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-gold-500 px-4 py-2 text-sm font-medium text-[#16231e] hover:bg-gold-600"
+            className="hidden min-h-12 items-center gap-2 rounded-lg bg-gold-500 px-4 py-2 text-sm font-medium text-[#16231e] hover:bg-gold-600 lg:inline-flex"
           >
             <ScanLine size={16} />
             Escanear factura
@@ -122,7 +123,7 @@ export default function Expenses() {
               setEditing(null)
               setFormOpen(true)
             }}
-            className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+            className="hidden min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800 lg:inline-flex"
           >
             <Plus size={16} />
             Nuevo gasto
@@ -308,6 +309,49 @@ export default function Expenses() {
         onCancel={() => setDeleting(null)}
         busy={deleteExpense.isPending}
       />
+
+      {/* FAB + action-sheet (móvil): nuevo gasto o escanear factura */}
+      <button
+        onClick={() => setFabOpen(true)}
+        aria-label="Agregar gasto"
+        className="fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-pine-700 text-white shadow-lg shadow-pine-900/30 transition-transform active:scale-95 lg:hidden"
+      >
+        <Plus size={26} />
+      </button>
+
+      {fabOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setFabOpen(false)} />
+          <div className="animate-fade-up absolute inset-x-0 bottom-0 rounded-t-3xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl">
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-ink/10" />
+            <button
+              onClick={() => {
+                setFabOpen(false)
+                setEditing(null)
+                setFormOpen(true)
+              }}
+              className="flex min-h-14 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-ink/80 hover:bg-cream"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-pine-50 text-pine-600">
+                <Plus size={18} />
+              </span>
+              Nuevo gasto
+            </button>
+            <button
+              onClick={() => {
+                setFabOpen(false)
+                setCaptureOpen(true)
+              }}
+              className="flex min-h-14 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-ink/80 hover:bg-cream"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold-100 text-gold-600">
+                <ScanLine size={18} />
+              </span>
+              Escanear factura
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

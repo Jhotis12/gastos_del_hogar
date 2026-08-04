@@ -134,7 +134,7 @@ export default function Dashboard() {
             onClick={() => setQuickOpen(true)}
             aria-label="Agregar gasto rápido"
             title="Agregar gasto rápido"
-            className="flex h-11 w-11 items-center justify-center rounded-lg bg-pine-700 text-white shadow-md shadow-pine-900/20 transition-transform hover:bg-pine-800 active:scale-95"
+            className="hidden h-11 w-11 items-center justify-center rounded-lg bg-pine-700 text-white shadow-md shadow-pine-900/20 transition-transform hover:bg-pine-800 active:scale-95 lg:flex"
           >
             <Plus size={20} />
           </button>
@@ -480,6 +480,15 @@ export default function Dashboard() {
         pending={applyable}
         onClose={() => setApplyOpen(false)}
       />
+
+      {/* FAB (móvil): la acción más frecuente al alcance del pulgar */}
+      <button
+        onClick={() => setQuickOpen(true)}
+        aria-label="Agregar gasto rápido"
+        className="fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-pine-700 text-white shadow-lg shadow-pine-900/30 transition-transform active:scale-95 lg:hidden"
+      >
+        <Plus size={26} />
+      </button>
     </div>
   )
 }
