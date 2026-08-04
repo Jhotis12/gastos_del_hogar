@@ -412,13 +412,15 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
 | `node tests/e2e-flow.mjs` | Suite e2e (requiere dev server arriba) |
 | `node tests/check-mobile.mjs` | Verificación mobile 375px: 9 rutas + modales sin overflow |
 | `SUPABASE_SERVICE_ROLE=… bash tests/reset-sandbox.sh` | Reinicia usuario sandbox (proyecto del `.env`) |
-| `SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE=<key local> bash tests/reset-sandbox.sh` | Reinicia el sandbox en el entorno LOCAL (`supabase start`) |
+| `SUPABASE_URL=http://127.0.0.1:54331 SUPABASE_SERVICE_ROLE=<key local> bash tests/reset-sandbox.sh` | Reinicia el sandbox en el entorno LOCAL (`supabase start`) |
 | `SUPABASE_ACCESS_TOKEN=… supabase functions deploy analyze-receipt` | Deploy Edge Function |
 | `SUPABASE_ACCESS_TOKEN=… supabase secrets set GEMINI_API_KEY=…` | Secret de Gemini |
 
 > **Entorno local (Supabase CLI + Docker):** `supabase start` levanta la pila
-> en `127.0.0.1:54321` (API), `54322` (Postgres), `54323` (Studio) y `54324`
-> (Mailpit). `.env.local` (gitignored por `*.local`) apunta el dev server al
+> en `127.0.0.1:54331` (API), `54332` (Postgres), `54333` (Studio) y `54334`
+> (Mailpit). Los puertos difieren de los por defecto porque el proyecto usa
+> una serie propia (54330-54339) para no chocar con otros proyectos locales.
+> `.env.local` (gitignored por `*.local`) apunta el dev server al
 > local; Vercel usa sus variables del dashboard, por lo que el deploy de
 > producción nunca ve el `.env.local`. La anon key del local es un JWT firmado
 > con el secret por defecto de `config.toml` (sin `jwt_secret` definido, la

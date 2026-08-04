@@ -2,7 +2,7 @@
 # Reinicia el usuario sandbox para que las pruebas e2e partan de cero.
 # Por defecto apunta al proyecto del .env (producción). Para el entorno
 # LOCAL (supabase start) sobreescribe: 
-#   SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE=<key local> bash tests/reset-sandbox.sh
+#   SUPABASE_URL=http://127.0.0.1:54331 SUPABASE_SERVICE_ROLE=<key local> bash tests/reset-sandbox.sh
 # La service role local se obtiene con `supabase status` (o se deriva del
 # secret por defecto del CLI cuando config.toml no define jwt_secret).
 set -euo pipefail

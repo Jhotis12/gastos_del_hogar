@@ -61,8 +61,8 @@ supabase start
 ```
 
 La primera vez descarga las imágenes de Docker (varios minutos). Al terminar,
-la API queda en `http://127.0.0.1:54321`, la DB en `54322`, el Studio
-(panel web) en `http://127.0.0.1:54323`. Verificar con `supabase status`.
+la API queda en `http://127.0.0.1:54331`, la DB en `54332`, el Studio
+(panel web) en `http://127.0.0.1:54333`. Verificar con `supabase status`.
 
 Aplicar el esquema (tablas, RLS, RPCs) desde las migraciones del repo:
 
@@ -75,7 +75,7 @@ supabase migration up --local
 > `supabase db reset` es **destructivo**: borra todos los datos locales.
 
 Crear el bucket de almacenamiento para las facturas (una sola vez):
-en el Studio (`http://127.0.0.1:54323` → Storage → New bucket) crear el
+en el Studio (`http://127.0.0.1:54333` → Storage → New bucket) crear el
 bucket **`receipts`** (privado), o ejecutar:
 
 ```sql
@@ -90,12 +90,12 @@ ya están en `.gitignore`).
 
 | Variable | Local (`.env.local`) | Producción (`.env`) |
 |---|---|---|
-| `VITE_SUPABASE_URL` | `http://127.0.0.1:54321` | `https://<ref-del-proyecto>.supabase.co` |
+| `VITE_SUPABASE_URL` | `http://127.0.0.1:54331` | `https://<ref-del-proyecto>.supabase.co` |
 | `VITE_SUPABASE_ANON_KEY` | Key anon de `supabase status` | Key anon del Dashboard de Supabase (Settings → API) |
 
 ```bash
 # .env.local  (desarrollo contra Supabase local)
-VITE_SUPABASE_URL=http://127.0.0.1:54321
+VITE_SUPABASE_URL=http://127.0.0.1:54331
 VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
 
 # .env  (producción — reemplazar con las keys reales del proyecto)
@@ -210,7 +210,7 @@ node tests/e2e-flow.mjs       # corre los 43 pasos y muestra el resumen
 
 - **`docker` deniega permisos** → agregar el usuario al grupo `docker` y
   volver a iniciar sesión.
-- **Puertos ocupados (54321/54322/54323)** → cambiar los puertos en
+- **Puertos ocupados (54331/54332/54333)** → cambiar los puertos en
   `supabase/config.toml` y ejecutar `supabase start` de nuevo.
 - **La app muestra datos de un entorno que no esperas** → revisar qué URL usa
   el entorno activo: `grep VITE_SUPABASE_URL .env .env.local`.
@@ -218,4 +218,4 @@ node tests/e2e-flow.mjs       # corre los 43 pasos y muestra el resumen
   (las migraciones nuevas no se aplican solas).
 - **UI con caché vieja de Vite** → `rm -rf node_modules/.vite` y reiniciar
   `pnpm dev`.
-- **No puedo conectarme a la DB local** → `docker exec -it supabase_db_App-gastos psql -U postgres -d postgres` (o usar el SQL Editor del Studio en `http://127.0.0.1:54323`).
+- **No puedo conectarme a la DB local** → `docker exec -it supabase_db_App-gastos psql -U postgres -d postgres` (o usar el SQL Editor del Studio en `http://127.0.0.1:54333`).

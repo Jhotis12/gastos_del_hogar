@@ -431,7 +431,7 @@ await step('escanear factura: dos opciones y análisis', async () => {
   const urls = await page.evaluate(() =>
     performance.getEntriesByType('resource').map((e) => e.name),
   )
-  const isLocalBackend = urls.some((u) => u.includes('127.0.0.1:54321'))
+  const isLocalBackend = urls.some((u) => u.includes('127.0.0.1:54331'))
   await goTo('Gastos', '/gastos')
   await waitForText('Escanear factura')
   await page.click('text=Escanear factura')
