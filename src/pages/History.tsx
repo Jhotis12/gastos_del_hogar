@@ -64,7 +64,57 @@ export default function History() {
             Aún no hay movimientos registrados
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="divide-y divide-slate-100 md:hidden">
+            {rows.map((r) => {
+              const ratio = r.income > 0 ? r.surplus / r.income : 0
+              return (
+                <div key={r.month} className="px-5 py-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-ink">
+                      {monthLabel(r.month)}
+                    </p>
+                    <p
+                      className={cn(
+                        'text-sm font-bold',
+                        r.surplus >= 0 ? 'text-pine-600' : 'text-coral-600',
+                      )}
+                    >
+                      {r.surplus >= 0 ? '+' : '−'}
+                      {formatCurrency(Math.abs(r.surplus))}
+                    </p>
+                  </div>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <div>
+                      <p className="text-xs text-ink/40">Ingresos</p>
+                      <p className="text-sm font-medium text-ink/70">
+                        {formatCurrency(r.income)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-ink/40">Gastos</p>
+                      <p className="text-sm font-medium text-ink/70">
+                        {formatCurrency(r.expenses)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-ink/40">Ahorro</p>
+                      <p className="text-sm font-medium text-ink/70">
+                        {r.income > 0 ? `${Math.round(ratio * 100)}%` : '—'}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs text-ink/50">
+                    Acumulado:{' '}
+                    <span className="font-medium text-ink/70">
+                      {formatCurrency(r.accumulated)}
+                    </span>
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-ink/40">
