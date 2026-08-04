@@ -236,7 +236,8 @@ await step('historial completo por mes', async () => {
   await waitForText('Sobrantes por mes: cuánto quedó libre de cada mes')
   await waitForText('Ahorro acumulado')
   await waitForText('Totales')
-  await waitForText('92%')
+  // La tabla de desktop es la fuente visible (las cards móviles están ocultas en >768px)
+  await page.waitForSelector('td:has-text("92%")', { timeout: 6000 })
   await goTo('Dashboard', '/')
 })
 
