@@ -538,6 +538,8 @@ await step('cambiar nombre en perfil', async () => {
 
 // Perfil: eliminar hogar (cierra el flujo — va a /setup)
 await step('eliminar hogar desde perfil', async () => {
+  // El perfil es un acordeón: expandir la sección de peligro
+  await page.click('button[aria-controls="peligro-panel"]')
   await page.click('text=Eliminar hogar')
   await page.click('[data-testid="confirm-dialog-confirm"]')
   await page.waitForURL(/\/setup/, { timeout: 20000 })

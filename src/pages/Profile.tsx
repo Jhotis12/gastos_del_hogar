@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from 'react'
 import {
   AlertTriangle,
   Camera,
+  ChevronDown,
   Check,
   Copy,
   Home,
@@ -38,38 +39,62 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
-// Tarjeta de sección con cabecera propia (icono + título + descripción):
-// separa visualmente información y acciones en Perfil.
-function Section({
+// Sección tipo acordeón: el encabezado es un botón que despliega/contenido
+// colapsado con animación suave (grid-rows) y fuera del tabulador al cerrar.
+function AccordionSection({
+  id,
   icon,
   title,
   description,
-  delay,
+  open,
+  onToggle,
   className,
   children,
 }: {
+  id: string
   icon: ReactNode
   title: string
   description?: string
-  delay?: number
+  open: boolean
+  onToggle: () => void
   className?: string
   children: ReactNode
 }) {
   return (
-    <div
-      className={cn('card animate-fade-up p-6', className)}
-      style={delay ? { animationDelay: `${delay}ms` } : undefined}
-    >
-      <div className="mb-4 flex items-center gap-3">
+    <div className={cn('card animate-fade-up overflow-hidden', className)}>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-controls={`${id}-panel`}
+        className="flex w-full items-center gap-3 p-5 text-left transition-colors hover:bg-cream/60"
+      >
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-pine-50 text-pine-600">
           {icon}
         </span>
-        <div>
-          <h2 className="font-display text-sm font-semibold text-ink">{title}</h2>
-          {description && <p className="text-xs text-ink/40">{description}</p>}
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-sm font-semibold text-ink">{title}</span>
+          {description && <span className="block text-xs text-ink/40">{description}</span>}
+        </span>
+        <ChevronDown
+          size={18}
+          className={cn(
+            'shrink-0 text-ink/40 transition-transform duration-300',
+            open && 'rotate-180',
+          )}
+        />
+      </button>
+      <div
+        id={`${id}-panel`}
+        className={cn(
+          'grid transition-[grid-template-rows] duration-300 ease-out',
+          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+        )}
+      >
+        <div inert={!open} className="min-h-0 overflow-hidden">
+          <div className="px-5 pb-5 pt-1">{children}</div>
         </div>
       </div>
-      {children}
     </div>
   )
 }
@@ -111,6 +136,9 @@ export default function Profile() {
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [checkingUpdate, setCheckingUpdate] = useState(false)
+  // Acordeón: una sola sección abierta a la vez
+  const [openSection, setOpenSection] = useState<string>('cuenta')
+  const toggleSection = (id: string) => setOpenSection((s) => (s === id ? '' : id))
   const updateAvatar = useUpdateAvatar()
   const removeAvatar = useRemoveAvatar()
   const avatarInputRef = useRef<HTMLInputElement>(null)
@@ -219,11 +247,13 @@ export default function Profile() {
       </div>
 
       {/* Cuenta */}
-      <Section
+      <AccordionSection
+        id="cuenta"
         icon={<UserRound size={18} />}
         title="Tu cuenta"
         description="Foto, nombre y correo"
-        delay={60}
+        open={openSection === 'cuenta'}
+        onToggle={() => toggleSection('cuenta')}
       >
         <div className="mb-5 flex items-center gap-4 sm:gap-5">
           <div className="relative shrink-0">
@@ -289,14 +319,16 @@ export default function Profile() {
             {updateProfile.isPending ? 'Guardando…' : 'Guardar cambios'}
           </button>
         </form>
-      </Section>
+      </AccordionSection>
 
       {/* Apariencia */}
-      <Section
+      <AccordionSection
+        id="apariencia"
         icon={<Palette size={18} />}
         title="Apariencia"
         description="Personaliza cómo se ve la app"
-        delay={120}
+        open={openSection === 'apariencia'}
+        onToggle={() => toggleSection('apariencia')}
       >
         <SettingRow
           label="Reducir animaciones"
@@ -308,14 +340,16 @@ export default function Profile() {
             aria-label="Reducir animaciones"
           />
         </SettingRow>
-      </Section>
+      </AccordionSection>
 
       {/* Hogar */}
-      <Section
+      <AccordionSection
+        id="hogar"
         icon={<Home size={18} />}
         title="Tu hogar"
         description="Información del hogar e invitaciones"
-        delay={180}
+        open={openSection === 'hogar'}
+        onToggle={() => toggleSection('hogar')}
       >
         {household ? (
           <div className="space-y-4">
@@ -352,14 +386,16 @@ export default function Profile() {
         ) : (
           <p className="text-sm text-ink/50">Sin hogar — ve a /setup para crear o unirte.</p>
         )}
-      </Section>
+      </AccordionSection>
 
       {/* Información */}
-      <Section
+      <AccordionSection
+        id="info"
         icon={<Info size={18} />}
         title="Información"
         description="Versión y actualizaciones"
-        delay={240}
+        open={openSection === 'info'}
+        onToggle={() => toggleSection('info')}
       >
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-cream px-4 py-3">
           <div>
@@ -378,14 +414,16 @@ export default function Profile() {
         <p className="mt-3 text-xs text-ink/40">
           Cuando haya una versión nueva verás un aviso con el botón Actualizar.
         </p>
-      </Section>
+      </AccordionSection>
 
       {/* Zona de peligro */}
-      <Section
+      <AccordionSection
+        id="peligro"
         icon={<AlertTriangle size={18} />}
         title="Zona de peligro"
         description="Acciones que no se pueden deshacer"
-        delay={300}
+        open={openSection === 'peligro'}
+        onToggle={() => toggleSection('peligro')}
         className="border-coral-200"
       >
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -413,7 +451,7 @@ export default function Profile() {
             Cerrar sesión
           </button>
         </div>
-      </Section>
+      </AccordionSection>
 
       <div className="flex items-center justify-center gap-2 opacity-60">
         <AppLogo size={28} />
