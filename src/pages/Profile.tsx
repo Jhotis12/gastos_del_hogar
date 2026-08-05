@@ -16,7 +16,6 @@ import {
   X,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { useTheme } from '@/hooks/useTheme'
 import { useSettings } from '@/hooks/useSettings'
 import { useHousehold } from '@/hooks/useHousehold'
 import { useMembers } from '@/hooks/useMembers'
@@ -99,7 +98,6 @@ function SettingRow({
 export default function Profile() {
   usePageTitle('Perfil')
   const { user, profile, signOut } = useAuth()
-  const { theme, toggle: toggleTheme } = useTheme()
   const { reduceAnimations, toggleReduceAnimations } = useSettings()
   const { data: household } = useHousehold()
   const { data: members } = useMembers()
@@ -300,28 +298,16 @@ export default function Profile() {
         description="Personaliza cómo se ve la app"
         delay={120}
       >
-        <div className="divide-y divide-slate-100">
-          <SettingRow
-            label="Modo oscuro"
-            description="Fondo oscuro para cuidar la vista"
-          >
-            <Toggle
-              checked={theme === 'dark'}
-              onChange={toggleTheme}
-              aria-label="Alternar modo oscuro"
-            />
-          </SettingRow>
-          <SettingRow
-            label="Reducir animaciones"
-            description="Desactiva animaciones si tu teléfono va lento"
-          >
-            <Toggle
-              checked={reduceAnimations}
-              onChange={toggleReduceAnimations}
-              aria-label="Reducir animaciones"
-            />
-          </SettingRow>
-        </div>
+        <SettingRow
+          label="Reducir animaciones"
+          description="Desactiva animaciones si tu teléfono va lento"
+        >
+          <Toggle
+            checked={reduceAnimations}
+            onChange={toggleReduceAnimations}
+            aria-label="Reducir animaciones"
+          />
+        </SettingRow>
       </Section>
 
       {/* Hogar */}
