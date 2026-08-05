@@ -12,7 +12,7 @@ import type { Income, IncomeWithRelations } from '@/lib/types'
 
 const INCOME_SELECT = `
   *,
-  member:profiles(id, full_name)
+  member:profiles(id, full_name, avatar_path)
 `
 
 type IncomeInput = {

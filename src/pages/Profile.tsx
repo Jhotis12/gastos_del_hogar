@@ -1,13 +1,20 @@
-import { useState } from 'react'
-import { Copy, Check, Home, LogOut, RefreshCw, Settings, Trash2, UserRound } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { Camera, Copy, Check, Home, Loader2, LogOut, RefreshCw, Settings, Trash2, X } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useHousehold } from '@/hooks/useHousehold'
 import { useMembers } from '@/hooks/useMembers'
-import { useDeleteHousehold, useLeaveHousehold, useUpdateProfile } from '@/hooks/useMembers'
+import {
+  useDeleteHousehold,
+  useLeaveHousehold,
+  useRemoveAvatar,
+  useUpdateAvatar,
+  useUpdateProfile,
+} from '@/hooks/useMembers'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 import { useToast } from '@/components/ui/Toast'
 import AppLogo from '@/components/ui/AppLogo'
+import UserAvatar from '@/components/ui/UserAvatar'
 import { errorMessage } from '@/lib/utils'
 
 const inputClass =
@@ -30,6 +37,38 @@ export default function Profile() {
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [checkingUpdate, setCheckingUpdate] = useState(false)
+  const updateAvatar = useUpdateAvatar()
+  const removeAvatar = useRemoveAvatar()
+  const avatarInputRef = useRef<HTMLInputElement>(null)
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      toast.error('Selecciona una imagen (JPG, PNG o WebP)')
+      return
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('La imagen pesa más de 2 MB')
+      return
+    }
+    try {
+      await updateAvatar.mutateAsync({ file })
+      toast.success('Foto de perfil actualizada')
+    } catch (err) {
+      toast.error(errorMessage(err))
+    }
+  }
+
+  const handleRemoveAvatar = async () => {
+    try {
+      await removeAvatar.mutateAsync()
+      toast.success('Foto de perfil eliminada')
+    } catch (err) {
+      toast.error(errorMessage(err))
+    }
+  }
 
   // Buscar actualizaciones manualmente: re-descarga el service worker; si
   // hay un build nuevo, UpdatePrompt muestra el aviso con el botón Actualizar.
@@ -107,15 +146,46 @@ export default function Profile() {
       {/* Tu cuenta */}
       <div className="card animate-fade-up p-6" style={{ animationDelay: '80ms' }}>
         <h2 className="mb-4 font-display text-sm font-semibold text-ink">Tu cuenta</h2>
-        <div className="mb-5 flex items-center gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-pine-50 text-pine-600">
-            <UserRound size={26} />
+        <div className="mb-5 flex items-center gap-4 sm:gap-5">
+          <div className="relative shrink-0">
+            <UserAvatar name={profile.full_name} avatarPath={profile.avatar_path} size="xl" />
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={updateAvatar.isPending}
+              aria-label="Cambiar foto de perfil"
+              className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full bg-pine-700 text-white shadow-md ring-2 ring-surface transition-transform hover:bg-pine-800 active:scale-95 disabled:opacity-60"
+            >
+              {updateAvatar.isPending ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Camera size={16} />
+              )}
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="sr-only"
+              onChange={handleAvatarChange}
+            />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-base font-semibold text-ink">
+            <p className="truncate text-lg font-semibold text-ink">
               {profile.full_name || 'Sin nombre'}
             </p>
             <p className="truncate text-sm text-ink/50">{user?.email}</p>
+            {profile.avatar_path && (
+              <button
+                type="button"
+                onClick={handleRemoveAvatar}
+                disabled={removeAvatar.isPending}
+                className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-ink/45 hover:text-coral-600 disabled:opacity-50"
+              >
+                <X size={12} />
+                Quitar foto
+              </button>
+            )}
           </div>
         </div>
         <form onSubmit={saveName} className="flex flex-col gap-3 sm:flex-row sm:items-end">

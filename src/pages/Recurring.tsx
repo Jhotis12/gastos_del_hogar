@@ -6,6 +6,7 @@ import { useSalaries } from '@/hooks/useMembers'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import EmptyState from '@/components/ui/EmptyState'
 import CategoryBadge from '@/components/ui/CategoryBadge'
+import UserAvatar from '@/components/ui/UserAvatar'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 import QueryError from '@/components/ui/QueryError'
 import MonthPicker from '@/components/ui/MonthPicker'
@@ -214,7 +215,14 @@ export default function Recurring() {
                       {r.category && (
                         <CategoryBadge name={r.category.name} color={r.category.color} />
                       )}
-                      <span>{r.payer?.full_name || 'Sin asignar'}</span>
+                      {r.payer ? (
+                        <span className="flex items-center gap-1.5">
+                          <UserAvatar name={r.payer.full_name} avatarPath={r.payer.avatar_path} size="xs" />
+                          {r.payer.full_name}
+                        </span>
+                      ) : (
+                        <span>Sin asignar</span>
+                      )}
                       <span>· {FREQUENCY_LABELS[r.frequency] ?? r.frequency}</span>
                       <span>· vence {formatDate(r.next_due_date)}</span>
                     </div>

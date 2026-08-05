@@ -9,6 +9,7 @@ export interface Profile {
   id: string
   household_id: string | null
   full_name: string
+  avatar_path?: string | null
   payday?: number | null
   created_at: string
 }
@@ -80,7 +81,7 @@ export interface Receipt {
 
 export interface ExpenseWithRelations extends Expense {
   category: Pick<Category, 'id' | 'name' | 'color' | 'icon'> | null
-  payer: Pick<Profile, 'id' | 'full_name'> | null
+  payer: Pick<Profile, 'id' | 'full_name' | 'avatar_path'> | null
   recurring: Pick<RecurringExpense, 'id' | 'description'> | null
   receipt: Receipt | null
 }
@@ -98,7 +99,7 @@ export interface Income {
 }
 
 export interface IncomeWithRelations extends Income {
-  member: Pick<Profile, 'id' | 'full_name'> | null
+  member: Pick<Profile, 'id' | 'full_name' | 'avatar_path'> | null
 }
 
 export type Frequency = 'monthly' | 'bimonthly' | 'quarterly' | 'yearly'
@@ -118,7 +119,7 @@ export interface RecurringExpense {
 
 export interface RecurringExpenseWithRelations extends RecurringExpense {
   category: Pick<Category, 'id' | 'name' | 'color' | 'icon'> | null
-  payer: Pick<Profile, 'id' | 'full_name'> | null
+  payer: Pick<Profile, 'id' | 'full_name' | 'avatar_path'> | null
 }
 
 export interface SavingsGoal {

@@ -15,7 +15,7 @@ import { daysInMonth, shiftMonth, todayISO } from '@/lib/dates'
 const EXPENSE_SELECT = `
   *,
   category:categories(id, name, color, icon),
-  payer:profiles(id, full_name),
+  payer:profiles(id, full_name, avatar_path),
   recurring:recurring_expenses(id, description),
   receipt:receipts(*)
 `

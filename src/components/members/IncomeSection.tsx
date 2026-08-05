@@ -3,6 +3,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import Skeleton from '@/components/ui/Skeleton'
 import DateInput from '@/components/ui/DateInput'
+import UserAvatar from '@/components/ui/UserAvatar'
 import MoneyInput from '@/components/ui/MoneyInput'
 import SelectInput from '@/components/ui/SelectInput'
 import { useToast } from '@/components/ui/Toast'
@@ -139,8 +140,17 @@ export default function IncomeSection({ month, members }: IncomeSectionProps) {
                 <p className="truncate text-sm font-medium text-ink">
                   {i.description || 'Sin descripción'}
                 </p>
-                <p className="mt-0.5 text-xs text-ink/40">
-                  {memberName(i.member_id) && `${memberName(i.member_id)} · `}
+                <p className="mt-0.5 flex items-center gap-1.5 text-xs text-ink/40">
+                  {memberName(i.member_id) && (
+                    <>
+                      <UserAvatar
+                        name={members?.find((m) => m.id === i.member_id)?.full_name}
+                        avatarPath={members?.find((m) => m.id === i.member_id)?.avatar_path}
+                        size="xs"
+                      />
+                      {memberName(i.member_id)} ·
+                    </>
+                  )}
                   {formatDate(i.income_date)}
                 </p>
               </div>

@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils'
 import AppLogo from '@/components/ui/AppLogo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import InstallAppButton from '@/components/ui/InstallAppButton'
+import UserAvatar from '@/components/ui/UserAvatar'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -118,11 +119,18 @@ export default function Layout() {
           </nav>
 
           <div className="border-t border-slate-200/70 p-4">
-            <div className="mb-3 flex items-center gap-2 px-3">
-              <span className="text-xs text-ink/40">Miembro de:</span>
-              <span className="truncate text-xs font-medium text-ink/60">
-                {profile?.full_name}
-              </span>
+            <div className="mb-4 flex items-center gap-3 px-3">
+              <UserAvatar
+                name={profile?.full_name}
+                avatarPath={profile?.avatar_path}
+                size="md"
+              />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-ink">
+                  {profile?.full_name || 'Sin nombre'}
+                </p>
+                <p className="text-xs text-ink/40">Miembro de este hogar</p>
+              </div>
             </div>
             <ThemeToggle />
             <button
@@ -143,11 +151,16 @@ export default function Layout() {
             <AppLogo size={36} />
             <p className="font-display text-sm font-semibold text-ink">Gastos del Hogar</p>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <ThemeToggle compact />
-            <span className="max-w-[6rem] truncate text-xs text-ink/50">
+            <span className="hidden max-w-[6rem] truncate text-xs text-ink/50 min-[400px]:inline">
               {profile?.full_name}
             </span>
+            <UserAvatar
+              name={profile?.full_name}
+              avatarPath={profile?.avatar_path}
+              size="sm"
+            />
           </div>
         </header>
 

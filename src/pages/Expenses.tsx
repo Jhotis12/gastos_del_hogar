@@ -5,6 +5,7 @@ import ExpenseForm from '@/components/expenses/ExpenseForm'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import EmptyState from '@/components/ui/EmptyState'
 import CategoryBadge from '@/components/ui/CategoryBadge'
+import UserAvatar from '@/components/ui/UserAvatar'
 import MonthPicker from '@/components/ui/MonthPicker'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 import QueryError from '@/components/ui/QueryError'
@@ -239,7 +240,14 @@ export default function Expenses() {
                     {e.category && (
                       <CategoryBadge name={e.category.name} color={e.category.color} />
                     )}
-                    <span>{e.payer?.full_name || 'Sin asignar'}</span>
+                    {e.payer ? (
+                      <span className="flex items-center gap-1.5">
+                        <UserAvatar name={e.payer.full_name} avatarPath={e.payer.avatar_path} size="xs" />
+                        {e.payer.full_name}
+                      </span>
+                    ) : (
+                      <span>Sin asignar</span>
+                    )}
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-4">

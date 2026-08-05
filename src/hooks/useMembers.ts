@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { effectiveSalariesForMonth } from '@/lib/salaries'
+import { resizeAvatar } from '@/lib/images'
 import { errorMessage } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
 import { runWithOfflineFallback, invalidateIfOnline } from '@/lib/offline/offlineSafe'
@@ -221,6 +222,67 @@ export function useUpdateProfile() {
     },
     onSuccess: () => {
       void refreshProfile()
+      queryClient.invalidateQueries({ queryKey: ['members'] })
+    },
+  })
+}
+
+// Sube y asigna la foto de perfil: recorte cuadrado 256px, archivo aleatorio
+// {userId}/uuid.jpg en el bucket público 'avatars', y limpia la anterior.
+export function useUpdateAvatar() {
+  const { user, profile, refreshProfile } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ file }: { file: File }) => {
+      if (!user) throw new Error('No autenticado')
+      const blob = await resizeAvatar(file)
+      const path = `${user.id}/${crypto.randomUUID()}.jpg`
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, blob, { contentType: 'image/jpeg', upsert: true })
+      if (uploadError) throw uploadError
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_path: path })
+        .eq('id', user.id)
+      if (error) {
+        await supabase.storage.from('avatars').remove([path]).catch(() => {})
+        throw error
+      }
+      return path
+    },
+    onSuccess: async (path) => {
+      const previous = profile?.avatar_path
+      if (previous && previous !== path) {
+        await supabase.storage.from('avatars').remove([previous]).catch(() => {})
+      }
+      await refreshProfile()
+      queryClient.invalidateQueries({ queryKey: ['members'] })
+    },
+  })
+}
+
+// Quita la foto de perfil (columna a null + borra el archivo).
+export function useRemoveAvatar() {
+  const { user, profile, refreshProfile } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error('No autenticado')
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_path: null })
+        .eq('id', user.id)
+      if (error) throw error
+    },
+    onSuccess: async () => {
+      const previous = profile?.avatar_path
+      if (previous) {
+        await supabase.storage.from('avatars').remove([previous]).catch(() => {})
+      }
+      await refreshProfile()
       queryClient.invalidateQueries({ queryKey: ['members'] })
     },
   })

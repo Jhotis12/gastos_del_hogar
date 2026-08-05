@@ -7,7 +7,7 @@ import { shiftMonth } from '@/lib/dates'
 const RECURRING_SELECT = `
   *,
   category:categories(id, name, color, icon),
-  payer:profiles(id, full_name)
+  payer:profiles(id, full_name, avatar_path)
 `
 
 type RecurringInput = {

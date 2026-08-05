@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Copy, Check, Users, User, Pencil, Trash2 } from 'lucide-react'
+import { Copy, Check, Users, Pencil, Trash2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import {
   useDeleteSalary,
@@ -13,6 +13,7 @@ import { useExpenses } from '@/hooks/useExpenses'
 import { useIncomes } from '@/hooks/useIncomes'
 import { useHousehold } from '@/hooks/useHousehold'
 import IncomeSection from '@/components/members/IncomeSection'
+import UserAvatar from '@/components/ui/UserAvatar'
 import MonthPicker from '@/components/ui/MonthPicker'
 import SelectInput from '@/components/ui/SelectInput'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
@@ -343,7 +344,10 @@ export default function Members() {
                   : 'border-coral-200 hover:bg-coral-100/70'
               }`}
             >
-              <p className="text-sm font-medium text-ink">{member.full_name}</p>
+              <div className="flex items-center gap-2">
+                <UserAvatar name={member.full_name} avatarPath={member.avatar_path} size="sm" />
+                <p className="truncate text-sm font-medium text-ink">{member.full_name}</p>
+              </div>
               <div className="mt-2 space-y-1 text-xs text-ink/50">
                 <p className="flex justify-between">
                   <span>Aportado</span>
@@ -382,15 +386,7 @@ export default function Members() {
             return (
               <li key={m.id} className="flex items-center justify-between gap-4 px-5 py-4">
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-ink/50">
-                    {m.id === user?.id ? (
-                      <User size={18} />
-                    ) : (
-                      <span className="text-sm font-semibold">
-                        {m.full_name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
+                  <UserAvatar name={m.full_name} avatarPath={m.avatar_path} size="md" />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-ink">
                       {m.full_name}
