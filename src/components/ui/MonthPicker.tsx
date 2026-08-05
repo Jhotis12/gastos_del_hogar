@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { monthLabel, shiftMonth } from '@/lib/dates'
 
@@ -8,9 +8,17 @@ interface MonthPickerProps {
 }
 
 export default function MonthPicker({ month, onChange }: MonthPickerProps) {
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Sincroniza el input cuando el mes cambia por fuera (flechas, otra pestaña).
+  // OJO: type="month" maneja "YYYY-MM" (sin día); el estado de la app es
+  // "YYYY-MM-01". Comparar contra el estado completo hacía que el efecto
+  // escribiera un valor inválido en el input cada vez (bug de "2026-08-01").
   useEffect(() => {
-    const input = document.getElementById('month-picker-input') as HTMLInputElement | null
-    if (input && input.value !== month) input.value = month
+    const input = inputRef.current
+    if (!input) return
+    const monthValue = month.slice(0, 7)
+    if (input.value !== monthValue) input.value = monthValue
   }, [month])
 
   return (
@@ -23,6 +31,7 @@ export default function MonthPicker({ month, onChange }: MonthPickerProps) {
         <ChevronLeft size={18} />
       </button>
       <input
+        ref={inputRef}
         id="month-picker-input"
         type="month"
         defaultValue={month.slice(0, 7)}
