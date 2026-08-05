@@ -136,9 +136,16 @@ export default function Profile() {
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [checkingUpdate, setCheckingUpdate] = useState(false)
-  // Acordeón: una sola sección abierta a la vez
-  const [openSection, setOpenSection] = useState<string>('cuenta')
-  const toggleSection = (id: string) => setOpenSection((s) => (s === id ? '' : id))
+  // Acordeón: varias secciones abiertas a la vez (Tu cuenta por defecto)
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(['cuenta']))
+  const toggleSection = (id: string) =>
+    setOpenSections((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  const isOpen = (id: string) => openSections.has(id)
   const updateAvatar = useUpdateAvatar()
   const removeAvatar = useRemoveAvatar()
   const avatarInputRef = useRef<HTMLInputElement>(null)
@@ -252,7 +259,7 @@ export default function Profile() {
         icon={<UserRound size={18} />}
         title="Tu cuenta"
         description="Foto, nombre y correo"
-        open={openSection === 'cuenta'}
+        open={isOpen('cuenta')}
         onToggle={() => toggleSection('cuenta')}
       >
         <div className="mb-5 flex items-center gap-4 sm:gap-5">
@@ -327,7 +334,7 @@ export default function Profile() {
         icon={<Palette size={18} />}
         title="Apariencia"
         description="Personaliza cómo se ve la app"
-        open={openSection === 'apariencia'}
+        open={isOpen('apariencia')}
         onToggle={() => toggleSection('apariencia')}
       >
         <SettingRow
@@ -348,7 +355,7 @@ export default function Profile() {
         icon={<Home size={18} />}
         title="Tu hogar"
         description="Información del hogar e invitaciones"
-        open={openSection === 'hogar'}
+        open={isOpen('hogar')}
         onToggle={() => toggleSection('hogar')}
       >
         {household ? (
@@ -394,7 +401,7 @@ export default function Profile() {
         icon={<Info size={18} />}
         title="Información"
         description="Versión y actualizaciones"
-        open={openSection === 'info'}
+        open={isOpen('info')}
         onToggle={() => toggleSection('info')}
       >
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-cream px-4 py-3">
@@ -422,7 +429,7 @@ export default function Profile() {
         icon={<AlertTriangle size={18} />}
         title="Zona de peligro"
         description="Acciones que no se pueden deshacer"
-        open={openSection === 'peligro'}
+        open={isOpen('peligro')}
         onToggle={() => toggleSection('peligro')}
         className="border-coral-200"
       >
