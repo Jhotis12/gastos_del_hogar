@@ -193,16 +193,6 @@ export default function Dashboard() {
               Por llegar: {pendingLabel}
             </p>
           )}
-          <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2 text-sm">
-            <span className="flex items-center gap-2 text-white">
-              <ArrowUpCircle size={16} className="text-gold-300" />
-              Ingresos {formatCurrency(totalIncome)}
-            </span>
-            <span className="flex items-center gap-2 text-white">
-              <ArrowDownCircle size={16} className="text-coral-300" />
-              Gastos {formatCurrency(totalExpenses)}
-            </span>
-          </div>
         </div>
       </div>
 
@@ -230,6 +220,72 @@ export default function Dashboard() {
         />
       </div>
 
+      <div className="card card-hover animate-fade-up p-5" style={{ animationDelay: '400ms' }}>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-display text-sm font-semibold text-ink">Gastos recientes</h2>
+          <Link
+            to="/gastos"
+            className="inline-flex min-h-11 items-center text-sm font-medium text-pine-600 hover:text-ink"
+          >
+            Ver todos
+          </Link>
+        </div>
+        {expensesLoading ? (
+          <div className="space-y-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="flex items-center justify-between gap-3">
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-5 w-24" />
+              </div>
+            ))}
+          </div>
+        ) : !expenses || expenses.length === 0 ? (
+          <EmptyState
+            compact
+            icon={<ReceiptText size={22} />}
+            title="Sin gastos este mes"
+            action={
+              <button
+                onClick={() => setQuickOpen(true)}
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+              >
+                <Plus size={16} />
+                Agregar gasto
+              </button>
+            }
+          />
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {expenses.slice(0, 6).map((e) => (
+              <li
+                key={e.id}
+                className="flex items-center justify-between gap-3 py-3"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-ink">
+                    {e.description || 'Sin descripción'}
+                  </p>
+                  <div className="mt-0.5 flex items-center gap-2 text-xs text-ink/50">
+                    {e.category && (
+                      <CategoryBadge name={e.category.name} color={e.category.color} />
+                    )}
+                    <span>{e.payer?.full_name || 'Sin asignar'}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-ink">
+                    -{formatCurrency(Number(e.amount))}
+                  </p>
+                  <p className="text-xs text-ink/40">
+                    {formatDate(e.expense_date)}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+   
       {pendingRecurring > 0 && (
         <div className="animate-fade-up flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold-200 bg-gold-100/60 p-4">
           <p className="text-sm text-gold-600">
@@ -475,72 +531,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      <div className="card card-hover animate-fade-up p-5" style={{ animationDelay: '400ms' }}>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-sm font-semibold text-ink">Gastos recientes</h2>
-          <Link
-            to="/gastos"
-            className="inline-flex min-h-11 items-center text-sm font-medium text-pine-600 hover:text-ink"
-          >
-            Ver todos
-          </Link>
-        </div>
-        {expensesLoading ? (
-          <div className="space-y-3">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="flex items-center justify-between gap-3">
-                <Skeleton className="h-5 w-40" />
-                <Skeleton className="h-5 w-24" />
-              </div>
-            ))}
-          </div>
-        ) : !expenses || expenses.length === 0 ? (
-          <EmptyState
-            compact
-            icon={<ReceiptText size={22} />}
-            title="Sin gastos este mes"
-            action={
-              <button
-                onClick={() => setQuickOpen(true)}
-                className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
-              >
-                <Plus size={16} />
-                Agregar gasto
-              </button>
-            }
-          />
-        ) : (
-          <ul className="divide-y divide-slate-100">
-            {expenses.slice(0, 6).map((e) => (
-              <li
-                key={e.id}
-                className="flex items-center justify-between gap-3 py-3"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-ink">
-                    {e.description || 'Sin descripción'}
-                  </p>
-                  <div className="mt-0.5 flex items-center gap-2 text-xs text-ink/50">
-                    {e.category && (
-                      <CategoryBadge name={e.category.name} color={e.category.color} />
-                    )}
-                    <span>{e.payer?.full_name || 'Sin asignar'}</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-ink">
-                    -{formatCurrency(Number(e.amount))}
-                  </p>
-                  <p className="text-xs text-ink/40">
-                    {formatDate(e.expense_date)}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-         <ExpenseForm
+      <ExpenseForm
         open={quickOpen}
         initial={null}
         onClose={() => setQuickOpen(false)}

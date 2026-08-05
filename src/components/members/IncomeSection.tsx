@@ -150,14 +150,14 @@ export default function IncomeSection({ month, members }: IncomeSectionProps) {
                 </span>
                 <button
                   onClick={() => startEdit(i)}
-                  className="rounded-lg p-2.5 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
+                  className="rounded-lg p-3 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
                   aria-label="Editar dinero extra"
                 >
                   <Pencil size={16} />
                 </button>
                 <button
                   onClick={() => setConfirmId(i.id)}
-                  className="rounded-lg p-2.5 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
+                  className="rounded-lg p-3 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
                   aria-label="Eliminar dinero extra"
                 >
                   <Trash2 size={16} />
