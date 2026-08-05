@@ -271,7 +271,7 @@ export default function Members() {
     return { member: m, aportado, pagado, balance: aportado - pagado }
   })
 
-  const handlePaydayChange = (m: Profile) => (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handlePaydayChange = (m: Profile) => (e: { target: { value: string } }) => {
     updatePayday.mutate({ profileId: m.id, payday: Number(e.target.value) })
   }
 

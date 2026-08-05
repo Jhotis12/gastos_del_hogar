@@ -68,6 +68,13 @@ async function waitForText(text, timeout = 6000) {
   await page.waitForSelector(`text=${text}`, { timeout })
 }
 
+
+// SelectInput personalizado: abrir el desplegable y elegir una opción exacta
+async function pickOption(selectIndex, label) {
+  await page.click(`button[data-select] >> nth=${selectIndex}`)
+  await page.click(`[role="option"] >> text="${label}"`)
+}
+
 async function waitGone(text, timeout = 6000) {
   await page.waitForSelector(`text=${text}`, { state: 'detached', timeout })
 }
@@ -118,8 +125,8 @@ await step('crear gasto', async () => {
   await page.click('text=Nuevo gasto')
   await page.fill('input[inputmode="decimal"]', '150.000')
   await page.fill('input[placeholder="Ej. Supermercado del mes"]', 'Mercado test')
-  await page.selectOption('select >> nth=0', { label: 'Comida' })
-  await page.selectOption('select >> nth=1', { label: 'Sandbox Test' })
+  await pickOption(0, 'Comida')
+  await pickOption(1, 'Sandbox Test')
   await page.click('text=Agregar gasto')
   await waitForText('Mercado test')
   await waitForText('150.000')
@@ -167,9 +174,10 @@ await step('saldos entre miembros', async () => {
 })
 
 await step('configurar día de pago', async () => {
-  await page.selectOption('select[aria-label="Día de pago"]', '15')
+  await page.click('button[aria-label="Día de pago"]')
+  await page.click('[role="option"] >> text="15"')
   await page.waitForTimeout(500)
-  const val = await page.inputValue('select[aria-label="Día de pago"]')
+  const val = (await page.textContent('button[aria-label="Día de pago"]'))?.trim()
   if (val !== '15') throw new Error('El día de pago no quedó en 15')
 })
 
@@ -298,7 +306,8 @@ await step('categoría nueva disponible en formulario de gasto', async () => {
   await waitForText('Nuevo gasto')
   await page.click('text=Nuevo gasto')
   try {
-    await page.locator('select option', { hasText: 'Mascotas' }).first().waitFor({ state: 'attached', timeout: 6000 })
+    await page.click('button[data-select] >> nth=0')
+    await page.locator('[role="option"]:has-text("Mascotas")').first().waitFor({ state: 'attached', timeout: 6000 })
   } finally {
     await page.keyboard.press('Escape').catch(() => {})
   }
@@ -311,9 +320,9 @@ await step('crear servicio (bimestral)', async () => {
   await page.click('text=Nuevo servicio')
   await page.fill('input[placeholder="Ej. Internet del hogar"]', 'Renta test')
   await page.fill('input[inputmode="decimal"]', '450.000')
-  await page.selectOption('select >> nth=0', { label: 'Vivienda' })
-  await page.selectOption('select >> nth=1', { label: 'Sandbox Test' })
-  await page.selectOption('select >> nth=2', { label: 'Bimestral' })
+  await pickOption(0, 'Vivienda')
+  await pickOption(1, 'Sandbox Test')
+  await pickOption(2, 'Bimestral')
   await page.click('text=Agregar')
   await waitForText('Renta test')
   await waitForText('450.000')
