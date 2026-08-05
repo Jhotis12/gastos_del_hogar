@@ -14,7 +14,10 @@ import { CATEGORY_COLORS, CATEGORY_ICONS, type CategoryIconKey } from '@/lib/con
 import { currentMonthKey } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
+import { usePageTitle } from '@/hooks/usePageTitle'
+
 export default function Categories() {
+  usePageTitle('Categorías')
   const { data: categories, isLoading, error, refetch } = useCategories()
   const add = useAddCategory()
   const remove = useDeleteCategory()

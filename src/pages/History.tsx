@@ -9,7 +9,10 @@ import { cn } from '@/lib/utils'
 import { monthLabel } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
+import { usePageTitle } from '@/hooks/usePageTitle'
+
 export default function History() {
+  usePageTitle('Historial')
   const { data: surpluses, isLoading, error, refetch } = useMonthlySurpluses()
 
   const rows = (surpluses ?? []).map((s, i) => ({

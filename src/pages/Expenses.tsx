@@ -17,7 +17,10 @@ import { errorMessage } from '@/lib/utils'
 import { currentMonthKey, formatDate, monthKey } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
+import { usePageTitle } from '@/hooks/usePageTitle'
+
 export default function Expenses() {
+  usePageTitle('Gastos')
   const [month, setMonth] = useState(currentMonthKey())
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [search, setSearch] = useState('')

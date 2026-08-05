@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -88,8 +88,24 @@ export default function Layout() {
 
   const closeMore = () => setMoreOpen(false)
 
+  useEffect(() => {
+    if (!moreOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeMore()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [moreOpen])
+
   return (
     <div className="min-h-screen bg-cream">
+      {/* Acceso rápido por teclado: saltar directamente al contenido */}
+      <a
+        href="#contenido"
+        className="sr-only z-[100] rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+      >
+        Saltar al contenido
+      </a>
       {/* Sidebar (desktop) */}
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-ink/10 bg-surface/70 backdrop-blur lg:block">
         <div className="flex h-full flex-col">
@@ -135,7 +151,10 @@ export default function Layout() {
           </div>
         </header>
 
-        <main className="mx-auto max-w-5xl px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-6">
+        <main
+          id="contenido"
+          className="mx-auto max-w-5xl scroll-mt-20 px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-6"
+        >
           <Outlet />
         </main>
       </div>
@@ -168,11 +187,13 @@ export default function Layout() {
           ))}
           <button
             onClick={() => setMoreOpen(true)}
+            aria-label="Más opciones"
+            aria-haspopup="menu"
+            aria-expanded={moreOpen}
             className={cn(
               'flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-medium transition-colors',
               moreOpen ? 'text-pine-600' : 'text-ink/45',
             )}
-            aria-label="Más opciones"
           >
             {moreOpen ? <X size={20} /> : <MoreHorizontal size={20} />}
             Más

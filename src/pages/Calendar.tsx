@@ -15,7 +15,10 @@ import { WEEKDAYS } from '@/lib/constants'
 import { currentMonthKey, daysInMonth, formatDate, monthLabel, todayISO } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
+import { usePageTitle } from '@/hooks/usePageTitle'
+
 export default function Calendar() {
+  usePageTitle('Calendario')
   const [month, setMonth] = useState(currentMonthKey())
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [formDate, setFormDate] = useState<string | null>(null)

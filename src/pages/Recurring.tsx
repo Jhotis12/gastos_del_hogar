@@ -18,7 +18,10 @@ import { FREQUENCY_LABELS } from '@/lib/constants'
 import { currentMonthKey, formatDate, shiftMonth } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
+import { usePageTitle } from '@/hooks/usePageTitle'
+
 export default function Recurring() {
+  usePageTitle('Servicios')
   const [month, setMonth] = useState(currentMonthKey())
   const { data: recurring, isLoading, error, refetch } = useRecurringExpenses()
   const { data: expenses } = useExpenses(month)

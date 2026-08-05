@@ -216,7 +216,10 @@ function SalaryInput({
   )
 }
 
+import { usePageTitle } from '@/hooks/usePageTitle'
+
 export default function Members() {
+  usePageTitle('Miembros y Salarios')
   const { user } = useAuth()
   const [month, setMonth] = useState(currentMonthKey())
   const { data: household, error: householdError, refetch: refetchHousehold } = useHousehold()

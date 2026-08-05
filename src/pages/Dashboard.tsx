@@ -35,7 +35,10 @@ import {
 } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
+import { usePageTitle } from '@/hooks/usePageTitle'
+
 export default function Dashboard() {
+  usePageTitle('Dashboard')
   const { user, profile } = useAuth()
   const [month, setMonth] = useState(currentMonthKey())
   const toast = useToast()

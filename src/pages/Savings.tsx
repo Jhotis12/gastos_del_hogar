@@ -12,7 +12,10 @@ import type { SavingsGoal } from '@/lib/types'
 import { cn, errorMessage } from '@/lib/utils'
 import { formatCurrency } from '@/lib/money'
 
+import { usePageTitle } from '@/hooks/usePageTitle'
+
 export default function Savings() {
+  usePageTitle('Metas de Ahorro')
   const { data: goals, isLoading, error, refetch } = useSavingsGoals()
   const remove = useDeleteSavingsGoal()
   const toast = useToast()

@@ -9,6 +9,7 @@ import SessionSync from '@/components/ui/SessionSync'
 import OfflineBanner from '@/components/ui/OfflineBanner'
 import { queryPersister } from '@/lib/offline/persister'
 import { initOfflineWatcher, attachQueryClient } from '@/lib/offline/sync'
+import { supabaseUrl } from '@/lib/supabase'
 
 // Aplicar tema guardado antes del primer render (evita parpadeo)
 {
@@ -44,6 +45,22 @@ const queryClient = new QueryClient({
 
 attachQueryClient(queryClient)
 initOfflineWatcher()
+
+// Conexión temprana al backend: preconnect/dns-prefetch al host de Supabase
+// configurado (local o producción), antes de que las queries lo necesiten.
+{
+  try {
+    const host = new URL(supabaseUrl ?? 'https://placeholder.supabase.co').origin
+    for (const rel of ['preconnect', 'dns-prefetch']) {
+      const link = document.createElement('link')
+      link.rel = rel
+      link.href = host
+      document.head.appendChild(link)
+    }
+  } catch {
+    /* host inválido — se ignora */
+  }
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

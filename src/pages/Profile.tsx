@@ -13,7 +13,10 @@ import { errorMessage } from '@/lib/utils'
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
+import { usePageTitle } from '@/hooks/usePageTitle'
+
 export default function Profile() {
+  usePageTitle('Perfil')
   const { user, profile, signOut } = useAuth()
   const { data: household } = useHousehold()
   const { data: members } = useMembers()

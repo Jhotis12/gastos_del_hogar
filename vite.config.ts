@@ -44,4 +44,19 @@ export default defineConfig({
       '@': new URL('./src', import.meta.url).pathname,
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          // Vendors estables aparte: mejor caché (no se invalidan al cambiar
+          // el código de la app) y carga en paralelo.
+          if (id.includes('react-router-dom') || id.includes('/react/') || id.includes('/react-dom/')) {
+            return 'react-vendor'
+          }
+          if (id.includes('@tanstack')) return 'query'
+        },
+      },
+    },
+  },
 })

@@ -11,6 +11,7 @@ interface ModalProps {
 
 export default function Modal({ open, title, onClose, children }: ModalProps) {
   const closeRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
   const previousFocus = useRef<HTMLElement | null>(null)
   // onClose cambia de identidad en cada render del formulario padre (p. ej.
   // al escribir en un input): se guarda en un ref para que el efecto de foco
@@ -22,7 +23,27 @@ export default function Modal({ open, title, onClose, children }: ModalProps) {
   useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCloseRef.current()
+      if (e.key === 'Escape') {
+        onCloseRef.current()
+        return
+      }
+      // Focus trap: Tab/Shift+Tab se mantienen dentro del modal
+      if (e.key !== 'Tab') return
+      const panel = panelRef.current
+      if (!panel) return
+      const focusables = panel.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )
+      if (focusables.length === 0) return
+      const first = focusables[0]
+      const last = focusables[focusables.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
     }
     // Scroll-lock del fondo: la página deja de desplazarse mientras el
     // modal esté abierto (patrón esperado en móvil).
@@ -54,6 +75,7 @@ export default function Modal({ open, title, onClose, children }: ModalProps) {
       onClick={onClose}
     >
       <div
+        ref={panelRef}
         className="animate-scale-in max-h-[92dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:rounded-2xl sm:pb-6"
         onClick={(e) => e.stopPropagation()}
       >

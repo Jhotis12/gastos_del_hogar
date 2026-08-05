@@ -380,6 +380,14 @@ button {
   touch-action: manipulation;
 }
 
+/* Anillo de foco visible para navegación por teclado (no se ve al usar
+   mouse/touch). Los inputs/selects ya tienen su propio ring. */
+:focus-visible:not(input):not(textarea):not(select) {
+  outline: 2px solid var(--pine-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .font-display {
   font-variant-numeric: tabular-nums;
 }
