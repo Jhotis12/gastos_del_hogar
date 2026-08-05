@@ -7,6 +7,7 @@ import { AuthProvider } from '@/hooks/useAuth'
 import { ToastProvider } from '@/components/ui/Toast'
 import SessionSync from '@/components/ui/SessionSync'
 import OfflineBanner from '@/components/ui/OfflineBanner'
+import UpdatePrompt from '@/components/ui/UpdatePrompt'
 import { queryPersister } from '@/lib/offline/persister'
 import { initOfflineWatcher, attachQueryClient } from '@/lib/offline/sync'
 import { supabaseUrl } from '@/lib/supabase'
@@ -69,6 +70,7 @@ createRoot(document.getElementById('root')!).render(
         <SessionSync />
         <ToastProvider>
           <OfflineBanner />
+          <UpdatePrompt />
           <App />
         </ToastProvider>
       </AuthProvider>

@@ -8,7 +8,12 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt': el nuevo service worker espera; la app muestra el aviso de
+      // actualización y el usuario decide (UpdatePrompt).
+      registerType: 'prompt',
+      // El registro lo hace el hook useRegisterSW (virtual:pwa-register/react);
+      // evitar el script inyectado para no registrarlo dos veces.
+      injectRegister: false,
       includeAssets: ['icono.svg', 'favicon.svg', 'icons.svg'],
       manifest: {
         name: 'Gastos del Hogar',
