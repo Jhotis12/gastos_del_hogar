@@ -1,21 +1,23 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
-import { CheckCircle2, XCircle, X } from 'lucide-react'
+import { CheckCircle2, Info, XCircle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ToastItem {
   id: number
-  type: 'success' | 'error'
+  type: 'success' | 'error' | 'info'
   message: string
 }
 
 interface ToastContextValue {
   success: (message: string) => void
   error: (message: string) => void
+  info: (message: string) => void
 }
 
 const ToastContext = createContext<ToastContextValue>({
   success: () => {},
   error: () => {},
+  info: () => {},
 })
 
 export function useToast() {
@@ -57,9 +59,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const success = useCallback((message: string) => push('success', message), [push])
   const error = useCallback((message: string) => push('error', message), [push])
+  const info = useCallback((message: string) => push('info', message), [push])
 
   return (
-    <ToastContext.Provider value={{ success, error }}>
+    <ToastContext.Provider value={{ success, error, info }}>
       {children}
       <div className="pointer-events-none fixed right-4 top-[calc(env(safe-area-inset-top)+1rem)] z-[100] flex w-full max-w-xs flex-col gap-2">
         {toasts.map((t) => (
@@ -68,13 +71,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             role="status"
             className={cn(
               'animate-slide-in pointer-events-auto flex items-start gap-2.5 rounded-xl border bg-surface p-3.5 shadow-lg',
-              t.type === 'success' ? 'border-pine-200' : 'border-coral-200',
+              t.type === 'success'
+                ? 'border-pine-200'
+                : t.type === 'error'
+                  ? 'border-coral-200'
+                  : 'border-slate-300',
             )}
           >
             {t.type === 'success' ? (
               <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-pine-600" />
-            ) : (
+            ) : t.type === 'error' ? (
               <XCircle size={18} className="mt-0.5 shrink-0 text-coral-600" />
+            ) : (
+              <Info size={18} className="mt-0.5 shrink-0 text-pine-600" />
             )}
             <p className="flex-1 text-sm text-ink/80">{t.message}</p>
             <button

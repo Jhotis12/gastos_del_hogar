@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Copy, Check, Home, LogOut, Settings, Trash2, UserRound } from 'lucide-react'
+import { Copy, Check, Home, LogOut, RefreshCw, Settings, Trash2, UserRound } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useHousehold } from '@/hooks/useHousehold'
 import { useMembers } from '@/hooks/useMembers'
@@ -29,6 +29,46 @@ export default function Profile() {
   const [copied, setCopied] = useState(false)
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [checkingUpdate, setCheckingUpdate] = useState(false)
+
+  // Buscar actualizaciones manualmente: re-descarga el service worker; si
+  // hay un build nuevo, UpdatePrompt muestra el aviso con el botón Actualizar.
+  const checkForUpdates = async () => {
+    if (checkingUpdate) return
+    setCheckingUpdate(true)
+    try {
+      if (!('serviceWorker' in navigator)) {
+        toast.info('Las actualizaciones se aplican automáticamente al abrir la app')
+        return
+      }
+      const reg = await navigator.serviceWorker.getRegistration()
+      if (!reg) {
+        toast.info('Las actualizaciones se aplican automáticamente al abrir la app')
+        return
+      }
+      // Si ya hay una versión esperando activarse (el aviso ya apareció al
+      // cargar), no decir que está al día.
+      if (reg.waiting) {
+        toast.info('Ya hay una actualización pendiente — pulsa Actualizar en el aviso')
+        return
+      }
+      const updated = await new Promise<boolean>((resolve) => {
+        let done = false
+        const finish = (found: boolean) => {
+          if (done) return
+          done = true
+          resolve(found)
+        }
+        reg.addEventListener('updatefound', () => finish(true))
+        void reg.update().catch(() => finish(false))
+        setTimeout(() => finish(false), 4000)
+      })
+      if (!updated) toast.info('Ya tienes la última versión')
+      // si updated: el banner de UpdatePrompt aparece solo
+    } finally {
+      setCheckingUpdate(false)
+    }
+  }
 
   if (!profile) return <PageSkeleton />
 
@@ -142,8 +182,30 @@ export default function Profile() {
         )}
       </div>
 
+      {/* Sobre la app */}
+      <div className="card animate-fade-up p-6" style={{ animationDelay: '200ms' }}>
+        <h2 className="mb-4 font-display text-sm font-semibold text-ink">Sobre la app</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-cream px-4 py-3">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-ink/40">Versión</p>
+            <p className="text-sm font-semibold text-ink">v{__APP_VERSION__}</p>
+          </div>
+          <button
+            onClick={checkForUpdates}
+            disabled={checkingUpdate}
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800 disabled:opacity-60"
+          >
+            <RefreshCw size={16} className={checkingUpdate ? 'animate-spin' : ''} />
+            {checkingUpdate ? 'Buscando…' : 'Buscar actualizaciones'}
+          </button>
+        </div>
+        <p className="mt-3 text-xs text-ink/40">
+          Cuando haya una versión nueva verás un aviso con el botón Actualizar.
+        </p>
+      </div>
+
       {/* Zona de peligro */}
-      <div className="card animate-fade-up border-coral-200 p-6" style={{ animationDelay: '240ms' }}>
+      <div className="card animate-fade-up border-coral-200 p-6" style={{ animationDelay: '260ms' }}>
         <h2 className="mb-2 font-display text-sm font-semibold text-coral-600">
           Zona de peligro
         </h2>
