@@ -167,6 +167,8 @@ export default function Categories() {
                     type="button"
                     key={key}
                     onClick={() => setIcon(key)}
+                    aria-label={`Icono ${key}`}
+                    aria-pressed={icon === key}
                     className={cn(
                       'flex h-11 items-center justify-center rounded-lg border',
                       icon === key

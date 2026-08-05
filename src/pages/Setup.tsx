@@ -120,7 +120,7 @@ export default function Setup() {
           <button
             type="submit"
             disabled={busy}
-            className="mt-5 min-h-12 w-full rounded-xl bg-pine-700 py-3 text-[15px] font-semibold text-white shadow-md shadow-pine-900/20 transition-all hover:bg-pine-800 disabled:opacity-50"
+            className="mt-5 min-h-12 w-full rounded-xl bg-pine-700 py-3 text-base font-semibold text-white shadow-md shadow-pine-900/20 transition-all hover:bg-pine-800 disabled:opacity-50"
           >
             {busy ? 'Procesando…' : 'Continuar'}
           </button>

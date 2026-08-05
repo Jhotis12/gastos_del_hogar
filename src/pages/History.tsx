@@ -1,4 +1,4 @@
-import { ArrowDownCircle, ArrowUpCircle, Wallet } from 'lucide-react'
+import { ArrowDownCircle, ArrowUpCircle, Wallet, History as HistoryIcon } from 'lucide-react'
 import { useMonthlySurpluses } from '@/hooks/useExpenses'
 import StatCard from '@/components/ui/StatCard'
 import PageSkeleton from '@/components/ui/PageSkeleton'
@@ -26,7 +26,8 @@ export default function History() {
   return (
     <div className="space-y-6">
       <div className="animate-fade-up">
-        <h1 className="font-display text-2xl font-bold tracking-tight text-ink">
+        <h1 className="flex items-center gap-2 font-display text-2xl font-bold tracking-tight text-ink">
+          <HistoryIcon size={24} className="text-pine-600" />
           Historial
         </h1>
         <p className="text-sm text-ink/50">

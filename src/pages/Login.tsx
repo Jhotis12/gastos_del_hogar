@@ -40,7 +40,7 @@ function FieldError({ message }: { message?: string }) {
       role="alert"
       className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-coral-600"
     >
-      <AlertCircle size={13} className="shrink-0" />
+      <AlertCircle size={14} className="shrink-0" />
       {message}
     </p>
   )
@@ -189,7 +189,7 @@ export default function Login() {
                 <label className="mb-1.5 block text-sm font-medium text-ink/70">Nombre</label>
                 <div className="relative">
                   <User
-                    size={17}
+                    size={16}
                     className={cn(
                       'pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2',
                       fieldErrors.name ? 'text-coral-500' : 'text-ink/35',
@@ -225,7 +225,7 @@ export default function Login() {
               </label>
               <div className="relative">
                 <Mail
-                  size={17}
+                  size={16}
                   className={cn(
                     'pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2',
                     fieldErrors.email ? 'text-coral-500' : 'text-ink/35',
@@ -259,7 +259,7 @@ export default function Login() {
               <label className="mb-1.5 block text-sm font-medium text-ink/70">Contraseña</label>
               <div className="relative">
                 <Lock
-                  size={17}
+                  size={16}
                   className={cn(
                     'pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2',
                     fieldErrors.password ? 'text-coral-500' : 'text-ink/35',
@@ -316,7 +316,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={busy}
-              className="group relative min-h-12 w-full overflow-hidden rounded-xl bg-gradient-to-br from-pine-600 to-pine-800 py-3 text-[15px] font-semibold text-white shadow-lg shadow-pine-900/25 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-pine-900/30 active:translate-y-0 active:scale-[0.99] disabled:opacity-50 disabled:hover:translate-y-0"
+              className="group relative min-h-12 w-full overflow-hidden rounded-xl bg-gradient-to-br from-pine-600 to-pine-800 py-3 text-base font-semibold text-white shadow-lg shadow-pine-900/25 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-pine-900/30 active:translate-y-0 active:scale-[0.99] disabled:opacity-50 disabled:hover:translate-y-0"
             >
               <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
               {busy

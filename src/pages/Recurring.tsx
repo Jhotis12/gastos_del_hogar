@@ -112,13 +112,13 @@ export default function Recurring() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="card p-5">
           <p className="text-sm font-medium text-ink/50">Gastos fijos del mes</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-ink">
+          <p className="mt-2 font-display text-2xl font-bold tracking-tight text-ink">
             {formatCurrency(totalFixed)}
           </p>
         </div>
         <div className="card p-5">
           <p className="text-sm font-medium text-ink/50">vs ingreso unificado</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-ink">
+          <p className="mt-2 font-display text-2xl font-bold tracking-tight text-ink">
             {totalIncome > 0 ? `${Math.round(fixedRatio * 100)}%` : '—'}
           </p>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
@@ -131,7 +131,7 @@ export default function Recurring() {
         <div className="flex flex-col justify-between rounded-2xl border border-pine-200 bg-pine-50 p-5">
           <div>
             <p className="text-sm font-medium text-pine-600">Pendientes este mes</p>
-            <p className="mt-2 text-2xl font-bold tracking-tight text-pine-600">
+            <p className="mt-2 font-display text-2xl font-bold tracking-tight text-pine-600">
               {pendingCount}
             </p>
           </div>
@@ -228,10 +228,12 @@ export default function Recurring() {
                     <button
                       onClick={() => handleToggle(r)}
                       disabled={toggle.isPending}
+                      role="switch"
+                      aria-checked={r.is_active}
                       className={`flex h-7 w-12 items-center rounded-full p-0.5 transition-colors ${
                         r.is_active ? 'justify-end bg-pine-700' : 'justify-start bg-slate-300'
                       }`}
-                      aria-label={r.is_active ? 'Desactivar' : 'Activar'}
+                      aria-label={r.is_active ? 'Desactivar servicio' : 'Activar servicio'}
                     >
                       <span className="h-6 w-6 rounded-full bg-surface shadow" />
                     </button>

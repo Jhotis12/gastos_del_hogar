@@ -82,7 +82,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               className="shrink-0 rounded p-1.5 text-ink/40 hover:text-ink/55"
               aria-label="Cerrar notificación"
             >
-              <X size={14} />
+              <X size={16} />
             </button>
           </div>
         ))}

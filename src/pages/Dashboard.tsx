@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowDownCircle, ArrowUpCircle, Sparkles, AlertTriangle, Plus, Wallet } from 'lucide-react'
+import { ArrowDownCircle, ArrowUpCircle, Sparkles, AlertTriangle, Plus, Wallet, LayoutDashboard } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useAddExpense } from '@/hooks/useExpenses'
 import { useCountUp } from '@/hooks/useCountUp'
@@ -121,7 +121,8 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="animate-fade-up flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-ink">
+          <h1 className="flex items-center gap-2 font-display text-2xl font-bold tracking-tight text-ink">
+            <LayoutDashboard size={24} className="text-pine-600" />
             Dashboard
           </h1>
           <p className="text-sm text-ink/50">
@@ -162,7 +163,7 @@ export default function Dashboard() {
           )}
           <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2 text-sm">
             <span className="flex items-center gap-2 text-white">
-              <ArrowUpCircle size={16} className="text-emerald-300" />
+              <ArrowUpCircle size={16} className="text-gold-300" />
               Ingresos {formatCurrency(totalIncome)}
             </span>
             <span className="flex items-center gap-2 text-white">
@@ -224,7 +225,7 @@ export default function Dashboard() {
               <p className="text-sm text-ink/40">Sin gastos registrados este mes</p>
               <button
                 onClick={() => setQuickOpen(true)}
-                className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+                className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
               >
                 <Plus size={16} />
                 Agregar gasto
@@ -298,7 +299,7 @@ export default function Dashboard() {
               <p className="text-sm text-ink/40">Aún no hay salarios registrados</p>
               <Link
                 to="/miembros"
-                className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+                className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
               >
                 Registrar salario
               </Link>
@@ -316,7 +317,7 @@ export default function Dashboard() {
                         'Miembro'}
                     </span>
                     {s.source_month !== month && (
-                      <span className="shrink-0 rounded-full bg-pine-50 px-2 py-0.5 text-xs font-medium text-pine-600">
+                      <span className="shrink-0 rounded-full bg-gold-100 px-2 py-0.5 text-xs font-medium text-gold-600">
                         Heredado
                       </span>
                     )}
@@ -429,7 +430,7 @@ export default function Dashboard() {
             <p className="text-sm text-ink/40">Sin gastos este mes</p>
             <button
               onClick={() => setQuickOpen(true)}
-              className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+              className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
             >
               <Plus size={16} />
               Agregar gasto

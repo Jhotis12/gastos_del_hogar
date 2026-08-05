@@ -145,7 +145,7 @@ function SalaryInput({
               <span className="text-sm font-semibold text-pine-600">
                 {formatCurrency(Number(effective.amount))}
               </span>
-              <span className="rounded-full bg-gold-100 px-2 py-0.5 text-[11px] font-medium text-gold-600">
+              <span className="rounded-full bg-gold-100 px-2 py-0.5 text-xs font-medium text-gold-600">
                 Heredado de {monthLabel(effective.source_month ?? month)}
               </span>
             </div>
@@ -289,7 +289,7 @@ export default function Members() {
             Ingreso unificado del mes
           </p>
           <p className="text-xs text-pine-600/70">Salarios + dinero extra</p>
-          <p className="mt-1 text-2xl font-bold text-pine-600">
+          <p className="mt-1 font-display text-2xl font-bold text-pine-600">
             {formatCurrency(totalIncome)}
           </p>
         </div>
@@ -343,7 +343,7 @@ export default function Members() {
                 </p>
               </div>
               <p
-                className={`mt-3 text-lg font-bold ${
+                className={`mt-3 font-display text-lg font-bold ${
                   balance >= 0 ? 'text-pine-600' : 'text-coral-600'
                 }`}
               >

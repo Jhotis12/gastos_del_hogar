@@ -198,7 +198,7 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
 
           <div className="flex items-center justify-between gap-2 pt-2">
             <p className="flex items-center gap-1.5 text-xs text-pine-600">
-              <CheckCircle2 size={14} />
+              <CheckCircle2 size={12} />
               Se creará 1 solo gasto con el total
             </p>
             <div className="flex gap-2">

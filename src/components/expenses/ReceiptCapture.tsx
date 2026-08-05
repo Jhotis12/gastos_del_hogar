@@ -117,7 +117,7 @@ export default function ReceiptCapture({ open, onClose, onAnalyzed }: ReceiptCap
               className="absolute right-2 top-2 rounded-full bg-black/60 p-2 text-white hover:bg-black/80"
               aria-label="Quitar imagen"
             >
-              <X size={16} />
+              <X size={20} />
             </button>
           </div>
         )}

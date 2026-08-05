@@ -126,6 +126,8 @@ export default function Profile() {
               </div>
               <button
                 onClick={copyCode}
+                aria-label="Copiar código de invitación"
+                title="Copiar código de invitación"
                 className="rounded-lg border border-slate-200 bg-surface px-3 py-2 text-sm font-medium text-ink/70 hover:bg-cream"
               >
                 {copied ? <Check size={16} className="text-pine-600" /> : <Copy size={16} />}
@@ -148,7 +150,7 @@ export default function Profile() {
             disabled={!household || leaveHousehold.isPending}
             className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-coral-200 px-4 text-sm font-medium text-coral-600 hover:bg-coral-100/60 disabled:opacity-50"
           >
-            <LogOut size={16} />
+            <LogOut size={18} />
             Salir del hogar
           </button>
           <button
@@ -163,7 +165,7 @@ export default function Profile() {
             onClick={signOut}
             className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-medium text-ink/70 hover:bg-cream"
           >
-            <LogOut size={16} />
+            <LogOut size={18} />
             Cerrar sesión
           </button>
         </div>

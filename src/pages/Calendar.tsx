@@ -105,19 +105,19 @@ export default function Calendar() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="card p-5">
           <p className="text-sm font-medium text-ink/50">Gastos del mes</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-ink">
+          <p className="mt-2 font-display text-2xl font-bold tracking-tight text-ink">
             {formatCurrency(monthTotal)}
           </p>
         </div>
         <div className="card p-5">
           <p className="text-sm font-medium text-ink/50">Servicios que vencen este mes</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-gold-600">
+          <p className="mt-2 font-display text-2xl font-bold tracking-tight text-gold-600">
             {servicesDueCount}
           </p>
         </div>
         <div className="card p-5">
           <p className="text-sm font-medium text-ink/50">Días con gastos</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-ink">
+          <p className="mt-2 font-display text-2xl font-bold tracking-tight text-ink">
             {byDay.size}
           </p>
         </div>

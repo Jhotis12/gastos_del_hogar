@@ -104,7 +104,10 @@ export default function Expenses() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-ink">Gastos</h1>
+          <h1 className="flex items-center gap-2 font-display text-2xl font-bold tracking-tight text-ink">
+            <ReceiptText size={24} className="text-pine-600" />
+            Gastos
+          </h1>
           <p className="text-sm text-ink/50">
             Total del mes filtrado: {formatCurrency(total)}
           </p>
@@ -176,7 +179,7 @@ export default function Expenses() {
             onClick={exportCSV}
             className="ml-auto inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-surface px-3 py-2 text-xs font-medium text-ink/55 hover:bg-cream"
           >
-            <Download size={14} />
+            <Download size={16} />
             Exportar CSV
           </button>
         )}
@@ -199,7 +202,7 @@ export default function Expenses() {
                 setEditing(null)
                 setFormOpen(true)
               }}
-              className="mt-4 inline-flex min-h-12 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+              className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
             >
               <Plus size={16} />
               Nuevo gasto
