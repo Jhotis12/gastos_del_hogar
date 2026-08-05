@@ -283,7 +283,7 @@ export default function Members() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="animate-fade-up flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="flex items-center gap-2 font-display text-2xl font-bold tracking-tight text-ink">
             <Users size={24} className="text-pine-600" />
@@ -296,7 +296,7 @@ export default function Members() {
         <MonthPicker month={month} onChange={setMonth} />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-pine-200 bg-pine-50 p-4">
+      <div className="animate-fade-up flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-pine-200 bg-pine-50 p-4" style={{ animationDelay: '90ms' }}>
         <div>
           <p className="text-sm font-medium text-pine-600">
             Ingreso unificado del mes
@@ -323,7 +323,7 @@ export default function Members() {
         </div>
       </div>
 
-      <div className="card">
+      <div className="card animate-fade-up" style={{ animationDelay: '180ms' }}>
         <div className="border-b border-slate-100 px-5 py-4">
           <h2 className="text-sm font-semibold text-ink">Saldos del mes</h2>
           <p className="mt-0.5 text-xs text-ink/40">
@@ -367,7 +367,7 @@ export default function Members() {
         </div>
       </div>
 
-      <div className="card">
+      <div className="card animate-fade-up" style={{ animationDelay: '260ms' }}>
         <div className="border-b border-slate-100 px-5 py-4">
           <h2 className="text-sm font-semibold text-ink">
             Personas del hogar

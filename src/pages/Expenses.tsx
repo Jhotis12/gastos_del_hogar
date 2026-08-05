@@ -103,7 +103,7 @@ export default function Expenses() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="animate-fade-up flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="flex items-center gap-2 font-display text-2xl font-bold tracking-tight text-ink">
             <ReceiptText size={24} className="text-pine-600" />
@@ -135,7 +135,7 @@ export default function Expenses() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="animate-fade-up flex flex-wrap items-center gap-2" style={{ animationDelay: '90ms' }}>
         <div className="relative w-full sm:w-auto">
           <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink/40" />
           <input
@@ -191,7 +191,7 @@ export default function Expenses() {
       ) : error ? (
         <QueryError error={error} onRetry={refetch} />
       ) : !searched || searched.length === 0 ? (
-        <div className="card border-2 border-dashed border-ink/10">
+        <div className="card animate-fade-up border-2 border-dashed border-ink/10" style={{ animationDelay: '160ms' }}>
           <EmptyState
             icon={<ReceiptText size={22} />}
             title={
@@ -221,7 +221,7 @@ export default function Expenses() {
           />
         </div>
       ) : (
-        <div className="overflow-hidden card">
+        <div className="card animate-fade-up overflow-hidden" style={{ animationDelay: '180ms' }}>
           <ul className="divide-y divide-slate-100">
             {searched.map((e) => (
               <li

@@ -63,7 +63,7 @@ export default function Categories() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="animate-fade-up flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="flex items-center gap-2 font-display text-2xl font-bold tracking-tight text-ink">
             <Tags size={24} className="text-pine-600" />
@@ -87,7 +87,7 @@ export default function Categories() {
       ) : error ? (
         <QueryError error={error} onRetry={refetch} />
       ) : !categories || categories.length === 0 ? (
-        <div className="card border-2 border-dashed border-ink/10">
+        <div className="card animate-fade-up border-2 border-dashed border-ink/10" style={{ animationDelay: '160ms' }}>
           <EmptyState
             icon={<Tags size={22} />}
             title="No hay categorías todavía"
@@ -104,7 +104,7 @@ export default function Categories() {
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="animate-fade-up grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" style={{ animationDelay: '120ms' }}>
           {categories.map((c) => {
             const Icon = CATEGORY_ICONS[c.icon as CategoryIconKey] ?? CATEGORY_ICONS.tag
             const budget = budgets?.find((b) => b.category_id === c.id)

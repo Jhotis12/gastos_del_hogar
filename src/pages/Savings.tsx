@@ -87,7 +87,7 @@ export default function Savings() {
       ) : error ? (
         <QueryError error={error} onRetry={refetch} />
       ) : !goals || goals.length === 0 ? (
-        <div className="card animate-fade-up border-2 border-dashed border-ink/10">
+        <div className="card animate-fade-up border-2 border-dashed border-ink/10" style={{ animationDelay: '160ms' }}>
           <EmptyState
             icon={<Target size={22} />}
             title="Sin metas todavía"

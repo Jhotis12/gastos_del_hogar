@@ -99,7 +99,7 @@ export default function IncomeSection({ month, members }: IncomeSectionProps) {
     members?.find((m) => m.id === id)?.full_name ?? ''
 
   return (
-    <div className="card">
+    <div className="card animate-fade-up">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
         <div>
           <h2 className="text-sm font-semibold text-ink">Otros ingresos del mes</h2>

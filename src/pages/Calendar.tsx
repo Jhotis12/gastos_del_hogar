@@ -89,7 +89,7 @@ export default function Calendar() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="animate-fade-up flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="flex items-center gap-2 font-display text-2xl font-bold tracking-tight text-ink">
             <CalendarDays size={24} className="text-pine-600" />
@@ -102,7 +102,7 @@ export default function Calendar() {
         <MonthPicker month={month} onChange={setMonth} />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="animate-fade-up grid grid-cols-1 gap-4 sm:grid-cols-3" style={{ animationDelay: '90ms' }}>
         <div className="card p-5">
           <p className="text-sm font-medium text-ink/50">Gastos del mes</p>
           <p className="mt-2 font-display text-2xl font-bold tracking-tight text-ink">
@@ -128,7 +128,7 @@ export default function Calendar() {
       ) : error ? (
         <QueryError error={error} onRetry={refetch} />
       ) : (
-        <div className="overflow-hidden card">
+        <div className="card animate-fade-up overflow-hidden" style={{ animationDelay: '180ms' }}>
           <div className="grid grid-cols-7 border-b border-slate-100">
             {WEEKDAYS.map((w) => (
               <div

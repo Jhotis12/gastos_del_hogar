@@ -85,7 +85,7 @@ export default function Recurring() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="animate-fade-up flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="flex items-center gap-2 font-display text-2xl font-bold tracking-tight text-ink">
             <Repeat size={24} className="text-pine-600" />
@@ -110,7 +110,7 @@ export default function Recurring() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="animate-fade-up grid grid-cols-1 gap-4 sm:grid-cols-3" style={{ animationDelay: '90ms' }}>
         <div className="card p-5">
           <p className="text-sm font-medium text-ink/50">Gastos fijos del mes</p>
           <p className="mt-2 font-display text-2xl font-bold tracking-tight text-ink">
@@ -152,7 +152,7 @@ export default function Recurring() {
       ) : error ? (
         <QueryError error={error} onRetry={refetch} />
       ) : !recurring || recurring.length === 0 ? (
-        <div className="card border-2 border-dashed border-ink/10">
+        <div className="card animate-fade-up border-2 border-dashed border-ink/10" style={{ animationDelay: '160ms' }}>
           <EmptyState
             icon={<Repeat size={22} />}
             title="No hay servicios registrados"
@@ -172,7 +172,7 @@ export default function Recurring() {
           />
         </div>
       ) : (
-        <div className="overflow-hidden card">
+        <div className="card animate-fade-up overflow-hidden" style={{ animationDelay: '180ms' }}>
           <ul className="divide-y divide-slate-100">
             {recurring.map((r) => {
               const paid = paidIds.has(r.id)
