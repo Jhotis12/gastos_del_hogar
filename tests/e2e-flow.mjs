@@ -347,8 +347,8 @@ await step('editar servicio', async () => {
 
 await step('desactivar servicio', async () => {
   await goTo('Servicios', '/recurrentes')
-  await page.waitForSelector('button[aria-label="Desactivar"]', { timeout: 8000 })
-  await page.click('button[aria-label="Desactivar"]')
+  await page.waitForSelector('button[aria-label="Desactivar servicio"]', { timeout: 8000 })
+  await page.click('button[aria-label="Desactivar servicio"]')
   await page.waitForTimeout(800)
   const body = (await page.evaluate(() => document.body.innerText)).trim()
   if (!body.includes('Renta test')) throw new Error('El servicio desapareció al desactivarlo')
