@@ -38,12 +38,12 @@ export default function Profile() {
     setCheckingUpdate(true)
     try {
       if (!('serviceWorker' in navigator)) {
-        toast.info('Las actualizaciones se aplican automáticamente al abrir la app')
+        toast.info('Busca actualizaciones desde la app instalada (PWA)')
         return
       }
       const reg = await navigator.serviceWorker.getRegistration()
       if (!reg) {
-        toast.info('Las actualizaciones se aplican automáticamente al abrir la app')
+        toast.info('Busca actualizaciones desde la app instalada (PWA)')
         return
       }
       // Si ya hay una versión esperando activarse (el aviso ya apareció al
