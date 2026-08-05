@@ -9,7 +9,8 @@
   --font-display: "Sora Variable", "Inter Variable", system-ui, sans-serif;
 }
 
-/* Tokens temáticos: se invierten en .dark */
+/* Tokens temáticos: se invierten en .dark. Todos los acentos son variables
+   CSS (definidas en :root/.dark/paletas) para poder cambiarlos por paleta. */
 @theme inline {
   --color-cream: var(--cream);
   --color-ink: var(--ink);
@@ -26,12 +27,29 @@
   --color-slate-900: var(--slate-900);
   --color-pine-50: var(--pine-50);
   --color-pine-100: var(--pine-100);
+  --color-pine-200: var(--pine-200);
+  --color-pine-300: var(--pine-300);
+  --color-pine-400: var(--pine-400);
   --color-pine-500: var(--pine-500);
   --color-pine-600: var(--pine-600);
+  --color-pine-700: var(--pine-700);
+  --color-pine-800: var(--pine-800);
+  --color-pine-900: var(--pine-900);
+  --color-pine-950: var(--pine-950);
   --color-gold-100: var(--gold-100);
+  --color-gold-200: var(--gold-200);
+  --color-gold-300: var(--gold-300);
+  --color-gold-400: var(--gold-400);
+  --color-gold-500: var(--gold-500);
   --color-gold-600: var(--gold-600);
+  --color-gold-700: var(--gold-700);
   --color-coral-100: var(--coral-100);
+  --color-coral-200: var(--coral-200);
+  --color-coral-300: var(--coral-300);
+  --color-coral-400: var(--coral-400);
+  --color-coral-500: var(--coral-500);
   --color-coral-600: var(--coral-600);
+  --color-coral-700: var(--coral-700);
 }
 
 :root {
@@ -52,12 +70,29 @@
   --slate-900: #0f172a;
   --pine-50: #eef7f3;
   --pine-100: #d8ede4;
+  --pine-200: #b3dcca;
+  --pine-300: #82c3aa;
+  --pine-400: #4fa387;
   --pine-500: #2f876b;
   --pine-600: #206c55;
+  --pine-700: #1b5745;
+  --pine-800: #184639;
+  --pine-900: #143a30;
+  --pine-950: #0a211b;
   --gold-100: #fdf3d7;
+  --gold-200: #fae4a8;
+  --gold-300: #f5cf6f;
+  --gold-400: #eeb73d;
+  --gold-500: #d99a1e;
   --gold-600: #b97a16;
+  --gold-700: #945b15;
   --coral-100: #fde8e2;
+  --coral-200: #fbc8bb;
+  --coral-300: #f7a28c;
+  --coral-400: #ef7759;
+  --coral-500: #e2553a;
   --coral-600: #cc3d26;
+  --coral-700: #a92f1d;
 }
 
 .dark {
@@ -84,6 +119,113 @@
   --gold-600: #dfae3f;
   --coral-100: #331c15;
   --coral-600: #ee8269;
+}
+
+/* ============ PALETAS DE COLOR (ajustes → Apariencia) ============
+   Cada paleta redefine los acentos (primario/secundario) para modo claro
+   y para modo oscuro (html.dark[data-palette]). Los tonos neutros y el
+   peligro (coral) se mantienen. La paleta por defecto es la del :root/.dark. */
+
+/* Océano: azul profundo + dorado */
+html[data-palette="oceano"] {
+  --pine-50: #eef4fb;
+  --pine-100: #d9e8f7;
+  --pine-200: #b3d1ef;
+  --pine-300: #82b4e4;
+  --pine-400: #4f92d6;
+  --pine-500: #2f76c4;
+  --pine-600: #1f5ea8;
+  --pine-700: #1a4d8a;
+  --pine-800: #173f72;
+  --pine-900: #12335d;
+  --pine-950: #0b2140;
+}
+html.dark[data-palette="oceano"] {
+  --pine-50: #0d1c30;
+  --pine-100: #132742;
+  --pine-500: #4f92d6;
+  --pine-600: #6ea9e0;
+}
+
+/* Violeta: morado-rosado */
+html[data-palette="violeta"] {
+  --pine-50: #f6f0fb;
+  --pine-100: #ecdcf6;
+  --pine-200: #d6b8ec;
+  --pine-300: #ba8fdf;
+  --pine-400: #9d66d1;
+  --pine-500: #8248c0;
+  --pine-600: #6c37a6;
+  --pine-700: #592d89;
+  --pine-800: #4a2670;
+  --pine-900: #3c1f5c;
+  --pine-950: #281340;
+  --gold-100: #fdeaf4;
+  --gold-200: #f9d2e6;
+  --gold-300: #f3aed3;
+  --gold-400: #e985bb;
+  --gold-500: #dd5f9f;
+  --gold-600: #c04484;
+  --gold-700: #9c3368;
+}
+html.dark[data-palette="violeta"] {
+  --pine-50: #1f1330;
+  --pine-100: #2a1a40;
+  --pine-500: #9d66d1;
+  --pine-600: #b484e0;
+  --gold-100: #361426;
+  --gold-600: #e985bb;
+}
+
+/* Rubí: rojo carmesí + dorado */
+html[data-palette="rubi"] {
+  --pine-50: #fbeeee;
+  --pine-100: #f5d9d9;
+  --pine-200: #eab2b2;
+  --pine-300: #dc8585;
+  --pine-400: #cc5757;
+  --pine-500: #b93a3a;
+  --pine-600: #9e2d2d;
+  --pine-700: #832626;
+  --pine-800: #6b2020;
+  --pine-900: #571b1b;
+  --pine-950: #3a1010;
+}
+html.dark[data-palette="rubi"] {
+  --pine-50: #2b1212;
+  --pine-100: #3a1818;
+  --pine-500: #cc5757;
+  --pine-600: #dc8585;
+}
+
+/* Esmeralda: teal + ámbar */
+html[data-palette="esmeralda"] {
+  --pine-50: #ecf7f5;
+  --pine-100: #d4ede8;
+  --pine-200: #a8dbd2;
+  --pine-300: #76c4b8;
+  --pine-400: #47a99b;
+  --pine-500: #2f8d80;
+  --pine-600: #247268;
+  --pine-700: #1e5e56;
+  --pine-800: #194d46;
+  --pine-900: #143f3a;
+  --pine-950: #0c2926;
+  --gold-100: #fdf0d3;
+  --gold-200: #fadfa3;
+  --gold-300: #f5c968;
+  --gold-400: #edad38;
+  --gold-500: #d18f1d;
+  --gold-600: #ad7316;
+  --gold-700: #8a5b12;
+}
+html.dark[data-palette="esmeralda"] {
+  --pine-50: #0e2622;
+  --pine-100: #14322e;
+  --pine-500: #47a99b;
+  --pine-600: #63beb0;
+  --gold-100: #33270f;
+  --gold-600: #edad38;
 }
 
 /* Refuerzo de contraste del texto en modo oscuro: las opacidades bajas de ink
@@ -144,25 +286,8 @@
 }
 
 @theme {
-  /* Paleta "billete": verde profundo + dorado + coral, sobre lienzo cálido */
-  --color-pine-200: #b3dcca;
-  --color-pine-300: #82c3aa;
-  --color-pine-400: #4fa387;
-  --color-pine-700: #1b5745;
-  --color-pine-800: #184639;
-  --color-pine-900: #143a30;
-  --color-pine-950: #0a211b;
-  --color-gold-200: #fae4a8;
-  --color-gold-300: #f5cf6f;
-  --color-gold-400: #eeb73d;
-  --color-gold-500: #d99a1e;
-  --color-gold-700: #945b15;
-  --color-coral-200: #fbc8bb;
-  --color-coral-300: #f7a28c;
-  --color-coral-400: #ef7759;
-  --color-coral-500: #e2553a;
-  --color-coral-700: #a92f1d;
-
+  /* Paleta "billete": verde profundo + dorado + coral, sobre lienzo cálido.
+     Las sombras de color se definen como variables en :root/.dark/paletas. */
   --animate-fade-up: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-scale-in: scale-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-slide-in: slide-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;

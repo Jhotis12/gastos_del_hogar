@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useSettings } from '@/hooks/useSettings'
+import { PALETTES } from '@/lib/palettes'
 import { useHousehold } from '@/hooks/useHousehold'
 import { useMembers } from '@/hooks/useMembers'
 import {
@@ -123,7 +124,7 @@ function SettingRow({
 export default function Profile() {
   usePageTitle('Perfil')
   const { user, profile, signOut } = useAuth()
-  const { reduceAnimations, toggleReduceAnimations } = useSettings()
+  const { reduceAnimations, toggleReduceAnimations, palette, applyPalette } = useSettings()
   const { data: household } = useHousehold()
   const { data: members } = useMembers()
   const updateProfile = useUpdateProfile()
@@ -337,6 +338,44 @@ export default function Profile() {
         open={isOpen('apariencia')}
         onToggle={() => toggleSection('apariencia')}
       >
+        <div className="mb-4">
+          <p className="text-sm font-medium text-ink">Paleta de colores</p>
+          <p className="mt-0.5 text-xs text-ink/40">
+            Cambia los acentos de la app (claro y oscuro)
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {PALETTES.map((p) => {
+              const active = palette === p.id
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => applyPalette(p.id)}
+                  aria-pressed={active}
+                  aria-label={`Paleta ${p.name}`}
+                  className={cn(
+                    'flex min-h-11 items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors',
+                    active
+                      ? 'border-pine-600 bg-pine-50 text-pine-600'
+                      : 'border-slate-200 text-ink/60 hover:bg-cream',
+                  )}
+                >
+                  <span className="flex -space-x-1.5">
+                    <span
+                      className="h-4 w-4 rounded-full ring-2 ring-surface"
+                      style={{ backgroundColor: p.primary }}
+                    />
+                    <span
+                      className="h-4 w-4 rounded-full ring-2 ring-surface"
+                      style={{ backgroundColor: p.secondary }}
+                    />
+                  </span>
+                  {p.name}
+                </button>
+              )
+            })}
+          </div>
+        </div>
         <SettingRow
           label="Reducir animaciones"
           description="Desactiva animaciones si tu teléfono va lento"

@@ -26,6 +26,12 @@ if (localStorage.getItem('reduce-animations') === '1') {
   document.documentElement.classList.add('reduce-animations')
 }
 
+// Paleta de colores guardada antes del primer render
+{
+  const palette = localStorage.getItem('palette')
+  if (palette) document.documentElement.dataset.palette = palette
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
