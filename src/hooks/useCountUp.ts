@@ -7,7 +7,9 @@ export function useCountUp(target: number, duration = 700): number {
   const frame = useRef<number | null>(null)
 
   useEffect(() => {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reduced =
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      document.documentElement.classList.contains('reduce-animations')
     if (reduced) {
       setValue(target)
       return

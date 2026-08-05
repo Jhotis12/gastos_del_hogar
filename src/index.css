@@ -350,6 +350,15 @@ html.theme-switching *::after {
     box-shadow 0.35s ease !important;
 }
 
+/* Animaciones desactivadas por el ajuste del usuario (teléfonos de gama
+   baja): anula animaciones y transiciones CSS en toda la app. */
+html.reduce-animations *,
+html.reduce-animations *::before,
+html.reduce-animations *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
 /* Respeto a usuarios con movimiento reducido */
 @media (prefers-reduced-motion: reduce) {
   *,

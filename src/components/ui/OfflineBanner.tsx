@@ -25,7 +25,7 @@ export default function OfflineBanner() {
       aria-label={label}
       title={label}
       onClick={() => void syncNow()}
-      className="fixed bottom-20 right-3 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-surface shadow-md ring-1 ring-coral-200 transition-transform active:scale-95 lg:bottom-6"
+      className="fixed bottom-[calc(env(safe-area-inset-bottom)+4.75rem)] left-4 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-surface shadow-md ring-1 ring-coral-200 transition-transform active:scale-95 lg:bottom-6 lg:left-auto lg:right-3"
     >
       {syncing ? (
         <RefreshCw size={18} className="animate-spin text-coral-600" />

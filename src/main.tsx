@@ -21,6 +21,11 @@ import { supabaseUrl } from '@/lib/supabase'
   if (dark) document.documentElement.classList.add('dark')
 }
 
+// Ajuste "reducir animaciones" antes del primer render
+if (localStorage.getItem('reduce-animations') === '1') {
+  document.documentElement.classList.add('reduce-animations')
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

@@ -21,7 +21,7 @@ export default function UpdatePrompt() {
   if (!needRefresh) return null
 
   return (
-    <div className="fixed inset-x-0 bottom-24 z-[95] flex justify-center px-4 lg:bottom-6">
+    <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+8.25rem)] z-[95] flex justify-center px-4 lg:bottom-6">
       <div
         role="alert"
         aria-live="assertive"

@@ -1,6 +1,23 @@
-import { useRef, useState } from 'react'
-import { Camera, Copy, Check, Home, Loader2, LogOut, RefreshCw, Settings, Trash2, X } from 'lucide-react'
+import { useRef, useState, type ReactNode } from 'react'
+import {
+  AlertTriangle,
+  Camera,
+  Check,
+  Copy,
+  Home,
+  Info,
+  Loader2,
+  LogOut,
+  Palette,
+  RefreshCw,
+  Settings,
+  Trash2,
+  UserRound,
+  X,
+} from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { useTheme } from '@/hooks/useTheme'
+import { useSettings } from '@/hooks/useSettings'
 import { useHousehold } from '@/hooks/useHousehold'
 import { useMembers } from '@/hooks/useMembers'
 import {
@@ -12,19 +29,78 @@ import {
 } from '@/hooks/useMembers'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import PageSkeleton from '@/components/ui/PageSkeleton'
+import Toggle from '@/components/ui/Toggle'
+import UserAvatar from '@/components/ui/UserAvatar'
 import { useToast } from '@/components/ui/Toast'
 import AppLogo from '@/components/ui/AppLogo'
-import UserAvatar from '@/components/ui/UserAvatar'
-import { errorMessage } from '@/lib/utils'
+import { cn, errorMessage } from '@/lib/utils'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
-import { usePageTitle } from '@/hooks/usePageTitle'
+// Tarjeta de sección con cabecera propia (icono + título + descripción):
+// separa visualmente información y acciones en Perfil.
+function Section({
+  icon,
+  title,
+  description,
+  delay,
+  className,
+  children,
+}: {
+  icon: ReactNode
+  title: string
+  description?: string
+  delay?: number
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <div
+      className={cn('card animate-fade-up p-6', className)}
+      style={delay ? { animationDelay: `${delay}ms` } : undefined}
+    >
+      <div className="mb-4 flex items-center gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-pine-50 text-pine-600">
+          {icon}
+        </span>
+        <div>
+          <h2 className="font-display text-sm font-semibold text-ink">{title}</h2>
+          {description && <p className="text-xs text-ink/40">{description}</p>}
+        </div>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+// Fila de ajuste con switch (tema, animaciones…)
+function SettingRow({
+  label,
+  description,
+  children,
+}: {
+  label: string
+  description?: string
+  children: ReactNode
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-ink">{label}</p>
+        {description && <p className="mt-0.5 text-xs text-ink/40">{description}</p>}
+      </div>
+      {children}
+    </div>
+  )
+}
 
 export default function Profile() {
   usePageTitle('Perfil')
   const { user, profile, signOut } = useAuth()
+  const { theme, toggle: toggleTheme } = useTheme()
+  const { reduceAnimations, toggleReduceAnimations } = useSettings()
   const { data: household } = useHousehold()
   const { data: members } = useMembers()
   const updateProfile = useUpdateProfile()
@@ -40,6 +116,19 @@ export default function Profile() {
   const updateAvatar = useUpdateAvatar()
   const removeAvatar = useRemoveAvatar()
   const avatarInputRef = useRef<HTMLInputElement>(null)
+
+  if (!profile) return <PageSkeleton />
+
+  const saveName = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim()) return
+    try {
+      await updateProfile.mutateAsync({ full_name: name.trim() })
+      toast.success('Nombre actualizado')
+    } catch (err) {
+      toast.error(errorMessage(err))
+    }
+  }
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -68,6 +157,13 @@ export default function Profile() {
     } catch (err) {
       toast.error(errorMessage(err))
     }
+  }
+
+  const copyCode = async () => {
+    if (!household) return
+    await navigator.clipboard.writeText(household.invite_code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
   }
 
   // Buscar actualizaciones manualmente: re-descarga el service worker; si
@@ -109,43 +205,28 @@ export default function Profile() {
     }
   }
 
-  if (!profile) return <PageSkeleton />
-
-  const saveName = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim()) return
-    try {
-      await updateProfile.mutateAsync({ full_name: name.trim() })
-      toast.success('Nombre actualizado')
-    } catch (err) {
-      toast.error(errorMessage(err))
-    }
-  }
-
-  const copyCode = async () => {
-    if (!household) return
-    await navigator.clipboard.writeText(household.invite_code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
-  }
-
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-2xl space-y-5">
+      {/* Cabecera */}
       <div className="animate-fade-up flex items-center gap-3">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-pine-600 to-pine-800 text-white shadow-md shadow-pine-900/20">
           <Settings size={22} />
         </div>
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-ink">
-            Perfil y Hogar
+            Perfil y ajustes
           </h1>
-          <p className="text-sm text-ink/50">Gestiona tu cuenta y el hogar</p>
+          <p className="text-sm text-ink/50">Tu cuenta, apariencia y hogar</p>
         </div>
       </div>
 
-      {/* Tu cuenta */}
-      <div className="card animate-fade-up p-6" style={{ animationDelay: '80ms' }}>
-        <h2 className="mb-4 font-display text-sm font-semibold text-ink">Tu cuenta</h2>
+      {/* Cuenta */}
+      <Section
+        icon={<UserRound size={18} />}
+        title="Tu cuenta"
+        description="Foto, nombre y correo"
+        delay={60}
+      >
         <div className="mb-5 flex items-center gap-4 sm:gap-5">
           <div className="relative shrink-0">
             <UserAvatar name={profile.full_name} avatarPath={profile.avatar_path} size="xl" />
@@ -210,11 +291,46 @@ export default function Profile() {
             {updateProfile.isPending ? 'Guardando…' : 'Guardar cambios'}
           </button>
         </form>
-      </div>
+      </Section>
+
+      {/* Apariencia */}
+      <Section
+        icon={<Palette size={18} />}
+        title="Apariencia"
+        description="Personaliza cómo se ve la app"
+        delay={120}
+      >
+        <div className="divide-y divide-slate-100">
+          <SettingRow
+            label="Modo oscuro"
+            description="Fondo oscuro para cuidar la vista"
+          >
+            <Toggle
+              checked={theme === 'dark'}
+              onChange={toggleTheme}
+              aria-label="Alternar modo oscuro"
+            />
+          </SettingRow>
+          <SettingRow
+            label="Reducir animaciones"
+            description="Desactiva animaciones si tu teléfono va lento"
+          >
+            <Toggle
+              checked={reduceAnimations}
+              onChange={toggleReduceAnimations}
+              aria-label="Reducir animaciones"
+            />
+          </SettingRow>
+        </div>
+      </Section>
 
       {/* Hogar */}
-      <div className="card animate-fade-up p-6" style={{ animationDelay: '160ms' }}>
-        <h2 className="mb-4 font-display text-sm font-semibold text-ink">Tu hogar</h2>
+      <Section
+        icon={<Home size={18} />}
+        title="Tu hogar"
+        description="Información del hogar e invitaciones"
+        delay={180}
+      >
         {household ? (
           <div className="space-y-4">
             <div className="flex items-center gap-3">
@@ -250,11 +366,15 @@ export default function Profile() {
         ) : (
           <p className="text-sm text-ink/50">Sin hogar — ve a /setup para crear o unirte.</p>
         )}
-      </div>
+      </Section>
 
-      {/* Sobre la app */}
-      <div className="card animate-fade-up p-6" style={{ animationDelay: '200ms' }}>
-        <h2 className="mb-4 font-display text-sm font-semibold text-ink">Sobre la app</h2>
+      {/* Información */}
+      <Section
+        icon={<Info size={18} />}
+        title="Información"
+        description="Versión y actualizaciones"
+        delay={240}
+      >
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-cream px-4 py-3">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-ink/40">Versión</p>
@@ -272,13 +392,16 @@ export default function Profile() {
         <p className="mt-3 text-xs text-ink/40">
           Cuando haya una versión nueva verás un aviso con el botón Actualizar.
         </p>
-      </div>
+      </Section>
 
       {/* Zona de peligro */}
-      <div className="card animate-fade-up border-coral-200 p-6" style={{ animationDelay: '260ms' }}>
-        <h2 className="mb-2 font-display text-sm font-semibold text-coral-600">
-          Zona de peligro
-        </h2>
+      <Section
+        icon={<AlertTriangle size={18} />}
+        title="Zona de peligro"
+        description="Acciones que no se pueden deshacer"
+        delay={300}
+        className="border-coral-200"
+      >
         <div className="flex flex-col gap-3 sm:flex-row">
           <button
             onClick={() => setConfirmLeave(true)}
@@ -304,11 +427,11 @@ export default function Profile() {
             Cerrar sesión
           </button>
         </div>
-      </div>
+      </Section>
 
       <div className="flex items-center justify-center gap-2 opacity-60">
         <AppLogo size={28} />
-        <p className="text-xs text-ink/40">Gastos del Hogar · versión 1.0</p>
+        <p className="text-xs text-ink/40">Gastos del Hogar · v{__APP_VERSION__}</p>
       </div>
 
       <ConfirmDialog

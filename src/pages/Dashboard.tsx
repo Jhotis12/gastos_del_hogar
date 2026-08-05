@@ -553,7 +553,7 @@ export default function Dashboard() {
       <button
         onClick={() => setQuickOpen(true)}
         aria-label="Agregar gasto rápido"
-        className="fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-pine-700 text-white shadow-lg shadow-pine-900/30 transition-transform active:scale-95 lg:hidden"
+        className="fixed bottom-[calc(env(safe-area-inset-bottom)+4.75rem)] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-pine-700 text-white shadow-lg shadow-pine-900/30 transition-transform active:scale-95 lg:hidden"
       >
         <Plus size={26} />
       </button>

@@ -4,6 +4,7 @@ import { useDeleteRecurring, useRecurringExpenses, useToggleRecurring } from '@/
 import { useExpenses } from '@/hooks/useExpenses'
 import { useSalaries } from '@/hooks/useMembers'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import Toggle from '@/components/ui/Toggle'
 import EmptyState from '@/components/ui/EmptyState'
 import CategoryBadge from '@/components/ui/CategoryBadge'
 import UserAvatar from '@/components/ui/UserAvatar'
@@ -241,18 +242,12 @@ export default function Recurring() {
                     >
                       <Pencil size={16} />
                     </button>
-                    <button
-                      onClick={() => handleToggle(r)}
+                    <Toggle
+                      checked={r.is_active}
+                      onChange={() => handleToggle(r)}
                       disabled={toggle.isPending}
-                      role="switch"
-                      aria-checked={r.is_active}
-                      className={`flex h-7 w-12 items-center rounded-full p-0.5 transition-colors ${
-                        r.is_active ? 'justify-end bg-pine-700' : 'justify-start bg-slate-300'
-                      }`}
                       aria-label={r.is_active ? 'Desactivar servicio' : 'Activar servicio'}
-                    >
-                      <span className="h-6 w-6 rounded-full bg-surface shadow" />
-                    </button>
+                    />
                     <button
                       onClick={() => setDeleting(r)}
                       className="rounded-lg p-3 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
