@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import { Check, ChevronDown } from 'lucide-react'
+import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock'
 import { cn } from '@/lib/utils'
 
 interface SelectInputProps {
@@ -79,11 +80,8 @@ export default function SelectInput({
   // Scroll-lock del fondo solo cuando el sheet móvil está abierto
   useEffect(() => {
     if (!open || !isMobile) return
-    const { overflow } = document.body.style
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = overflow
-    }
+    lockBodyScroll()
+    return () => unlockBodyScroll()
   }, [open, isMobile])
 
   const renderOption = (o: (typeof options)[number]) => {

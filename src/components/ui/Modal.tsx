@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
+import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock'
 
 interface ModalProps {
   open: boolean
@@ -45,21 +46,16 @@ export default function Modal({ open, title, onClose, children }: ModalProps) {
         first.focus()
       }
     }
-    // Scroll-lock del fondo: la página deja de desplazarse mientras el
-    // modal esté abierto (patrón esperado en móvil).
-    const { overflow, paddingRight } = document.body.style
-    document.body.style.overflow = 'hidden'
-    if (window.innerWidth > document.documentElement.clientWidth) {
-      document.body.style.paddingRight = '15px'
-    }
+    // Scroll-lock del fondo: contador compartido (soporta modales anidados
+    // sin dejar el fondo bloqueado).
+    lockBodyScroll()
     previousFocus.current = document.activeElement as HTMLElement | null
     closeRef.current?.focus()
 
     window.addEventListener('keydown', handler)
     return () => {
       window.removeEventListener('keydown', handler)
-      document.body.style.overflow = overflow
-      document.body.style.paddingRight = paddingRight
+      unlockBodyScroll()
       previousFocus.current?.focus()
     }
   }, [open])
