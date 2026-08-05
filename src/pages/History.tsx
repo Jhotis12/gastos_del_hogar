@@ -1,13 +1,16 @@
-import { ArrowDownCircle, ArrowUpCircle, Wallet, History as HistoryIcon } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ArrowDownCircle, ArrowUpCircle, Wallet, History as HistoryIcon, Plus } from 'lucide-react'
 import { useMonthlySurpluses } from '@/hooks/useExpenses'
 import StatCard from '@/components/ui/StatCard'
 import PageSkeleton from '@/components/ui/PageSkeleton'
+import QueryError from '@/components/ui/QueryError'
+import EmptyState from '@/components/ui/EmptyState'
 import { cn } from '@/lib/utils'
 import { monthLabel } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
 export default function History() {
-  const { data: surpluses, isLoading } = useMonthlySurpluses()
+  const { data: surpluses, isLoading, error, refetch } = useMonthlySurpluses()
 
   const rows = (surpluses ?? []).map((s, i) => ({
     ...s,
@@ -22,6 +25,7 @@ export default function History() {
   const finalAccumulated = rows.length > 0 ? rows[rows.length - 1].accumulated : 0
 
   if (isLoading) return <PageSkeleton />
+  if (error) return <QueryError error={error} onRetry={refetch} />
 
   return (
     <div className="space-y-6">
@@ -61,9 +65,20 @@ export default function History() {
 
       <div className="card card-hover animate-fade-up overflow-hidden" style={{ animationDelay: '220ms' }}>
         {rows.length === 0 ? (
-          <p className="py-12 text-center text-sm text-ink/40">
-            Aún no hay movimientos registrados
-          </p>
+          <EmptyState
+            icon={<HistoryIcon size={22} />}
+            title="Aún no hay movimientos registrados"
+            hint="Los sobrantes por mes aparecen cuando registres salarios o gastos"
+            action={
+              <Link
+                to="/gastos"
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+              >
+                <Plus size={16} />
+                Registrar gasto
+              </Link>
+            }
+          />
         ) : (
           <>
             <div className="divide-y divide-slate-100 md:hidden">

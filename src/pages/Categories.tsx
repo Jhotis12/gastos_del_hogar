@@ -4,6 +4,7 @@ import { useAddCategory, useBudgets, useCategories, useDeleteCategory } from '@/
 import Modal from '@/components/ui/Modal'
 import BudgetModal from '@/components/categories/BudgetModal'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import EmptyState from '@/components/ui/EmptyState'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 import QueryError from '@/components/ui/QueryError'
 import { useToast } from '@/components/ui/Toast'
@@ -86,15 +87,21 @@ export default function Categories() {
       ) : error ? (
         <QueryError error={error} onRetry={refetch} />
       ) : !categories || categories.length === 0 ? (
-        <div className="card border-2 border-dashed border-ink/10 py-16 text-center">
-          <p className="text-sm text-ink/40">No hay categorías todavía</p>
-          <button
-            onClick={() => setFormOpen(true)}
-            className="mt-4 inline-flex min-h-12 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
-          >
-            <Plus size={16} />
-            Nueva categoría
-          </button>
+        <div className="card border-2 border-dashed border-ink/10">
+          <EmptyState
+            icon={<Tags size={22} />}
+            title="No hay categorías todavía"
+            hint="Clasifica tus gastos para ver dónde se va el dinero"
+            action={
+              <button
+                onClick={() => setFormOpen(true)}
+                className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+              >
+                <Plus size={16} />
+                Nueva categoría
+              </button>
+            }
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">

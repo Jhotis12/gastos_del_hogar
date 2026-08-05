@@ -219,15 +219,28 @@ function SalaryInput({
 export default function Members() {
   const { user } = useAuth()
   const [month, setMonth] = useState(currentMonthKey())
-  const { data: household } = useHousehold()
-  const { data: members, error: membersError, refetch: refetchMembers } = useMembers()
+  const { data: household, error: householdError, refetch: refetchHousehold } = useHousehold()
+  const {
+    data: members,
+    isLoading: membersLoading,
+    error: membersError,
+    refetch: refetchMembers,
+  } = useMembers()
   const { salaries } = useSalaries(month)
-  const { data: expenses, error: expensesError, refetch: refetchExpenses } = useExpenses(month)
+  const {
+    data: expenses,
+    isLoading: expensesLoading,
+    error: expensesError,
+    refetch: refetchExpenses,
+  } = useExpenses(month)
   const { data: incomes } = useIncomes(month)
   const updatePayday = useUpdatePayday()
   const [copied, setCopied] = useState(false)
 
-  if (!household) return <PageSkeleton />
+  if (householdError) {
+    return <QueryError error={householdError} onRetry={refetchHousehold} />
+  }
+  if (!household || membersLoading || expensesLoading) return <PageSkeleton />
 
   if (membersError || expensesError)
     return (

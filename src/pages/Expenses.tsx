@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, Search, Download, ScanLine, ReceiptText } from 'l
 import { useAddExpense, useDeleteExpense, useExpenses, useUpdateExpense } from '@/hooks/useExpenses'
 import ExpenseForm from '@/components/expenses/ExpenseForm'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import EmptyState from '@/components/ui/EmptyState'
 import CategoryBadge from '@/components/ui/CategoryBadge'
 import MonthPicker from '@/components/ui/MonthPicker'
 import PageSkeleton from '@/components/ui/PageSkeleton'
@@ -190,24 +191,34 @@ export default function Expenses() {
       ) : error ? (
         <QueryError error={error} onRetry={refetch} />
       ) : !searched || searched.length === 0 ? (
-        <div className="card border-2 border-dashed border-ink/10 py-16 text-center">
-          <p className="text-sm text-ink/40">
-            {query || categoryFilter !== 'all'
-              ? 'Sin resultados con los filtros actuales'
-              : 'No hay gastos para este mes. Crea el primero.'}
-          </p>
-          {!query && categoryFilter === 'all' && (
-            <button
-              onClick={() => {
-                setEditing(null)
-                setFormOpen(true)
-              }}
-              className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
-            >
-              <Plus size={16} />
-              Nuevo gasto
-            </button>
-          )}
+        <div className="card border-2 border-dashed border-ink/10">
+          <EmptyState
+            icon={<ReceiptText size={22} />}
+            title={
+              query || categoryFilter !== 'all'
+                ? 'Sin resultados con los filtros actuales'
+                : 'No hay gastos para este mes. Crea el primero.'
+            }
+            hint={
+              query || categoryFilter !== 'all'
+                ? 'Prueba con otros términos o quita los filtros'
+                : 'Registra tu primer gasto para verlo aquí'
+            }
+            action={
+              !query && categoryFilter === 'all' ? (
+                <button
+                  onClick={() => {
+                    setEditing(null)
+                    setFormOpen(true)
+                  }}
+                  className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+                >
+                  <Plus size={16} />
+                  Nuevo gasto
+                </button>
+              ) : undefined
+            }
+          />
         </div>
       ) : (
         <div className="overflow-hidden card">

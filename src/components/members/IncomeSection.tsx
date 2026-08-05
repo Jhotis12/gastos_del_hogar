@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import Skeleton from '@/components/ui/Skeleton'
 import DateInput from '@/components/ui/DateInput'
 import MoneyInput from '@/components/ui/MoneyInput'
 import SelectInput from '@/components/ui/SelectInput'
@@ -33,7 +34,7 @@ type Draft = {
 }
 
 export default function IncomeSection({ month, members }: IncomeSectionProps) {
-  const { data: incomes } = useIncomes(month)
+  const { data: incomes, isLoading: incomesLoading, error: incomesError } = useIncomes(month)
   const addIncome = useAddIncome()
   const updateIncome = useUpdateIncome()
   const removeIncome = useDeleteIncome()
@@ -113,7 +114,20 @@ export default function IncomeSection({ month, members }: IncomeSectionProps) {
         )}
       </div>
 
-      {!incomes || incomes.length === 0 ? (
+      {incomesLoading ? (
+        <div className="space-y-3 px-5 py-6">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="flex items-center justify-between gap-3">
+              <Skeleton className="h-5 w-36" />
+              <Skeleton className="h-5 w-24" />
+            </div>
+          ))}
+        </div>
+      ) : incomesError ? (
+        <p className="px-5 py-6 text-center text-sm text-coral-600">
+          No se pudieron cargar los otros ingresos
+        </p>
+      ) : !incomes || incomes.length === 0 ? (
         <p className="px-5 py-8 text-center text-sm text-ink/40">
           Aún no hay otros ingresos este mes
         </p>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowDownCircle, ArrowUpCircle, Sparkles, AlertTriangle, Plus, Wallet, LayoutDashboard } from 'lucide-react'
+import { ArrowDownCircle, ArrowUpCircle, Sparkles, AlertTriangle, Plus, Wallet, LayoutDashboard, PieChart, ReceiptText, Coins } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useAddExpense } from '@/hooks/useExpenses'
 import { useCountUp } from '@/hooks/useCountUp'
@@ -15,6 +15,9 @@ import {
 import { useHousehold } from '@/hooks/useHousehold'
 import { useMembers, useSalaries } from '@/hooks/useMembers'
 import StatCard from '@/components/ui/StatCard'
+import EmptyState from '@/components/ui/EmptyState'
+import QueryError from '@/components/ui/QueryError'
+import Skeleton from '@/components/ui/Skeleton'
 import ExpenseForm from '@/components/expenses/ExpenseForm'
 import ApplyRecurringModal from '@/components/services/ApplyRecurringModal'
 import MonthPicker from '@/components/ui/MonthPicker'
@@ -55,18 +58,41 @@ export default function Dashboard() {
       throw err
     }
   }
-  const { data: household } = useHousehold()
-  const { data: members } = useMembers()
+  const { data: household, error: householdError, refetch: refetchHousehold } = useHousehold()
+  const { data: members, error: membersError, refetch: refetchMembers } = useMembers()
   const { salaries, isPending: salariesPending } = useSalaries(month)
-  const { data: expenses } = useExpenses(month)
+  const {
+    data: expenses,
+    isLoading: expensesLoading,
+    error: expensesError,
+    refetch: refetchExpenses,
+  } = useExpenses(month)
   const { data: budgets } = useBudgets(month)
   const { totalIncome, totalExpenses } = useSummary(month)
-  const { data: runningBalance } = useRunningBalance(month)
-  const { data: surpluses } = useMonthlySurpluses()
+  const {
+    data: runningBalance,
+    error: balanceError,
+    refetch: refetchBalance,
+  } = useRunningBalance(month)
+  const {
+    data: surpluses,
+    error: surplusesError,
+    refetch: refetchSurpluses,
+  } = useMonthlySurpluses()
   const pendingRecurring = usePendingRecurring(month)
   const { data: recurring } = useRecurringExpenses()
   const balanceAnimated = useCountUp(runningBalance ?? 0)
   const [applyOpen, setApplyOpen] = useState(false)
+
+  // Errores de queries: fallo visible con reintento en vez de secciones vacías
+  const queryError = [householdError, membersError, expensesError, balanceError, surplusesError].find(Boolean)
+  const retryAll = () => {
+    void refetchHousehold()
+    void refetchMembers()
+    void refetchExpenses()
+    void refetchBalance()
+    void refetchSurpluses()
+  }
 
   const paidIds = new Set<string>()
   for (const e of expenses ?? []) {
@@ -142,6 +168,8 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {queryError && <QueryError error={queryError} onRetry={retryAll} />}
+
       <div className="animate-fade-up relative overflow-hidden rounded-2xl bg-gradient-to-br from-pine-700 via-pine-800 to-pine-950 p-5 text-white shadow-lg shadow-pine-900/20 sm:p-8">
         <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-400/20 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-14 left-1/3 h-40 w-40 rounded-full bg-pine-400/20 blur-2xl" />
@@ -151,7 +179,11 @@ export default function Dashboard() {
             data-testid="hero-saldo"
             className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-5xl"
           >
-            {runningBalance === undefined ? '$ —' : formatCurrency(balanceAnimated)}
+            {runningBalance === undefined ? (
+              <Skeleton tone="onDark" className="mt-2 h-10 w-52 sm:h-14 sm:w-72" />
+            ) : (
+              formatCurrency(balanceAnimated)
+            )}
           </p>
           <p className="mt-1 text-xs text-pine-200/80">
             Incluye el sobrante de meses anteriores
@@ -220,17 +252,30 @@ export default function Dashboard() {
           <h2 className="mb-4 font-display text-sm font-semibold text-ink">
             Gastos por categoría
           </h2>
-          {categoriesSorted.length === 0 ? (
-            <div className="py-6 text-center">
-              <p className="text-sm text-ink/40">Sin gastos registrados este mes</p>
-              <button
-                onClick={() => setQuickOpen(true)}
-                className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
-              >
-                <Plus size={16} />
-                Agregar gasto
-              </button>
+          {expensesLoading ? (
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex items-center justify-between gap-3">
+                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="h-5 w-20" />
+                </div>
+              ))}
             </div>
+          ) : categoriesSorted.length === 0 ? (
+            <EmptyState
+              compact
+              icon={<PieChart size={22} />}
+              title="Sin gastos registrados este mes"
+              action={
+                <button
+                  onClick={() => setQuickOpen(true)}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+                >
+                  <Plus size={16} />
+                  Agregar gasto
+                </button>
+              }
+            />
           ) : (
             <div className="space-y-3">
               {categoriesSorted.map((c) => {
@@ -295,15 +340,19 @@ export default function Dashboard() {
             </Link>
           </div>
           {salariesPending ? null : salaries.length === 0 ? (
-            <div className="py-6 text-center">
-              <p className="text-sm text-ink/40">Aún no hay salarios registrados</p>
-              <Link
-                to="/miembros"
-                className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
-              >
-                Registrar salario
-              </Link>
-            </div>
+            <EmptyState
+              compact
+              icon={<Wallet size={22} />}
+              title="Aún no hay salarios registrados"
+              action={
+                <Link
+                  to="/miembros"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+                >
+                  Registrar salario
+                </Link>
+              }
+            />
           ) : (
             <ul className="space-y-3">
               {salaries.map((s) => (
@@ -359,9 +408,20 @@ export default function Dashboard() {
           </Link>
         </div>
         {surpluses === undefined ? null : monthList.length === 0 ? (
-          <p className="py-8 text-center text-sm text-ink/40">
-            Sin movimientos registrados
-          </p>
+          <EmptyState
+            compact
+            icon={<Coins size={22} />}
+            title="Sin movimientos registrados"
+            hint="Registra salarios o gastos para ver el sobrante por mes"
+            action={
+              <Link
+                to="/gastos"
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+              >
+                Ver gastos
+              </Link>
+            }
+          />
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {monthList.map((s) => {
@@ -425,17 +485,30 @@ export default function Dashboard() {
             Ver todos
           </Link>
         </div>
-        {!expenses || expenses.length === 0 ? (
-          <div className="py-6 text-center">
-            <p className="text-sm text-ink/40">Sin gastos este mes</p>
-            <button
-              onClick={() => setQuickOpen(true)}
-              className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
-            >
-              <Plus size={16} />
-              Agregar gasto
-            </button>
+        {expensesLoading ? (
+          <div className="space-y-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="flex items-center justify-between gap-3">
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-5 w-24" />
+              </div>
+            ))}
           </div>
+        ) : !expenses || expenses.length === 0 ? (
+          <EmptyState
+            compact
+            icon={<ReceiptText size={22} />}
+            title="Sin gastos este mes"
+            action={
+              <button
+                onClick={() => setQuickOpen(true)}
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+              >
+                <Plus size={16} />
+                Agregar gasto
+              </button>
+            }
+          />
         ) : (
           <ul className="divide-y divide-slate-100">
             {expenses.slice(0, 6).map((e) => (

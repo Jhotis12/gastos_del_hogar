@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus, Trash2, Pencil, PiggyBank, ArrowDownToLine, ArrowUpFromLine, CheckCircle2, Target } from 'lucide-react'
 import { useDeleteSavingsGoal, useSavingsGoals } from '@/hooks/useSavings'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import EmptyState from '@/components/ui/EmptyState'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 import QueryError from '@/components/ui/QueryError'
 import GoalForm from '@/components/savings/GoalForm'
@@ -86,21 +87,24 @@ export default function Savings() {
       ) : error ? (
         <QueryError error={error} onRetry={refetch} />
       ) : !goals || goals.length === 0 ? (
-        <div className="card animate-fade-up border-2 border-dashed border-ink/10 py-16 text-center">
-          <Target size={32} className="mx-auto text-ink/20" />
-          <p className="mt-3 text-sm text-ink/40">
-            Sin metas todavía. Crea la primera y empieza a ahorrar.
-          </p>
-          <button
-            onClick={() => {
-              setEditing(null)
-              setFormOpen(true)
-            }}
-            className="mt-4 inline-flex min-h-12 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
-          >
-            <Plus size={16} />
-            Nueva meta
-          </button>
+        <div className="card animate-fade-up border-2 border-dashed border-ink/10">
+          <EmptyState
+            icon={<Target size={22} />}
+            title="Sin metas todavía"
+            hint="Define un objetivo y empieza a ahorrar"
+            action={
+              <button
+                onClick={() => {
+                  setEditing(null)
+                  setFormOpen(true)
+                }}
+                className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+              >
+                <Plus size={16} />
+                Nueva meta
+              </button>
+            }
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

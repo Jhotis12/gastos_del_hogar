@@ -4,6 +4,7 @@ import { useDeleteRecurring, useRecurringExpenses, useToggleRecurring } from '@/
 import { useExpenses } from '@/hooks/useExpenses'
 import { useSalaries } from '@/hooks/useMembers'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import EmptyState from '@/components/ui/EmptyState'
 import CategoryBadge from '@/components/ui/CategoryBadge'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 import QueryError from '@/components/ui/QueryError'
@@ -151,20 +152,24 @@ export default function Recurring() {
       ) : error ? (
         <QueryError error={error} onRetry={refetch} />
       ) : !recurring || recurring.length === 0 ? (
-        <div className="card border-2 border-dashed border-ink/10 py-16 text-center">
-          <p className="text-sm text-ink/40">
-            No hay servicios registrados. Agrega el primero.
-          </p>
-          <button
-            onClick={() => {
-              setEditing(null)
-              setFormOpen(true)
-            }}
-            className="mt-4 inline-flex min-h-12 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
-          >
-            <Plus size={16} />
-            Nuevo servicio
-          </button>
+        <div className="card border-2 border-dashed border-ink/10">
+          <EmptyState
+            icon={<Repeat size={22} />}
+            title="No hay servicios registrados"
+            hint="Agrega gastos fijos como arriendo, servicios públicos o suscripciones"
+            action={
+              <button
+                onClick={() => {
+                  setEditing(null)
+                  setFormOpen(true)
+                }}
+                className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+              >
+                <Plus size={16} />
+                Nuevo servicio
+              </button>
+            }
+          />
         </div>
       ) : (
         <div className="overflow-hidden card">
