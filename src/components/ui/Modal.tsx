@@ -25,14 +25,14 @@ export default function Modal({ open, title, onClose, children }: ModalProps) {
   // al escribir en un input): se guarda en un ref para que el efecto de foco
   // y scroll-lock corra solo cuando el modal se abre/cierra, no en cada
   // render (eso movía el foco al botón X al teclear).
-  const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+  const requestCloseRef = useRef(drag.requestClose)
+  requestCloseRef.current = drag.requestClose
 
   useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onCloseRef.current()
+        requestCloseRef.current()
         return
       }
       // Focus trap: Tab/Shift+Tab se mantienen dentro del modal
@@ -75,27 +75,28 @@ export default function Modal({ open, title, onClose, children }: ModalProps) {
       aria-modal="true"
       aria-label={title}
       className="fixed inset-0 z-50 flex h-[100dvh] items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center sm:p-4"
-      onClick={onClose}
+      onClick={drag.requestClose}
     >
       <div
         ref={setPanelRef}
-        onTouchStart={drag.onTouchStart}
-        onTouchMove={drag.onTouchMove}
-        onTouchEnd={drag.onTouchEnd}
-        style={drag.dragStyle}
+        style={drag.style}
         className={cn(
-          'animate-scale-in max-h-[92dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:rounded-2xl sm:pb-6',
-          !drag.dragging && 'transition-transform duration-300 ease-out',
+          // Móvil: entra deslizándose desde abajo; desktop: escala centrada
+          'animate-sheet-up max-h-[92dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:animate-scale-in sm:rounded-2xl sm:pb-6',
+          !drag.dragging && !drag.closing && 'transition-transform duration-300 ease-out',
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Asa de arrastre (móvil): invita a deslizar hacia abajo para cerrar */}
-        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-ink/10 sm:hidden" />
+        {/* Asa de arrastre (móvil): se desliza hacia abajo para cerrar */}
+        <div
+          {...drag.handleProps}
+          className="mx-auto mb-3 h-1 w-10 shrink-0 touch-none rounded-full bg-ink/10 sm:hidden"
+        />
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-ink">{title}</h2>
           <button
             ref={closeRef}
-            onClick={onClose}
+            onClick={drag.requestClose}
             className="rounded-lg p-2.5 text-ink/40 hover:bg-slate-100 hover:text-ink/55"
             aria-label="Cerrar"
           >

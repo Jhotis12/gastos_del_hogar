@@ -59,17 +59,18 @@ export default function SelectInput({
   }
   const closeMenu = () => setOpen(false)
   const drag = useDragToClose(closeMenu)
+  const requestClose = drag.requestClose
 
   const select = (optionValue: unknown) => {
     onChange({ target: { value: String(optionValue) } })
-    closeMenu()
+    requestClose()
   }
 
   // Escape + cierre al redimensionar (el rect quedaría desfasado)
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeMenu()
+      if (e.key === 'Escape') requestClose()
     }
     window.addEventListener('keydown', onKey)
     window.addEventListener('resize', closeMenu)
@@ -119,7 +120,7 @@ export default function SelectInput({
         aria-haspopup="listbox"
         aria-expanded={open}
         disabled={disabled}
-        onClick={() => (open ? closeMenu() : openMenu())}
+        onClick={() => (open ? requestClose() : openMenu())}
         className={cn(
           'flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink transition-colors focus:outline-none focus:ring-2 focus:ring-pine-500/20 disabled:opacity-50',
           open && 'border-pine-500',
@@ -145,16 +146,16 @@ export default function SelectInput({
               <div className="fixed inset-0 z-[60]">
                 <div
                   ref={drag.panelRef}
-                  onTouchStart={drag.onTouchStart}
-                  onTouchMove={drag.onTouchMove}
-                  onTouchEnd={drag.onTouchEnd}
-                  style={drag.dragStyle}
+                  style={drag.style}
                   className={cn(
-                    'animate-fade-up absolute inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-3 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl',
-                    !drag.dragging && 'transition-transform duration-300 ease-out',
+                    'animate-sheet-up absolute inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-3 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl',
+                    !drag.dragging && !drag.closing && 'transition-transform duration-300 ease-out',
                   )}
                 >
-                  <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-ink/10" />
+                  <div
+                    {...drag.handleProps}
+                    className="mx-auto mb-2 h-1 w-10 shrink-0 touch-none rounded-full bg-ink/10"
+                  />
                   <ul role="listbox" aria-label={ariaLabel}>
                     {options.map(renderOption)}
                   </ul>

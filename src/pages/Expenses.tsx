@@ -37,6 +37,7 @@ export default function Expenses() {
   const [fabOpen, setFabOpen] = useState(false)
   const toast = useToast()
   const fabDrag = useDragToClose(() => setFabOpen(false))
+  const fabRequestClose = fabDrag.requestClose
 
   const { data: expenses, isLoading, error, refetch } = useExpenses(month)
   const addExpense = useAddExpense()
@@ -350,19 +351,19 @@ export default function Expenses() {
 
       {fabOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setFabOpen(false)} />
+          <div className="absolute inset-0 bg-black/40" onClick={fabRequestClose} />
           <div
             ref={fabDrag.panelRef}
-            onTouchStart={fabDrag.onTouchStart}
-            onTouchMove={fabDrag.onTouchMove}
-            onTouchEnd={fabDrag.onTouchEnd}
-            style={fabDrag.dragStyle}
+            style={fabDrag.style}
             className={cn(
-              'animate-fade-up absolute inset-x-0 bottom-0 rounded-t-3xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl',
-              !fabDrag.dragging && 'transition-transform duration-300 ease-out',
+              'animate-sheet-up absolute inset-x-0 bottom-0 rounded-t-3xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl',
+              !fabDrag.dragging && !fabDrag.closing && 'transition-transform duration-300 ease-out',
             )}
           >
-            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-ink/10" />
+            <div
+              {...fabDrag.handleProps}
+              className="mx-auto mb-3 h-1 w-10 shrink-0 touch-none rounded-full bg-ink/10"
+            />
             <button
               onClick={() => {
                 setFabOpen(false)

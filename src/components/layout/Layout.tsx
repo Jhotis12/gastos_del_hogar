@@ -90,6 +90,7 @@ export default function Layout() {
 
   const closeMore = () => setMoreOpen(false)
   const moreDrag = useDragToClose(closeMore)
+  const moreRequestClose = moreDrag.requestClose
 
   useEffect(() => {
     if (!moreOpen) return
@@ -222,16 +223,16 @@ export default function Layout() {
           <div className="absolute inset-0 bg-black/40" onClick={closeMore} />
           <div
             ref={moreDrag.panelRef}
-            onTouchStart={moreDrag.onTouchStart}
-            onTouchMove={moreDrag.onTouchMove}
-            onTouchEnd={moreDrag.onTouchEnd}
-            style={moreDrag.dragStyle}
+            style={moreDrag.style}
             className={cn(
-              'animate-fade-up absolute inset-x-0 bottom-0 max-h-[80dvh] overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl',
-              !moreDrag.dragging && 'transition-transform duration-300 ease-out',
+              'animate-sheet-up absolute inset-x-0 bottom-0 max-h-[80dvh] overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl',
+              !moreDrag.dragging && !moreDrag.closing && 'transition-transform duration-300 ease-out',
             )}
           >
-            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-ink/10" />
+            <div
+              {...moreDrag.handleProps}
+              className="mx-auto mb-3 h-1 w-10 shrink-0 touch-none rounded-full bg-ink/10"
+            />
             <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-ink/40">
               Más opciones
             </p>
@@ -240,7 +241,7 @@ export default function Layout() {
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  onClick={closeMore}
+                  onClick={moreRequestClose}
                   className={({ isActive }) =>
                     cn(
                       'flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors',
