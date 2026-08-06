@@ -38,7 +38,7 @@ export default function MonthPicker({ month, onChange }: MonthPickerProps) {
         onChange={(e) => {
           if (e.target.value) onChange(`${e.target.value}-01`)
         }}
-        className="rounded-lg border border-slate-200 px-3 py-2 text-base font-medium text-ink/70 focus:border-pine-500 focus:outline-none"
+        className="min-w-36 rounded-lg border border-slate-200 px-3 py-2 text-base font-medium text-ink/70 focus:border-pine-500 focus:outline-none"
       />
       <button
         onClick={() => onChange(shiftMonth(month, 1))}

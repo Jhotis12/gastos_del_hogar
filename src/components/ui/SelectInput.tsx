@@ -58,19 +58,22 @@ export default function SelectInput({
     setOpen(true)
   }
   const closeMenu = () => setOpen(false)
+  // La animación de salida (requestClose) queda SOLO para el gesto de
+  // arrastre del asa; elegir/escape/backdrop cierran al instante.
   const drag = useDragToClose(closeMenu)
-  const requestClose = drag.requestClose
 
   const select = (optionValue: unknown) => {
     onChange({ target: { value: String(optionValue) } })
-    requestClose()
+    // Cierre instantáneo al elegir: la animación de salida (requestClose)
+    // mantiene el backdrop 260ms y se traga el siguiente toque (doble tap)
+    closeMenu()
   }
 
   // Escape + cierre al redimensionar (el rect quedaría desfasado)
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') requestClose()
+      if (e.key === 'Escape') closeMenu()
     }
     window.addEventListener('keydown', onKey)
     window.addEventListener('resize', closeMenu)
@@ -120,7 +123,7 @@ export default function SelectInput({
         aria-haspopup="listbox"
         aria-expanded={open}
         disabled={disabled}
-        onClick={() => (open ? requestClose() : openMenu())}
+        onClick={() => (open ? closeMenu() : openMenu())}
         className={cn(
           'flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink transition-colors focus:outline-none focus:ring-2 focus:ring-pine-500/20 disabled:opacity-50',
           open && 'border-pine-500',

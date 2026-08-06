@@ -398,13 +398,13 @@ export default function Members() {
                       )}
                     </p>
                     {m.id === user?.id ? (
-                      <div className="mt-1 flex items-center gap-2">
+                      <div className="mt-1.5 flex flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:gap-2">
                         <span className="text-xs text-ink/40">Día de pago</span>
                         <SelectInput
                           aria-label="Día de pago"
                           value={m.payday ?? 1}
                           onChange={handlePaydayChange(m)}
-                          className="w-24"
+                          className="w-full sm:w-28"
                         >
                           {PAY_DAYS.map((d) => (
                             <option key={d} value={d}>
