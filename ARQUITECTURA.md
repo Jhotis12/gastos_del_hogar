@@ -72,6 +72,7 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 │   └── pages/              # 1 página por ruta
 ├── tests/
 │   ├── e2e-flow.mjs         # Suite e2e de 43 pasos (navegación SPA)
+│   ├── e2e-mobile.mjs       # Suite e2e móvil: 9 pasos táctiles (drag-to-close, sheets)
 │   ├── e2e-realtime.mjs     # Sincronización en tiempo real entre 2 miembros
 │   ├── check-mobile.mjs     # Verificación móvil (375px, sin overflow)
 │   ├── reset-sandbox.sh     # Reinicia el usuario sandbox (requiere SUPABASE_SERVICE_ROLE)
@@ -415,6 +416,7 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
 | `pnpm lint` | oxlint |
 | `node tests/e2e-flow.mjs` | Suite e2e (requiere dev server arriba) |
 | `node tests/check-mobile.mjs` | Verificación mobile 375px: 9 rutas + modales sin overflow |
+| `node tests/e2e-mobile.mjs` | Suite e2e móvil (Chromium touch): sheets, arrastre, flick, acordeón |
 | `SUPABASE_SERVICE_ROLE=… bash tests/reset-sandbox.sh` | Reinicia usuario sandbox (proyecto del `.env`) |
 | `SUPABASE_URL=http://127.0.0.1:54331 SUPABASE_SERVICE_ROLE=<key local> bash tests/reset-sandbox.sh` | Reinicia el sandbox en el entorno LOCAL (`supabase start`) |
 | `SUPABASE_ACCESS_TOKEN=… supabase functions deploy analyze-receipt` | Deploy Edge Function |
