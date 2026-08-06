@@ -231,8 +231,15 @@ export default function Layout() {
           >
             <div
               {...moreDrag.handleProps}
-              className="mx-auto mb-3 h-1 w-10 shrink-0 touch-none rounded-full bg-ink/10"
-            />
+              className="mb-1 flex shrink-0 touch-none justify-center py-2"
+            >
+              <span
+                className={cn(
+                  'h-1 w-10 rounded-full transition-colors duration-200',
+                  moreDrag.touching ? 'bg-pine-500' : moreDrag.dragging ? 'bg-pine-600' : 'bg-ink/10',
+                )}
+              />
+            </div>
             <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-ink/40">
               Más opciones
             </p>

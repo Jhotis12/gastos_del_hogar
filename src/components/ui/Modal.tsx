@@ -87,11 +87,19 @@ export default function Modal({ open, title, onClose, children }: ModalProps) {
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Asa de arrastre (móvil): se desliza hacia abajo para cerrar */}
+        {/* Asa de arrastre (móvil): al tocarla se ilumina para indicar que
+            se puede deslizar hacia abajo y cerrar */}
         <div
           {...drag.handleProps}
-          className="mx-auto mb-3 h-1 w-10 shrink-0 touch-none rounded-full bg-ink/10 sm:hidden"
-        />
+          className="mb-1 flex shrink-0 touch-none justify-center py-2 sm:hidden"
+        >
+          <span
+            className={cn(
+              'h-1 w-10 rounded-full transition-colors duration-200',
+              drag.touching ? 'bg-pine-500' : drag.dragging ? 'bg-pine-600' : 'bg-ink/10',
+            )}
+          />
+        </div>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-ink">{title}</h2>
           <button

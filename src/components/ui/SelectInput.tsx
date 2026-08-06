@@ -154,8 +154,15 @@ export default function SelectInput({
                 >
                   <div
                     {...drag.handleProps}
-                    className="mx-auto mb-2 h-1 w-10 shrink-0 touch-none rounded-full bg-ink/10"
-                  />
+                    className="mb-1 flex shrink-0 touch-none justify-center py-2"
+                  >
+                    <span
+                      className={cn(
+                        'h-1 w-10 rounded-full transition-colors duration-200',
+                        drag.touching ? 'bg-pine-500' : drag.dragging ? 'bg-pine-600' : 'bg-ink/10',
+                      )}
+                    />
+                  </div>
                   <ul role="listbox" aria-label={ariaLabel}>
                     {options.map(renderOption)}
                   </ul>

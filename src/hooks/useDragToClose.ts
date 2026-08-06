@@ -16,6 +16,7 @@ const EXIT_MS = 260
 export function useDragToClose(onClose: () => void) {
   const [dy, setDy] = useState(0)
   const [closing, setClosing] = useState(false)
+  const [touching, setTouching] = useState(false)
   const dragging = useRef(false)
   const startY = useRef(0)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -34,6 +35,7 @@ export function useDragToClose(onClose: () => void) {
 
   const onTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     if (window.matchMedia('(min-width: 640px)').matches) return
+    setTouching(true)
     dragging.current = true
     startY.current = e.touches[0].clientY
   }
@@ -48,6 +50,7 @@ export function useDragToClose(onClose: () => void) {
   const onTouchEnd = () => {
     if (!dragging.current) return
     dragging.current = false
+    setTouching(false)
     setDy((current) => {
       if (current >= CLOSE_THRESHOLD) requestClose()
       return 0
@@ -70,6 +73,7 @@ export function useDragToClose(onClose: () => void) {
     style,
     closing,
     dragging: dy > 0,
+    touching,
     // Props para el asa superior (la "rallita")
     handleProps: { onTouchStart, onTouchMove, onTouchEnd },
     requestClose,
