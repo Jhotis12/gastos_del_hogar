@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
 import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock'
+import { useDragToClose } from '@/hooks/useDragToClose'
+import { cn } from '@/lib/utils'
 
 interface ModalProps {
   open: boolean
@@ -13,6 +15,11 @@ interface ModalProps {
 export default function Modal({ open, title, onClose, children }: ModalProps) {
   const closeRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
+  const drag = useDragToClose(onClose)
+  const setPanelRef = (el: HTMLDivElement | null) => {
+    panelRef.current = el
+    drag.panelRef.current = el
+  }
   const previousFocus = useRef<HTMLElement | null>(null)
   // onClose cambia de identidad en cada render del formulario padre (p. ej.
   // al escribir en un input): se guarda en un ref para que el efecto de foco
@@ -71,10 +78,19 @@ export default function Modal({ open, title, onClose, children }: ModalProps) {
       onClick={onClose}
     >
       <div
-        ref={panelRef}
-        className="animate-scale-in max-h-[92dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:rounded-2xl sm:pb-6"
+        ref={setPanelRef}
+        onTouchStart={drag.onTouchStart}
+        onTouchMove={drag.onTouchMove}
+        onTouchEnd={drag.onTouchEnd}
+        style={drag.dragStyle}
+        className={cn(
+          'animate-scale-in max-h-[92dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] shadow-2xl sm:max-h-[calc(100dvh-2rem)] sm:rounded-2xl sm:pb-6',
+          !drag.dragging && 'transition-transform duration-300 ease-out',
+        )}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Asa de arrastre (móvil): invita a deslizar hacia abajo para cerrar */}
+        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-ink/10 sm:hidden" />
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-ink">{title}</h2>
           <button

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
+import { useDragToClose } from '@/hooks/useDragToClose'
 import { cn } from '@/lib/utils'
 import AppLogo from '@/components/ui/AppLogo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
@@ -88,6 +89,7 @@ export default function Layout() {
   useRealtimeSync(profile?.household_id ?? null)
 
   const closeMore = () => setMoreOpen(false)
+  const moreDrag = useDragToClose(closeMore)
 
   useEffect(() => {
     if (!moreOpen) return
@@ -218,7 +220,17 @@ export default function Layout() {
       {moreOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={closeMore} />
-          <div className="animate-fade-up absolute inset-x-0 bottom-0 max-h-[80dvh] overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl">
+          <div
+            ref={moreDrag.panelRef}
+            onTouchStart={moreDrag.onTouchStart}
+            onTouchMove={moreDrag.onTouchMove}
+            onTouchEnd={moreDrag.onTouchEnd}
+            style={moreDrag.dragStyle}
+            className={cn(
+              'animate-fade-up absolute inset-x-0 bottom-0 max-h-[80dvh] overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl',
+              !moreDrag.dragging && 'transition-transform duration-300 ease-out',
+            )}
+          >
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-ink/10" />
             <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-wide text-ink/40">
               Más opciones

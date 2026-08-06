@@ -10,6 +10,7 @@ import {
 import { createPortal } from 'react-dom'
 import { Check, ChevronDown } from 'lucide-react'
 import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock'
+import { useDragToClose } from '@/hooks/useDragToClose'
 import { cn } from '@/lib/utils'
 
 interface SelectInputProps {
@@ -57,6 +58,7 @@ export default function SelectInput({
     setOpen(true)
   }
   const closeMenu = () => setOpen(false)
+  const drag = useDragToClose(closeMenu)
 
   const select = (optionValue: unknown) => {
     onChange({ target: { value: String(optionValue) } })
@@ -141,7 +143,17 @@ export default function SelectInput({
             {isMobile ? (
               /* Bottom-sheet (móvil) */
               <div className="fixed inset-0 z-[60]">
-                <div className="animate-fade-up absolute inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-3 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl">
+                <div
+                  ref={drag.panelRef}
+                  onTouchStart={drag.onTouchStart}
+                  onTouchMove={drag.onTouchMove}
+                  onTouchEnd={drag.onTouchEnd}
+                  style={drag.dragStyle}
+                  className={cn(
+                    'animate-fade-up absolute inset-x-0 bottom-0 max-h-[70dvh] overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-3 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl',
+                    !drag.dragging && 'transition-transform duration-300 ease-out',
+                  )}
+                >
                   <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-ink/10" />
                   <ul role="listbox" aria-label={ariaLabel}>
                     {options.map(renderOption)}

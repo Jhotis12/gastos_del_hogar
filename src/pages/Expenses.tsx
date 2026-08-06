@@ -13,6 +13,8 @@ import ReceiptCapture from '@/components/expenses/ReceiptCapture'
 import ReceiptResult from '@/components/expenses/ReceiptResult'
 import ReceiptViewer from '@/components/expenses/ReceiptViewer'
 import { useToast } from '@/components/ui/Toast'
+import { useDragToClose } from '@/hooks/useDragToClose'
+import { cn } from '@/lib/utils'
 import type { ExpenseWithRelations, Receipt } from '@/lib/types'
 import { errorMessage } from '@/lib/utils'
 import { formatDate, monthKey } from '@/lib/dates'
@@ -34,6 +36,7 @@ export default function Expenses() {
   const [viewExpense, setViewExpense] = useState<ExpenseWithRelations | null>(null)
   const [fabOpen, setFabOpen] = useState(false)
   const toast = useToast()
+  const fabDrag = useDragToClose(() => setFabOpen(false))
 
   const { data: expenses, isLoading, error, refetch } = useExpenses(month)
   const addExpense = useAddExpense()
@@ -348,7 +351,17 @@ export default function Expenses() {
       {fabOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setFabOpen(false)} />
-          <div className="animate-fade-up absolute inset-x-0 bottom-0 rounded-t-3xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl">
+          <div
+            ref={fabDrag.panelRef}
+            onTouchStart={fabDrag.onTouchStart}
+            onTouchMove={fabDrag.onTouchMove}
+            onTouchEnd={fabDrag.onTouchEnd}
+            style={fabDrag.dragStyle}
+            className={cn(
+              'animate-fade-up absolute inset-x-0 bottom-0 rounded-t-3xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl',
+              !fabDrag.dragging && 'transition-transform duration-300 ease-out',
+            )}
+          >
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-ink/10" />
             <button
               onClick={() => {
