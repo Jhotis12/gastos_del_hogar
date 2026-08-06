@@ -15,14 +15,15 @@ import ReceiptViewer from '@/components/expenses/ReceiptViewer'
 import { useToast } from '@/components/ui/Toast'
 import type { ExpenseWithRelations, Receipt } from '@/lib/types'
 import { errorMessage } from '@/lib/utils'
-import { currentMonthKey, formatDate, monthKey } from '@/lib/dates'
+import { formatDate, monthKey } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useMonthParam } from '@/hooks/useMonthParam'
 
 export default function Expenses() {
   usePageTitle('Gastos')
-  const [month, setMonth] = useState(currentMonthKey())
+  const [month, setMonth] = useMonthParam()
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [formOpen, setFormOpen] = useState(false)

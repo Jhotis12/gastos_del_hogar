@@ -126,25 +126,66 @@
    y para modo oscuro (html.dark[data-palette]). Los tonos neutros y el
    peligro (coral) se mantienen. La paleta por defecto es la del :root/.dark. */
 
-/* Océano: azul profundo + dorado */
+/* Océano: azul cielo brillante (celeste) — claramente distinto del navy */
 html[data-palette="oceano"] {
-  --pine-50: #eef4fb;
-  --pine-100: #d9e8f7;
-  --pine-200: #b3d1ef;
-  --pine-300: #82b4e4;
-  --pine-400: #4f92d6;
-  --pine-500: #2f76c4;
-  --pine-600: #1f5ea8;
-  --pine-700: #1a4d8a;
-  --pine-800: #173f72;
-  --pine-900: #12335d;
-  --pine-950: #0b2140;
+  --pine-50: #f0f9ff;
+  --pine-100: #e0f2fe;
+  --pine-200: #bae6fd;
+  --pine-300: #7dd3fc;
+  --pine-400: #38bdf8;
+  --pine-500: #0ea5e9;
+  --pine-600: #0284c7;
+  --pine-700: #0369a1;
+  --pine-800: #075985;
+  --pine-900: #0c4a6e;
+  --pine-950: #082f49;
+  --gold-100: #e0f2fe;
+  --gold-200: #bae6fd;
+  --gold-300: #7dd3fc;
+  --gold-400: #38bdf8;
+  --gold-500: #0ea5e9;
+  --gold-600: #0284c7;
+  --gold-700: #0369a1;
 }
 html.dark[data-palette="oceano"] {
-  --pine-50: #0d1c30;
-  --pine-100: #132742;
-  --pine-500: #4f92d6;
-  --pine-600: #6ea9e0;
+  --pine-50: #0c1e30;
+  --pine-100: #122b42;
+  --pine-500: #38bdf8;
+  --pine-600: #7dd3fc;
+  --gold-100: #122b42;
+  --gold-600: #7dd3fc;
+}
+
+/* Marino: azul marino profundo + dorado premium (combo de confianza
+   financiera de la skill ui-ux-pro-max) — muy oscuro, nada que ver con
+   el celeste de Océano */
+html[data-palette="marino"] {
+  --pine-50: #eef2f9;
+  --pine-100: #dbe3f5;
+  --pine-200: #b7c7ea;
+  --pine-300: #8da5da;
+  --pine-400: #5f7fc8;
+  --pine-500: #4061b0;
+  --pine-600: #2f4f99;
+  --pine-700: #274083;
+  --pine-800: #21356c;
+  --pine-900: #1c2c59;
+  --pine-950: #121d3b;
+  --gold-100: #fdf6e0;
+  --gold-200: #f9e8b8;
+  --gold-300: #f0d380;
+  --gold-400: #e0b950;
+  --gold-500: #c99a2e;
+  --gold-600: #a16207;
+  --gold-700: #7c4c08;
+}
+html.dark[data-palette="marino"] {
+  --pine-50: #141f38;
+  --pine-100: #1a2947;
+  --pine-500: #5f7fc8;
+  --pine-600: #7f9ad6;
+  --gold-100: #332a12;
+  --gold-600: #e0b950;
 }
 
 /* Violeta: morado-rosado */
@@ -177,55 +218,55 @@ html.dark[data-palette="violeta"] {
   --gold-600: #e985bb;
 }
 
-/* Rubí: rojo carmesí + dorado */
+/* Rubí: rojo puro (carmesí) — claramente distinto del coral de peligro */
 html[data-palette="rubi"] {
-  --pine-50: #fbeeee;
-  --pine-100: #f5d9d9;
-  --pine-200: #eab2b2;
-  --pine-300: #dc8585;
-  --pine-400: #cc5757;
-  --pine-500: #b93a3a;
-  --pine-600: #9e2d2d;
-  --pine-700: #832626;
-  --pine-800: #6b2020;
-  --pine-900: #571b1b;
-  --pine-950: #3a1010;
+  --pine-50: #fef2f2;
+  --pine-100: #fee2e2;
+  --pine-200: #fecaca;
+  --pine-300: #fca5a5;
+  --pine-400: #f87171;
+  --pine-500: #ef4444;
+  --pine-600: #dc2626;
+  --pine-700: #b91c1c;
+  --pine-800: #991b1b;
+  --pine-900: #7f1d1d;
+  --pine-950: #450a0a;
 }
 html.dark[data-palette="rubi"] {
-  --pine-50: #2b1212;
-  --pine-100: #3a1818;
-  --pine-500: #cc5757;
-  --pine-600: #dc8585;
+  --pine-50: #450a0a;
+  --pine-100: #591c1c;
+  --pine-500: #ef4444;
+  --pine-600: #f87171;
 }
 
-/* Esmeralda: teal + ámbar */
+/* Esmeralda: turquesa (verde azulado) + ámbar — alejado del verde de Pino */
 html[data-palette="esmeralda"] {
-  --pine-50: #ecf7f5;
-  --pine-100: #d4ede8;
-  --pine-200: #a8dbd2;
-  --pine-300: #76c4b8;
-  --pine-400: #47a99b;
-  --pine-500: #2f8d80;
-  --pine-600: #247268;
-  --pine-700: #1e5e56;
-  --pine-800: #194d46;
-  --pine-900: #143f3a;
-  --pine-950: #0c2926;
-  --gold-100: #fdf0d3;
-  --gold-200: #fadfa3;
-  --gold-300: #f5c968;
-  --gold-400: #edad38;
-  --gold-500: #d18f1d;
-  --gold-600: #ad7316;
-  --gold-700: #8a5b12;
+  --pine-50: #f0fdfa;
+  --pine-100: #ccfbf1;
+  --pine-200: #99f6e4;
+  --pine-300: #5eead4;
+  --pine-400: #2dd4bf;
+  --pine-500: #14b8a6;
+  --pine-600: #0d9488;
+  --pine-700: #0f766e;
+  --pine-800: #115e59;
+  --pine-900: #134e4a;
+  --pine-950: #042f2e;
+  --gold-100: #fef3c7;
+  --gold-200: #fde68a;
+  --gold-300: #fcd34d;
+  --gold-400: #fbbf24;
+  --gold-500: #f59e0b;
+  --gold-600: #d97706;
+  --gold-700: #b45309;
 }
 html.dark[data-palette="esmeralda"] {
-  --pine-50: #0e2622;
-  --pine-100: #14322e;
-  --pine-500: #47a99b;
-  --pine-600: #63beb0;
+  --pine-50: #062c2a;
+  --pine-100: #0b3d3a;
+  --pine-500: #2dd4bf;
+  --pine-600: #5eead4;
   --gold-100: #33270f;
-  --gold-600: #edad38;
+  --gold-600: #fbbf24;
 }
 
 /* Refuerzo de contraste del texto en modo oscuro: las opacidades bajas de ink
@@ -514,6 +555,13 @@ button {
   touch-action: manipulation;
 }
 
+/* Tailwind v4 deja cursor:default en botones (estándar nativo) — la skill de
+   diseño pide pointer en todo lo clicable para sensación profesional. */
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+  cursor: pointer;
+}
+
 /* Anillo de foco visible para navegación por teclado (no se ve al usar
    mouse/touch). Los inputs/selects ya tienen su propio ring. */
 :focus-visible:not(input):not(textarea):not(select) {
@@ -524,4 +572,31 @@ button {
 
 .font-display {
   font-variant-numeric: tabular-nums;
+}
+
+/* Barras de scroll personalizadas: finas, redondeadas y con el acento de la
+   app. Usan tokens (--pine-*), así que se adaptan al modo oscuro y a las
+   paletas de color automáticamente. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--pine-500) 60%, transparent) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--pine-500) 55%, transparent);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--pine-600);
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
 }

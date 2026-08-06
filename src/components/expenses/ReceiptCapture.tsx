@@ -150,7 +150,7 @@ export default function ReceiptCapture({ open, onClose, onAnalyzed }: ReceiptCap
         )}
 
         {error && (
-          <p className="rounded-lg bg-coral-100/60 px-3 py-2 text-sm text-coral-600">{error}</p>
+          <p role="alert" className="rounded-lg bg-coral-100/60 px-3 py-2 text-sm text-coral-600">{error}</p>
         )}
 
         {preview && !analyzing && (

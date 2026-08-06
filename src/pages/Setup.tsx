@@ -112,7 +112,7 @@ export default function Setup() {
           )}
 
           {error && (
-            <p className="mt-4 rounded-xl bg-coral-100/60 px-4 py-3 text-sm text-coral-600">
+            <p role="alert" className="mt-4 rounded-xl bg-coral-100/60 px-4 py-3 text-sm text-coral-600">
               {error}
             </p>
           )}

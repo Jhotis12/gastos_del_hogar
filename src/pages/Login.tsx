@@ -307,7 +307,7 @@ export default function Login() {
             )}
 
             {error && (
-              <p className="flex items-start gap-2 rounded-xl bg-coral-100/60 px-4 py-3 text-sm text-coral-600">
+              <p role="alert" className="flex items-start gap-2 rounded-xl bg-coral-100/60 px-4 py-3 text-sm text-coral-600">
                 <AlertCircle size={16} className="mt-0.5 shrink-0" />
                 {error}
               </p>

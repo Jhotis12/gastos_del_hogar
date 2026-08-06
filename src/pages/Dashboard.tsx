@@ -26,7 +26,7 @@ import PageSkeleton from '@/components/ui/PageSkeleton'
 import { useToast } from '@/components/ui/Toast'
 import { cn, errorMessage } from '@/lib/utils'
 import {
-  currentMonthKey,
+  
   formatDate,
   monthLabel,
   shiftMonth,
@@ -36,11 +36,12 @@ import {
 import { formatCurrency } from '@/lib/money'
 
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useMonthParam } from '@/hooks/useMonthParam'
 
 export default function Dashboard() {
   usePageTitle('Dashboard')
   const { user, profile } = useAuth()
-  const [month, setMonth] = useState(currentMonthKey())
+  const [month, setMonth] = useMonthParam()
   const toast = useToast()
   const [quickOpen, setQuickOpen] = useState(false)
   const addExpense = useAddExpense()

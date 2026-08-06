@@ -118,7 +118,7 @@ export default function GoalForm({ open, initial, onClose }: GoalModalProps) {
           />
         </div>
         {error && (
-          <p className="rounded-lg bg-coral-100/60 px-3 py-2 text-sm text-coral-600">{error}</p>
+          <p role="alert" className="rounded-lg bg-coral-100/60 px-3 py-2 text-sm text-coral-600">{error}</p>
         )}
         <div className="flex justify-end gap-2 pt-2">
           <button

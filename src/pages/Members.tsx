@@ -24,7 +24,7 @@ import MoneyInput from '@/components/ui/MoneyInput'
 import { useToast } from '@/components/ui/Toast'
 import { errorMessage } from '@/lib/utils'
 import { payDateForMonth } from '@/lib/salaries'
-import { currentMonthKey, monthLabel, todayISO } from '@/lib/dates'
+import { monthLabel, todayISO } from '@/lib/dates'
 import { formatCurrency, parseMoneyInput } from '@/lib/money'
 import type { EffectiveSalary, Profile } from '@/lib/types'
 
@@ -218,11 +218,12 @@ function SalaryInput({
 }
 
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useMonthParam } from '@/hooks/useMonthParam'
 
 export default function Members() {
   usePageTitle('Miembros y Salarios')
   const { user } = useAuth()
-  const [month, setMonth] = useState(currentMonthKey())
+  const [month, setMonth] = useMonthParam()
   const { data: household, error: householdError, refetch: refetchHousehold } = useHousehold()
   const {
     data: members,

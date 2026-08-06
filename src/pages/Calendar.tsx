@@ -12,14 +12,15 @@ import { useToast } from '@/components/ui/Toast'
 import type { ExpenseWithRelations } from '@/lib/types'
 import { cn, errorMessage } from '@/lib/utils'
 import { WEEKDAYS } from '@/lib/constants'
-import { currentMonthKey, daysInMonth, formatDate, monthLabel, todayISO } from '@/lib/dates'
+import { daysInMonth, formatDate, monthLabel, todayISO } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useMonthParam } from '@/hooks/useMonthParam'
 
 export default function Calendar() {
   usePageTitle('Calendario')
-  const [month, setMonth] = useState(currentMonthKey())
+  const [month, setMonth] = useMonthParam()
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [formDate, setFormDate] = useState<string | null>(null)
   const toast = useToast()

@@ -17,14 +17,15 @@ import { useToast } from '@/components/ui/Toast'
 import type { RecurringExpenseWithRelations } from '@/lib/types'
 import { errorMessage } from '@/lib/utils'
 import { FREQUENCY_LABELS } from '@/lib/constants'
-import { currentMonthKey, formatDate, shiftMonth } from '@/lib/dates'
+import { formatDate, shiftMonth } from '@/lib/dates'
 import { formatCurrency } from '@/lib/money'
 
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useMonthParam } from '@/hooks/useMonthParam'
 
 export default function Recurring() {
   usePageTitle('Servicios')
-  const [month, setMonth] = useState(currentMonthKey())
+  const [month, setMonth] = useMonthParam()
   const { data: recurring, isLoading, error, refetch } = useRecurringExpenses()
   const { data: expenses } = useExpenses(month)
   const { salaries } = useSalaries(month)
