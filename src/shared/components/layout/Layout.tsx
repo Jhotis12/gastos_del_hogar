@@ -158,9 +158,6 @@ export default function Layout() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle compact />
-            <span className="hidden max-w-[6rem] truncate text-xs text-ink/50 min-[400px]:inline">
-              {profile?.full_name}
-            </span>
             <UserAvatar
               name={profile?.full_name}
               avatarPath={profile?.avatar_path}

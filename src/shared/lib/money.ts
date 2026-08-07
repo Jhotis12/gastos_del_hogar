@@ -27,3 +27,13 @@ export function formatMoneyInput(value: number): string {
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 }
+
+// Formato compacto para gráficos: 1500000 -> "$1,5 M" (es-CO).
+const compactFormatter = new Intl.NumberFormat('es-CO', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+})
+
+export function formatCurrencyCompact(value: number): string {
+  return '$' + compactFormatter.format(value)
+}

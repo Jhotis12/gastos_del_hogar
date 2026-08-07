@@ -484,7 +484,7 @@ export default function Dashboard() {
             }
           />
         ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex snap-x gap-3 overflow-x-auto pb-1 lg:grid lg:grid-cols-3 lg:overflow-visible lg:pb-0">
             {monthList.map((s) => {
               const isCurrent = s.month === month
               const ratio = s.income > 0 ? s.surplus / s.income : 0
@@ -492,7 +492,7 @@ export default function Dashboard() {
                 <div
                   key={s.month}
                   className={cn(
-                    'rounded-xl border p-4',
+                    'min-w-[9.5rem] snap-start rounded-xl border p-4 lg:min-w-0',
                     isCurrent
                       ? 'border-pine-200 bg-pine-50/40'
                       : 'border-slate-100 bg-cream/50',
@@ -553,14 +553,6 @@ export default function Dashboard() {
         onClose={() => setApplyOpen(false)}
       />
 
-      {/* FAB (móvil): la acción más frecuente al alcance del pulgar */}
-      <button
-        onClick={() => setQuickOpen(true)}
-        aria-label="Agregar gasto rápido"
-        className="fixed bottom-[calc(env(safe-area-inset-bottom)+4.75rem)] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-pine-700 text-white shadow-lg shadow-pine-900/30 transition-transform active:scale-95 lg:hidden"
-      >
-        <Plus size={26} />
-      </button>
     </div>
   )
 }

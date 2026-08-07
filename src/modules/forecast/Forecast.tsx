@@ -16,7 +16,7 @@ import QueryError from '@/shared/components/ui/QueryError'
 import PageSkeleton from '@/shared/components/ui/PageSkeleton'
 import { cn } from '@/shared/lib/utils'
 import { shortMonthLabel } from '@/shared/lib/dates'
-import { formatCurrency } from '@/shared/lib/money'
+import { formatCurrency, formatCurrencyCompact } from '@/shared/lib/money'
 import { savingsInMonths } from '@/modules/forecast/lib/forecast'
 
 const HORIZONS = [1, 3, 6]
@@ -219,7 +219,9 @@ export default function Forecast() {
             const h = Math.max(Math.round((c.expenses / maxChart) * BAR_MAX), 4)
             return (
               <div key={c.month} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
-                <p className="text-[11px] font-semibold text-ink/70">{formatCurrency(c.expenses)}</p>
+                <p className="whitespace-nowrap text-[11px] font-semibold text-ink/70">
+                  {formatCurrencyCompact(c.expenses)}
+                </p>
                 <div
                   title={shortMonthLabel(c.month)}
                   className={cn(
