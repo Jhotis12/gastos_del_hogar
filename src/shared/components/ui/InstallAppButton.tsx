@@ -1,5 +1,5 @@
 import { Download } from 'lucide-react'
-import { useInstallPrompt } from '@/hooks/useInstallPrompt'
+import { useInstallPrompt } from '@/shared/hooks/useInstallPrompt'
 
 export default function InstallAppButton() {
   const { canInstall, promptInstall } = useInstallPrompt()

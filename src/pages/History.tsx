@@ -9,7 +9,7 @@ import { cn } from '@/shared/lib/utils'
 import { monthLabel } from '@/shared/lib/dates'
 import { formatCurrency } from '@/shared/lib/money'
 
-import { usePageTitle } from '@/hooks/usePageTitle'
+import { usePageTitle } from '@/shared/hooks/usePageTitle'
 
 export default function History() {
   usePageTitle('Historial')

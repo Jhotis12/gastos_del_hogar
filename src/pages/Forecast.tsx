@@ -10,8 +10,8 @@ import {
   BarChart3,
 } from 'lucide-react'
 import { useForecast } from '@/hooks/useForecast'
-import { useCountUp } from '@/hooks/useCountUp'
-import { usePageTitle } from '@/hooks/usePageTitle'
+import { useCountUp } from '@/shared/hooks/useCountUp'
+import { usePageTitle } from '@/shared/hooks/usePageTitle'
 import QueryError from '@/shared/components/ui/QueryError'
 import PageSkeleton from '@/shared/components/ui/PageSkeleton'
 import { cn } from '@/shared/lib/utils'

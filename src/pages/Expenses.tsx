@@ -13,15 +13,15 @@ import ReceiptCapture from '@/components/expenses/ReceiptCapture'
 import ReceiptResult from '@/components/expenses/ReceiptResult'
 import ReceiptViewer from '@/components/expenses/ReceiptViewer'
 import { useToast } from '@/shared/components/ui/Toast'
-import { useDragToClose } from '@/hooks/useDragToClose'
+import { useDragToClose } from '@/shared/hooks/useDragToClose'
 import { cn } from '@/shared/lib/utils'
 import type { ExpenseWithRelations, Receipt } from '@/shared/lib/types'
 import { errorMessage } from '@/shared/lib/utils'
 import { formatDate, monthKey } from '@/shared/lib/dates'
 import { formatCurrency } from '@/shared/lib/money'
 
-import { usePageTitle } from '@/hooks/usePageTitle'
-import { useMonthParam } from '@/hooks/useMonthParam'
+import { usePageTitle } from '@/shared/hooks/usePageTitle'
+import { useMonthParam } from '@/shared/hooks/useMonthParam'
 
 export default function Expenses() {
   usePageTitle('Gastos')

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { AlertCircle, ArrowLeft, CheckCircle2, Lock } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/shared/hooks/useAuth'
 import { supabase } from '@/shared/lib/supabase'
 import { cn, errorMessage } from '@/shared/lib/utils'
 import { useToast } from '@/shared/components/ui/Toast'
-import { usePageTitle } from '@/hooks/usePageTitle'
+import { usePageTitle } from '@/shared/hooks/usePageTitle'
 
 const inputBase =
   'w-full rounded-xl border bg-surface py-3 pl-11 pr-4 text-base text-ink placeholder:text-ink/35 focus:outline-none focus:ring-2 transition-colors'

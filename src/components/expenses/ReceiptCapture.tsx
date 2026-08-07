@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Camera, ImagePlus, ScanLine, X } from 'lucide-react'
 import Modal from '@/shared/components/ui/Modal'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/shared/hooks/useAuth'
 import { analyzeReceipt, uploadReceiptImage, useCreateReceipt, useUpdateReceiptParsed } from '@/hooks/useReceipts'
 import { errorMessage } from '@/shared/lib/utils'
 import { compressImage } from '@/shared/lib/images'

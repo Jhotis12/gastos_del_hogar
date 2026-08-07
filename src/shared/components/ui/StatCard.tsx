@@ -1,5 +1,5 @@
 import { cn } from '@/shared/lib/utils'
-import { useCountUp } from '@/hooks/useCountUp'
+import { useCountUp } from '@/shared/hooks/useCountUp'
 import { formatCurrency } from '@/shared/lib/money'
 import type { ReactNode } from 'react'
 

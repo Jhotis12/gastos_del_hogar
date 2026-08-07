@@ -12,7 +12,7 @@ import type { SavingsGoal } from '@/shared/lib/types'
 import { cn, errorMessage } from '@/shared/lib/utils'
 import { formatCurrency } from '@/shared/lib/money'
 
-import { usePageTitle } from '@/hooks/usePageTitle'
+import { usePageTitle } from '@/shared/hooks/usePageTitle'
 import { useForecast } from '@/hooks/useForecast'
 import { shortMonthLabel, shiftMonth } from '@/shared/lib/dates'
 

@@ -10,7 +10,7 @@ import {
 import { createPortal } from 'react-dom'
 import { Check, ChevronDown } from 'lucide-react'
 import { lockBodyScroll, unlockBodyScroll } from '@/shared/lib/scrollLock'
-import { useDragToClose } from '@/hooks/useDragToClose'
+import { useDragToClose } from '@/shared/hooks/useDragToClose'
 import { cn } from '@/shared/lib/utils'
 
 interface SelectInputProps {

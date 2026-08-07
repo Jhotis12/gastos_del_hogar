@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/shared/hooks/useAuth'
 import { useMonthlySurpluses, useRunningBalance } from '@/hooks/useExpenses'
 import { useRecurringExpenses } from '@/hooks/useRecurring'
 import { useSalaries } from '@/hooks/useMembers'

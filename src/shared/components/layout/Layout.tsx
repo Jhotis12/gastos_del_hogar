@@ -15,9 +15,9 @@ import {
   History,
   TrendingUp,
 } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
-import { useRealtimeSync } from '@/hooks/useRealtimeSync'
-import { useDragToClose } from '@/hooks/useDragToClose'
+import { useAuth } from '@/shared/hooks/useAuth'
+import { useRealtimeSync } from '@/shared/hooks/useRealtimeSync'
+import { useDragToClose } from '@/shared/hooks/useDragToClose'
 import { cn } from '@/shared/lib/utils'
 import AppLogo from '@/shared/components/ui/AppLogo'
 import ThemeToggle from '@/shared/components/ui/ThemeToggle'

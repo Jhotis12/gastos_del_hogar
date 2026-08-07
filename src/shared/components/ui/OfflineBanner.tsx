@@ -1,5 +1,5 @@
 import { RefreshCw, WifiOff } from 'lucide-react'
-import { useOfflineStatus } from '@/hooks/useOffline'
+import { useOfflineStatus } from '@/shared/hooks/useOffline'
 import { syncNow } from '@/shared/lib/offline/sync'
 import { cn } from '@/shared/lib/utils'
 

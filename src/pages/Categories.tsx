@@ -14,7 +14,7 @@ import { CATEGORY_COLORS, CATEGORY_ICONS, type CategoryIconKey } from '@/shared/
 import { currentMonthKey } from '@/shared/lib/dates'
 import { formatCurrency } from '@/shared/lib/money'
 
-import { usePageTitle } from '@/hooks/usePageTitle'
+import { usePageTitle } from '@/shared/hooks/usePageTitle'
 
 export default function Categories() {
   usePageTitle('Categorías')

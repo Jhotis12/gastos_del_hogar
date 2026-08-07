@@ -16,7 +16,7 @@ import {
   UserRound,
   X,
 } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/shared/hooks/useAuth'
 import { useSettings } from '@/hooks/useSettings'
 import { PALETTES } from '@/shared/lib/palettes'
 import { useHousehold } from '@/hooks/useHousehold'
@@ -35,7 +35,7 @@ import UserAvatar from '@/shared/components/ui/UserAvatar'
 import { useToast } from '@/shared/components/ui/Toast'
 import AppLogo from '@/shared/components/ui/AppLogo'
 import { cn, errorMessage } from '@/shared/lib/utils'
-import { usePageTitle } from '@/hooks/usePageTitle'
+import { usePageTitle } from '@/shared/hooks/usePageTitle'
 
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'

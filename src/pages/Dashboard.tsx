@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowDownCircle, ArrowUpCircle, Sparkles, AlertTriangle, Plus, Wallet, LayoutDashboard, PieChart, ReceiptText, Coins, TrendingUp } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/shared/hooks/useAuth'
 import { useAddExpense } from '@/hooks/useExpenses'
-import { useCountUp } from '@/hooks/useCountUp'
+import { useCountUp } from '@/shared/hooks/useCountUp'
 import { usePendingRecurring, useRecurringExpenses } from '@/hooks/useRecurring'
 import { useBudgets } from '@/hooks/useCategories'
 import {
@@ -36,9 +36,9 @@ import {
 } from '@/shared/lib/dates'
 import { formatCurrency } from '@/shared/lib/money'
 
-import { usePageTitle } from '@/hooks/usePageTitle'
+import { usePageTitle } from '@/shared/hooks/usePageTitle'
 import { savingsInMonths } from '@/lib/forecast'
-import { useMonthParam } from '@/hooks/useMonthParam'
+import { useMonthParam } from '@/shared/hooks/useMonthParam'
 
 export default function Dashboard() {
   usePageTitle('Dashboard')

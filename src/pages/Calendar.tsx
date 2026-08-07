@@ -15,8 +15,8 @@ import { WEEKDAYS } from '@/shared/lib/constants'
 import { daysInMonth, formatDate, monthLabel, todayISO } from '@/shared/lib/dates'
 import { formatCurrency } from '@/shared/lib/money'
 
-import { usePageTitle } from '@/hooks/usePageTitle'
-import { useMonthParam } from '@/hooks/useMonthParam'
+import { usePageTitle } from '@/shared/hooks/usePageTitle'
+import { useMonthParam } from '@/shared/hooks/useMonthParam'
 
 export default function Calendar() {
   usePageTitle('Calendario')

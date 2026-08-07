@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Copy, Check, Users, Pencil, Trash2 } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/shared/hooks/useAuth'
 import {
   useDeleteSalary,
   useMembers,
@@ -217,8 +217,8 @@ function SalaryInput({
   )
 }
 
-import { usePageTitle } from '@/hooks/usePageTitle'
-import { useMonthParam } from '@/hooks/useMonthParam'
+import { usePageTitle } from '@/shared/hooks/usePageTitle'
+import { useMonthParam } from '@/shared/hooks/useMonthParam'
 
 export default function Members() {
   usePageTitle('Miembros y Salarios')
