@@ -1,4 +1,4 @@
-import AppLogo from '@/components/ui/AppLogo'
+import AppLogo from '@/shared/components/ui/AppLogo'
 
 // Carga de página completa: logo con pulso suave y texto breve, sin shimmer.
 // La animación de skeleton queda reservada para contenido puntual donde

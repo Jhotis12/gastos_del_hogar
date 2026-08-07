@@ -2,9 +2,9 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useOfflineStatus } from '@/hooks/useOffline'
-import Layout from '@/components/layout/Layout'
-import PageSkeleton from '@/components/ui/PageSkeleton'
-import OfflineGate from '@/components/ui/OfflineGate'
+import Layout from '@/shared/components/layout/Layout'
+import PageSkeleton from '@/shared/components/ui/PageSkeleton'
+import OfflineGate from '@/shared/components/ui/OfflineGate'
 
 // Lazy loading: cada página se carga solo cuando se navega a ella
 const Login = lazy(() => import('@/pages/Login'))

@@ -28,12 +28,12 @@ import {
   useUpdateAvatar,
   useUpdateProfile,
 } from '@/hooks/useMembers'
-import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import PageSkeleton from '@/components/ui/PageSkeleton'
-import Toggle from '@/components/ui/Toggle'
-import UserAvatar from '@/components/ui/UserAvatar'
-import { useToast } from '@/components/ui/Toast'
-import AppLogo from '@/components/ui/AppLogo'
+import ConfirmDialog from '@/shared/components/ui/ConfirmDialog'
+import PageSkeleton from '@/shared/components/ui/PageSkeleton'
+import Toggle from '@/shared/components/ui/Toggle'
+import UserAvatar from '@/shared/components/ui/UserAvatar'
+import { useToast } from '@/shared/components/ui/Toast'
+import AppLogo from '@/shared/components/ui/AppLogo'
 import { cn, errorMessage } from '@/shared/lib/utils'
 import { usePageTitle } from '@/hooks/usePageTitle'
 

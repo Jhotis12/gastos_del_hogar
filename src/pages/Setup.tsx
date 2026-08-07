@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Home, UserPlus } from 'lucide-react'
-import AppLogo from '@/components/ui/AppLogo'
+import AppLogo from '@/shared/components/ui/AppLogo'
 import { useCreateHousehold, useJoinHousehold } from '@/hooks/useHousehold'
 
 const inputClass =

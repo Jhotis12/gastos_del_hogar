@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
-import ConfirmDialog from '@/components/ui/ConfirmDialog'
-import Skeleton from '@/components/ui/Skeleton'
-import DateInput from '@/components/ui/DateInput'
-import UserAvatar from '@/components/ui/UserAvatar'
-import MoneyInput from '@/components/ui/MoneyInput'
-import SelectInput from '@/components/ui/SelectInput'
-import { useToast } from '@/components/ui/Toast'
+import ConfirmDialog from '@/shared/components/ui/ConfirmDialog'
+import Skeleton from '@/shared/components/ui/Skeleton'
+import DateInput from '@/shared/components/ui/DateInput'
+import UserAvatar from '@/shared/components/ui/UserAvatar'
+import MoneyInput from '@/shared/components/ui/MoneyInput'
+import SelectInput from '@/shared/components/ui/SelectInput'
+import { useToast } from '@/shared/components/ui/Toast'
 import {
   useAddIncome,
   useDeleteIncome,

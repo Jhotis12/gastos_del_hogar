@@ -12,7 +12,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react'
-import AppLogo from '@/components/ui/AppLogo'
+import AppLogo from '@/shared/components/ui/AppLogo'
 import { supabase } from '@/shared/lib/supabase'
 import { cn } from '@/shared/lib/utils'
 

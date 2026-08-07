@@ -4,7 +4,7 @@ import { AlertCircle, ArrowLeft, CheckCircle2, Lock } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/shared/lib/supabase'
 import { cn, errorMessage } from '@/shared/lib/utils'
-import { useToast } from '@/components/ui/Toast'
+import { useToast } from '@/shared/components/ui/Toast'
 import { usePageTitle } from '@/hooks/usePageTitle'
 
 const inputBase =

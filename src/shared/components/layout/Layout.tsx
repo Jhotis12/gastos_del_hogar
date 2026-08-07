@@ -19,10 +19,10 @@ import { useAuth } from '@/hooks/useAuth'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { useDragToClose } from '@/hooks/useDragToClose'
 import { cn } from '@/shared/lib/utils'
-import AppLogo from '@/components/ui/AppLogo'
-import ThemeToggle from '@/components/ui/ThemeToggle'
-import InstallAppButton from '@/components/ui/InstallAppButton'
-import UserAvatar from '@/components/ui/UserAvatar'
+import AppLogo from '@/shared/components/ui/AppLogo'
+import ThemeToggle from '@/shared/components/ui/ThemeToggle'
+import InstallAppButton from '@/shared/components/ui/InstallAppButton'
+import UserAvatar from '@/shared/components/ui/UserAvatar'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
