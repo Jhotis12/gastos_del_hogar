@@ -1,5 +1,5 @@
-import type { EffectiveSalary, Profile, Salary } from '@/lib/types'
-import { daysInMonth } from '@/lib/dates'
+import type { EffectiveSalary, Profile, Salary } from '@/shared/lib/types'
+import { daysInMonth } from '@/shared/lib/dates'
 
 // Fecha de pago de una persona para un mes dado: su día configurado
 // (payday, 1-31) recortado al último día del mes. Default: día 1.

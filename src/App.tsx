@@ -18,6 +18,7 @@ const Members = lazy(() => import('@/pages/Members'))
 const Expenses = lazy(() => import('@/pages/Expenses'))
 const Recurring = lazy(() => import('@/pages/Recurring'))
 const Savings = lazy(() => import('@/pages/Savings'))
+const Forecast = lazy(() => import('@/pages/Forecast'))
 const Categories = lazy(() => import('@/pages/Categories'))
 const Profile = lazy(() => import('@/pages/Profile'))
 
@@ -38,6 +39,7 @@ if (import.meta.env.DEV) {
     import('@/pages/Expenses'),
     import('@/pages/Recurring'),
     import('@/pages/Savings'),
+    import('@/pages/Forecast'),
     import('@/pages/Categories'),
     import('@/pages/Profile'),
   ])
@@ -110,6 +112,7 @@ export default function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/calendario" element={<Calendar />} />
               <Route path="/historial" element={<History />} />
+              <Route path="/proyeccion" element={<Forecast />} />
               <Route path="/miembros" element={<Members />} />
               <Route path="/gastos" element={<Expenses />} />
               <Route path="/recurrentes" element={<Recurring />} />

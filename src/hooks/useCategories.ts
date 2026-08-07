@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/lib/supabase'
-import type { Category } from '@/lib/types'
+import { supabase } from '@/shared/lib/supabase'
+import type { Category } from '@/shared/lib/types'
 
 export function useCategories() {
   const { profile } = useAuth()

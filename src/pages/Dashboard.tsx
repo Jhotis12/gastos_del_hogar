@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowDownCircle, ArrowUpCircle, Sparkles, AlertTriangle, Plus, Wallet, LayoutDashboard, PieChart, ReceiptText, Coins } from 'lucide-react'
+import { ArrowDownCircle, ArrowUpCircle, Sparkles, AlertTriangle, Plus, Wallet, LayoutDashboard, PieChart, ReceiptText, Coins, TrendingUp } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useAddExpense } from '@/hooks/useExpenses'
 import { useCountUp } from '@/hooks/useCountUp'
@@ -14,6 +14,7 @@ import {
 } from '@/hooks/useExpenses'
 import { useHousehold } from '@/hooks/useHousehold'
 import { useMembers, useSalaries } from '@/hooks/useMembers'
+import { useForecast } from '@/hooks/useForecast'
 import StatCard from '@/components/ui/StatCard'
 import EmptyState from '@/components/ui/EmptyState'
 import QueryError from '@/components/ui/QueryError'
@@ -24,7 +25,7 @@ import MonthPicker from '@/components/ui/MonthPicker'
 import CategoryBadge from '@/components/ui/CategoryBadge'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 import { useToast } from '@/components/ui/Toast'
-import { cn, errorMessage } from '@/lib/utils'
+import { cn, errorMessage } from '@/shared/lib/utils'
 import {
   
   formatDate,
@@ -32,10 +33,11 @@ import {
   shiftMonth,
   shortMonthLabel,
   todayISO,
-} from '@/lib/dates'
-import { formatCurrency } from '@/lib/money'
+} from '@/shared/lib/dates'
+import { formatCurrency } from '@/shared/lib/money'
 
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { savingsInMonths } from '@/lib/forecast'
 import { useMonthParam } from '@/hooks/useMonthParam'
 
 export default function Dashboard() {
@@ -535,6 +537,8 @@ export default function Dashboard() {
         )}
       </div>
 
+      <ForecastWidget />
+
       <ExpenseForm
         open={quickOpen}
         initial={null}
@@ -559,5 +563,46 @@ export default function Dashboard() {
         <Plus size={26} />
       </button>
     </div>
+  )
+}
+
+// Widget compacto: proyección del próximo mes y ahorro a 3 meses.
+function ForecastWidget() {
+  const { data, error, isLoading } = useForecast()
+  const next = data?.totalExpense?.median
+  const savings = data?.surplus ? savingsInMonths(data.baseBalance, data.surplus, 3) : null
+
+  if (isLoading || error || !data || next === undefined || !savings) return null
+
+  return (
+    <Link
+      to="/proyeccion"
+      className="card card-hover animate-fade-up block p-5"
+      style={{ animationDelay: '360ms' }}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-pine-50 text-pine-600">
+            <TrendingUp size={18} />
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-ink">Proyección del próximo mes</p>
+            <p className="text-xs text-ink/50">
+              {shortMonthLabel(data.nextMonth)}: ~{formatCurrency(next)}
+              {data.variable ? ` (${formatCurrency(data.variable.low)}–${formatCurrency(data.variable.high)})` : ''}
+            </p>
+          </div>
+        </div>
+        <div className="rounded-xl bg-cream px-4 py-2 text-right">
+          <p className="text-xs text-ink/50">Ahorro posible en 3 meses</p>
+          <p className="font-display text-lg font-bold text-pine-600">
+            ~{formatCurrency(savings.median)}
+          </p>
+        </div>
+        <span className="text-sm font-medium text-pine-600">
+          Ver análisis →
+        </span>
+      </div>
+    </Link>
   )
 }

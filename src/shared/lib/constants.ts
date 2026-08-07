@@ -1,5 +1,5 @@
 import { Home, Utensils, Car, Zap, Heart, Gamepad2, Tag } from 'lucide-react'
-import type { Frequency } from '@/lib/types'
+import type { Frequency } from '@/shared/lib/types'
 
 export const FREQUENCY_LABELS: Record<string, string> = {
   monthly: 'Mensual',

@@ -3,9 +3,9 @@ import Modal from '@/components/ui/Modal'
 import MoneyInput from '@/components/ui/MoneyInput'
 import { useAdjustSavingsGoal } from '@/hooks/useSavings'
 import { useToast } from '@/components/ui/Toast'
-import type { SavingsGoal } from '@/lib/types'
-import { formatCurrency, parseMoneyInput } from '@/lib/money'
-import { errorMessage } from '@/lib/utils'
+import type { SavingsGoal } from '@/shared/lib/types'
+import { formatCurrency, parseMoneyInput } from '@/shared/lib/money'
+import { errorMessage } from '@/shared/lib/utils'
 
 type AdjustModalProps = {
   open: boolean

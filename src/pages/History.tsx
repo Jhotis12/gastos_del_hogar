@@ -5,9 +5,9 @@ import StatCard from '@/components/ui/StatCard'
 import PageSkeleton from '@/components/ui/PageSkeleton'
 import QueryError from '@/components/ui/QueryError'
 import EmptyState from '@/components/ui/EmptyState'
-import { cn } from '@/lib/utils'
-import { monthLabel } from '@/lib/dates'
-import { formatCurrency } from '@/lib/money'
+import { cn } from '@/shared/lib/utils'
+import { monthLabel } from '@/shared/lib/dates'
+import { formatCurrency } from '@/shared/lib/money'
 
 import { usePageTitle } from '@/hooks/usePageTitle'
 

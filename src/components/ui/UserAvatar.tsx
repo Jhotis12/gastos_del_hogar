@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase'
-import { cn } from '@/lib/utils'
+import { supabase } from '@/shared/lib/supabase'
+import { cn } from '@/shared/lib/utils'
 
 // Avatar circular: foto de perfil si existe (bucket público 'avatars'),
 // si no, inicial del nombre con gradiente pine. Tamaños de miniatura a

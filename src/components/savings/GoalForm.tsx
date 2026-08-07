@@ -4,9 +4,9 @@ import MoneyInput from '@/components/ui/MoneyInput'
 import DateInput from '@/components/ui/DateInput'
 import { useAddSavingsGoal, useUpdateSavingsGoal } from '@/hooks/useSavings'
 import { useToast } from '@/components/ui/Toast'
-import type { SavingsGoal } from '@/lib/types'
-import { errorMessage } from '@/lib/utils'
-import { parseMoneyInput } from '@/lib/money'
+import type { SavingsGoal } from '@/shared/lib/types'
+import { errorMessage } from '@/shared/lib/utils'
+import { parseMoneyInput } from '@/shared/lib/money'
 
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'

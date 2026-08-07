@@ -3,9 +3,9 @@ import Modal from '@/components/ui/Modal'
 import MoneyInput from '@/components/ui/MoneyInput'
 import { useDeleteBudget, useUpsertBudget } from '@/hooks/useCategories'
 import { useToast } from '@/components/ui/Toast'
-import type { Category } from '@/lib/types'
-import { parseMoneyInput } from '@/lib/money'
-import { errorMessage } from '@/lib/utils'
+import type { Category } from '@/shared/lib/types'
+import { parseMoneyInput } from '@/shared/lib/money'
+import { errorMessage } from '@/shared/lib/utils'
 
 interface BudgetModalProps {
   category: Category | null

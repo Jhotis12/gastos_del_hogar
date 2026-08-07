@@ -22,11 +22,11 @@ import PageSkeleton from '@/components/ui/PageSkeleton'
 import QueryError from '@/components/ui/QueryError'
 import MoneyInput from '@/components/ui/MoneyInput'
 import { useToast } from '@/components/ui/Toast'
-import { errorMessage } from '@/lib/utils'
+import { errorMessage } from '@/shared/lib/utils'
 import { payDateForMonth } from '@/lib/salaries'
-import { monthLabel, todayISO } from '@/lib/dates'
-import { formatCurrency, parseMoneyInput } from '@/lib/money'
-import type { EffectiveSalary, Profile } from '@/lib/types'
+import { monthLabel, todayISO } from '@/shared/lib/dates'
+import { formatCurrency, parseMoneyInput } from '@/shared/lib/money'
+import type { EffectiveSalary, Profile } from '@/shared/lib/types'
 
 const PAY_DAYS = Array.from({ length: 31 }, (_, i) => i + 1)
 

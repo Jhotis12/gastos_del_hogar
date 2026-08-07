@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { monthLabel, shiftMonth } from '@/lib/dates'
+import { monthLabel, shiftMonth } from '@/shared/lib/dates'
 
 interface MonthPickerProps {
   month: string

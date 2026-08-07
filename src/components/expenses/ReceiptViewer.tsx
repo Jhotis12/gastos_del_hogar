@@ -3,9 +3,9 @@ import { Maximize2, Store, X } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import Skeleton from '@/components/ui/Skeleton'
 import { useReceiptSignedUrl } from '@/hooks/useReceipts'
-import { cn } from '@/lib/utils'
-import type { ExpenseWithRelations } from '@/lib/types'
-import { formatCurrency } from '@/lib/money'
+import { cn } from '@/shared/lib/utils'
+import type { ExpenseWithRelations } from '@/shared/lib/types'
+import { formatCurrency } from '@/shared/lib/money'
 
 interface ReceiptViewerProps {
   expense: ExpenseWithRelations | null

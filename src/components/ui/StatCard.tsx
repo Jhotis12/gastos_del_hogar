@@ -1,6 +1,6 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 import { useCountUp } from '@/hooks/useCountUp'
-import { formatCurrency } from '@/lib/money'
+import { formatCurrency } from '@/shared/lib/money'
 import type { ReactNode } from 'react'
 
 interface StatCardProps {

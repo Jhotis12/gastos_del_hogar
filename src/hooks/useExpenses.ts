@@ -1,16 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/shared/lib/supabase'
 import { useSalaries } from '@/hooks/useMembers'
 import { useIncomes } from '@/hooks/useIncomes'
-import { runWithOfflineFallback, invalidateIfOnline } from '@/lib/offline/offlineSafe'
+import { runWithOfflineFallback, invalidateIfOnline } from '@/shared/lib/offline/offlineSafe'
 import {
   enqueueExpenseAdd,
   enqueueExpenseUpdate,
   enqueueExpenseDelete,
-} from '@/lib/offline/optimistic'
-import type { Expense, ExpenseWithRelations } from '@/lib/types'
-import { daysInMonth, shiftMonth, todayISO } from '@/lib/dates'
+} from '@/shared/lib/offline/optimistic'
+import type { Expense, ExpenseWithRelations } from '@/shared/lib/types'
+import { daysInMonth, shiftMonth, todayISO } from '@/shared/lib/dates'
 
 const EXPENSE_SELECT = `
   *,

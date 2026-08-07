@@ -13,8 +13,8 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import AppLogo from '@/components/ui/AppLogo'
-import { supabase } from '@/lib/supabase'
-import { cn } from '@/lib/utils'
+import { supabase } from '@/shared/lib/supabase'
+import { cn } from '@/shared/lib/utils'
 
 type Mode = 'login' | 'register'
 

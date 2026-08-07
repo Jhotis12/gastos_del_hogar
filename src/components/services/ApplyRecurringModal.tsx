@@ -4,10 +4,10 @@ import { useApplyRecurringOne } from '@/hooks/useRecurring'
 import Modal from '@/components/ui/Modal'
 import CategoryBadge from '@/components/ui/CategoryBadge'
 import { useToast } from '@/components/ui/Toast'
-import type { RecurringExpenseWithRelations } from '@/lib/types'
-import { errorMessage } from '@/lib/utils'
-import { FREQUENCY_LABELS } from '@/lib/constants'
-import { formatCurrency } from '@/lib/money'
+import type { RecurringExpenseWithRelations } from '@/shared/lib/types'
+import { errorMessage } from '@/shared/lib/utils'
+import { FREQUENCY_LABELS } from '@/shared/lib/constants'
+import { formatCurrency } from '@/shared/lib/money'
 
 interface ApplyRecurringModalProps {
   open: boolean

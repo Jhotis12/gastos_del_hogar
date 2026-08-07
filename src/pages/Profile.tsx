@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useSettings } from '@/hooks/useSettings'
-import { PALETTES } from '@/lib/palettes'
+import { PALETTES } from '@/shared/lib/palettes'
 import { useHousehold } from '@/hooks/useHousehold'
 import { useMembers } from '@/hooks/useMembers'
 import {
@@ -34,7 +34,7 @@ import Toggle from '@/components/ui/Toggle'
 import UserAvatar from '@/components/ui/UserAvatar'
 import { useToast } from '@/components/ui/Toast'
 import AppLogo from '@/components/ui/AppLogo'
-import { cn, errorMessage } from '@/lib/utils'
+import { cn, errorMessage } from '@/shared/lib/utils'
 import { usePageTitle } from '@/hooks/usePageTitle'
 
 const inputClass =

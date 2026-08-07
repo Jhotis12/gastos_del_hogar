@@ -1,7 +1,7 @@
 import { RefreshCw, WifiOff } from 'lucide-react'
 import { useOfflineStatus } from '@/hooks/useOffline'
-import { syncNow } from '@/lib/offline/sync'
-import { cn } from '@/lib/utils'
+import { syncNow } from '@/shared/lib/offline/sync'
+import { cn } from '@/shared/lib/utils'
 
 // Indicador sutil de conectividad: antena wifi roja en una esquina cuando
 // no hay conexión (o hay cambios pendientes). Con pendientes muestra un

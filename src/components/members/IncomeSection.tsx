@@ -13,10 +13,10 @@ import {
   useIncomes,
   useUpdateIncome,
 } from '@/hooks/useIncomes'
-import { formatDate, todayISO } from '@/lib/dates'
-import { formatCurrency, parseMoneyInput } from '@/lib/money'
-import { errorMessage } from '@/lib/utils'
-import type { IncomeWithRelations, Profile } from '@/lib/types'
+import { formatDate, todayISO } from '@/shared/lib/dates'
+import { formatCurrency, parseMoneyInput } from '@/shared/lib/money'
+import { errorMessage } from '@/shared/lib/utils'
+import type { IncomeWithRelations, Profile } from '@/shared/lib/types'
 
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'

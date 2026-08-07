@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 
 // Bloque con shimmer: placeholder animado que indica que hay contenido
 // cargando. tone="onDark" para superficies oscuras (hero del Dashboard).

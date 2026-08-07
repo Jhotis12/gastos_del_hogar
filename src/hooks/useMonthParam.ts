@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router-dom'
-import { currentMonthKey } from '@/lib/dates'
+import { currentMonthKey } from '@/shared/lib/dates'
 
 // Mes sincronizado con la URL (?mes=2026-08-01): la skill de diseño pide que
 // la URL refleje el estado de la vista (deep linking) — el mes se puede

@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/lib/supabase'
-import type { Frequency, RecurringExpenseWithRelations } from '@/lib/types'
-import { shiftMonth } from '@/lib/dates'
+import { supabase } from '@/shared/lib/supabase'
+import type { Frequency, RecurringExpenseWithRelations } from '@/shared/lib/types'
+import { shiftMonth } from '@/shared/lib/dates'
 
 const RECURRING_SELECT = `
   *,

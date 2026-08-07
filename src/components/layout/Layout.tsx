@@ -13,11 +13,12 @@ import {
   X,
   Settings,
   History,
+  TrendingUp,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
 import { useDragToClose } from '@/hooks/useDragToClose'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 import AppLogo from '@/components/ui/AppLogo'
 import ThemeToggle from '@/components/ui/ThemeToggle'
 import InstallAppButton from '@/components/ui/InstallAppButton'
@@ -27,6 +28,7 @@ const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/calendario', label: 'Calendario', icon: CalendarDays },
   { to: '/historial', label: 'Historial', icon: History },
+  { to: '/proyeccion', label: 'Proyección', icon: TrendingUp },
   { to: '/miembros', label: 'Miembros y Salarios', icon: Users },
   { to: '/gastos', label: 'Gastos', icon: Receipt },
   { to: '/recurrentes', label: 'Servicios', icon: Repeat },

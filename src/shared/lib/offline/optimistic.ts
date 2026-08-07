@@ -2,7 +2,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import { enqueueOp } from './queue'
 import { refreshPendingCount, syncNow } from './sync'
 import { emitToast } from '@/components/ui/Toast'
-import type { ExpenseWithRelations, IncomeWithRelations, Salary } from '@/lib/types'
+import type { ExpenseWithRelations, IncomeWithRelations, Salary } from '@/shared/lib/types'
 
 // Encola la operación + actualización optimista de la caché: la fila
 // aparece al instante aunque no haya red. El id se genera en el cliente

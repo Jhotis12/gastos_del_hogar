@@ -8,9 +8,9 @@ import { ToastProvider } from '@/components/ui/Toast'
 import SessionSync from '@/components/ui/SessionSync'
 import OfflineBanner from '@/components/ui/OfflineBanner'
 import UpdatePrompt from '@/components/ui/UpdatePrompt'
-import { queryPersister } from '@/lib/offline/persister'
-import { initOfflineWatcher, attachQueryClient } from '@/lib/offline/sync'
-import { supabaseUrl } from '@/lib/supabase'
+import { queryPersister } from '@/shared/lib/offline/persister'
+import { initOfflineWatcher, attachQueryClient } from '@/shared/lib/offline/sync'
+import { supabaseUrl } from '@/shared/lib/supabase'
 
 // Aplicar tema guardado antes del primer render (evita parpadeo)
 {

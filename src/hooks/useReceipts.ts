@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/lib/supabase'
-import type { ReceiptParsed } from '@/lib/types'
+import { supabase } from '@/shared/lib/supabase'
+import type { ReceiptParsed } from '@/shared/lib/types'
 
 export function useCreateReceipt() {
   const { user, profile } = useAuth()

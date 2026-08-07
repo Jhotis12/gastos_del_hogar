@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 
 // Switch reutilizable (tema, animaciones, servicios…). Tokens del sistema,
 // así que respeta el modo oscuro automáticamente.

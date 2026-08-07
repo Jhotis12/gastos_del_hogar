@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { cn } from '@/lib/utils'
-import { formatMoneyInput, parseMoneyInput } from '@/lib/money'
+import { cn } from '@/shared/lib/utils'
+import { formatMoneyInput, parseMoneyInput } from '@/shared/lib/money'
 
 interface MoneyInputProps {
   value: string

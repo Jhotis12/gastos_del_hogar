@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
-import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock'
+import { lockBodyScroll, unlockBodyScroll } from '@/shared/lib/scrollLock'
 import { useDragToClose } from '@/hooks/useDragToClose'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 
 interface ModalProps {
   open: boolean

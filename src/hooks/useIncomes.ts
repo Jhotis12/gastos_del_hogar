@@ -1,14 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/lib/supabase'
-import { runWithOfflineFallback, invalidateIfOnline } from '@/lib/offline/offlineSafe'
+import { supabase } from '@/shared/lib/supabase'
+import { runWithOfflineFallback, invalidateIfOnline } from '@/shared/lib/offline/offlineSafe'
 import {
   enqueueIncomeAdd,
   enqueueIncomeUpdate,
   enqueueIncomeDelete,
-} from '@/lib/offline/optimistic'
-import { shiftMonth } from '@/lib/dates'
-import type { Income, IncomeWithRelations } from '@/lib/types'
+} from '@/shared/lib/offline/optimistic'
+import { shiftMonth } from '@/shared/lib/dates'
+import type { Income, IncomeWithRelations } from '@/shared/lib/types'
 
 const INCOME_SELECT = `
   *,

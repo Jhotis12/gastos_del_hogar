@@ -6,9 +6,9 @@ import DateInput from '@/components/ui/DateInput'
 import SelectInput from '@/components/ui/SelectInput'
 import { useCategories } from '@/hooks/useCategories'
 import { useMembers } from '@/hooks/useMembers'
-import type { ExpenseWithRelations } from '@/lib/types'
-import { parseMoneyInput } from '@/lib/money'
-import { todayISO } from '@/lib/dates'
+import type { ExpenseWithRelations } from '@/shared/lib/types'
+import { parseMoneyInput } from '@/shared/lib/money'
+import { todayISO } from '@/shared/lib/dates'
 
 interface ExpenseFormProps {
   open: boolean

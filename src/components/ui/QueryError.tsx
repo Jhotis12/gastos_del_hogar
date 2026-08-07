@@ -1,5 +1,5 @@
 import { RotateCcw } from 'lucide-react'
-import { errorMessage } from '@/lib/utils'
+import { errorMessage } from '@/shared/lib/utils'
 
 interface QueryErrorProps {
   error: unknown

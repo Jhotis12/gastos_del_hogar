@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { getPaletteId, DEFAULT_PALETTE } from '@/lib/palettes'
+import { getPaletteId, DEFAULT_PALETTE } from '@/shared/lib/palettes'
 
 const REDUCE_KEY = 'reduce-animations'
 const PALETTE_KEY = 'palette'

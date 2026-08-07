@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 
 // Estado vacío unificado: icono en caja suave, mensaje y CTA opcional.
 // Usar dentro de una .card (o con border-dashed para estados de página).

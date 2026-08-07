@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/lib/supabase'
-import type { SavingsGoal } from '@/lib/types'
+import { supabase } from '@/shared/lib/supabase'
+import type { SavingsGoal } from '@/shared/lib/types'
 
 export function useSavingsGoals() {
   const { profile } = useAuth()

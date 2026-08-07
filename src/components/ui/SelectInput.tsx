@@ -9,9 +9,9 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import { Check, ChevronDown } from 'lucide-react'
-import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock'
+import { lockBodyScroll, unlockBodyScroll } from '@/shared/lib/scrollLock'
 import { useDragToClose } from '@/hooks/useDragToClose'
-import { cn } from '@/lib/utils'
+import { cn } from '@/shared/lib/utils'
 
 interface SelectInputProps {
   value: string | number

@@ -8,15 +8,18 @@ import QueryError from '@/components/ui/QueryError'
 import GoalForm from '@/components/savings/GoalForm'
 import AdjustGoalModal from '@/components/savings/AdjustGoalModal'
 import { useToast } from '@/components/ui/Toast'
-import type { SavingsGoal } from '@/lib/types'
-import { cn, errorMessage } from '@/lib/utils'
-import { formatCurrency } from '@/lib/money'
+import type { SavingsGoal } from '@/shared/lib/types'
+import { cn, errorMessage } from '@/shared/lib/utils'
+import { formatCurrency } from '@/shared/lib/money'
 
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useForecast } from '@/hooks/useForecast'
+import { shortMonthLabel, shiftMonth } from '@/shared/lib/dates'
 
 export default function Savings() {
   usePageTitle('Metas de Ahorro')
   const { data: goals, isLoading, error, refetch } = useSavingsGoals()
+  const { data: forecast } = useForecast()
   const remove = useDeleteSavingsGoal()
   const toast = useToast()
 
@@ -164,6 +167,19 @@ export default function Savings() {
                 </div>
 
                 <div className="mt-4 flex flex-wrap items-center gap-2">
+                  {!reached && forecast?.surplus && forecast.surplus.median > 0 && (
+                    <p className="flex w-full items-center gap-1.5 rounded-lg bg-pine-50/70 px-3 py-2 text-xs text-pine-600">
+                      <PiggyBank size={13} className="shrink-0" />
+                      A tu ritmo actual, completarías esta meta en{' '}
+                      <strong>
+                        {shortMonthLabel(
+                          shiftMonth(forecast.nextMonth, Math.max(1, Math.ceil((target - saved) / forecast.surplus.median))),
+                        )}
+                      </strong>{' '}
+                      ({Math.max(1, Math.ceil((target - saved) / forecast.surplus.median))}{' '}
+                      {Math.max(1, Math.ceil((target - saved) / forecast.surplus.median)) === 1 ? 'mes' : 'meses'})
+                    </p>
+                  )}
                   <button
                     onClick={() => setAdjusting({ goal: g, mode: 'deposit' })}
                     className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-pine-50 px-3 py-2 text-xs font-medium text-pine-600 hover:bg-pine-100"

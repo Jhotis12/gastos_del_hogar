@@ -3,9 +3,9 @@ import { Camera, ImagePlus, ScanLine, X } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import { useAuth } from '@/hooks/useAuth'
 import { analyzeReceipt, uploadReceiptImage, useCreateReceipt, useUpdateReceiptParsed } from '@/hooks/useReceipts'
-import { errorMessage } from '@/lib/utils'
-import { compressImage } from '@/lib/images'
-import type { Receipt, ReceiptParsed } from '@/lib/types'
+import { errorMessage } from '@/shared/lib/utils'
+import { compressImage } from '@/shared/lib/images'
+import type { Receipt, ReceiptParsed } from '@/shared/lib/types'
 
 interface ReceiptCaptureProps {
   open: boolean

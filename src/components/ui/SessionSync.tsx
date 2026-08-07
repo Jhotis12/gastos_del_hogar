@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/shared/lib/supabase'
 
 // Procesa la sesión que Supabase entrega por el fragmento de la URL
 // (#access_token=...&refresh_token=...&type=signup) en el flujo legacy de

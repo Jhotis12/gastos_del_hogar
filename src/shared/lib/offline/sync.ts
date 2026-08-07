@@ -1,8 +1,8 @@
 import { listOps, removeOp, type PendingOp } from './queue'
 import { isNetworkError } from './offlineSafe'
 import { emitToast } from '@/components/ui/Toast'
-import { supabase } from '@/lib/supabase'
-import { errorMessage } from '@/lib/utils'
+import { supabase } from '@/shared/lib/supabase'
+import { errorMessage } from '@/shared/lib/utils'
 import type { QueryClient } from '@tanstack/react-query'
 
 // Referencia al QueryClient de la app: se inyecta desde main.tsx para poder

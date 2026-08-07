@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAuthRetryableFetchError } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/shared/lib/supabase'
 import type { Session, User } from '@supabase/supabase-js'
-import type { Profile } from '@/lib/types'
-import { clearPersistedCache } from '@/lib/offline/persister'
+import type { Profile } from '@/shared/lib/types'
+import { clearPersistedCache } from '@/shared/lib/offline/persister'
 
 interface AuthContextValue {
   user: User | null

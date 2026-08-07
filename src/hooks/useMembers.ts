@@ -1,14 +1,14 @@
 import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/shared/lib/supabase'
 import { effectiveSalariesForMonth } from '@/lib/salaries'
-import { resizeAvatar } from '@/lib/images'
-import { errorMessage } from '@/lib/utils'
+import { resizeAvatar } from '@/shared/lib/images'
+import { errorMessage } from '@/shared/lib/utils'
 import { useToast } from '@/components/ui/Toast'
-import { runWithOfflineFallback, invalidateIfOnline } from '@/lib/offline/offlineSafe'
-import { enqueueSalaryUpsert, enqueueSalaryDelete } from '@/lib/offline/optimistic'
-import type { EffectiveSalary, Profile, Salary } from '@/lib/types'
+import { runWithOfflineFallback, invalidateIfOnline } from '@/shared/lib/offline/offlineSafe'
+import { enqueueSalaryUpsert, enqueueSalaryDelete } from '@/shared/lib/offline/optimistic'
+import type { EffectiveSalary, Profile, Salary } from '@/shared/lib/types'
 
 export function useMembers() {
   const { profile } = useAuth()
