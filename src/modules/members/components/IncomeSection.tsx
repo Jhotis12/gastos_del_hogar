@@ -12,7 +12,7 @@ import {
   useDeleteIncome,
   useIncomes,
   useUpdateIncome,
-} from '@/hooks/useIncomes'
+} from '@/modules/members/hooks/useIncomes'
 import { formatDate, todayISO } from '@/shared/lib/dates'
 import { formatCurrency, parseMoneyInput } from '@/shared/lib/money'
 import { errorMessage } from '@/shared/lib/utils'

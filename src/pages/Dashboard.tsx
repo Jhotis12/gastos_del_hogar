@@ -13,7 +13,7 @@ import {
   useMonthlySurpluses,
 } from '@/hooks/useExpenses'
 import { useHousehold } from '@/modules/profile/hooks/useHousehold'
-import { useMembers, useSalaries } from '@/hooks/useMembers'
+import { useMembers, useSalaries } from '@/modules/members/hooks/useMembers'
 import { useForecast } from '@/hooks/useForecast'
 import StatCard from '@/shared/components/ui/StatCard'
 import EmptyState from '@/shared/components/ui/EmptyState'

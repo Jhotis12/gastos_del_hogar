@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { useMonthlySurpluses, useRunningBalance } from '@/hooks/useExpenses'
 import { useRecurringExpenses } from '@/hooks/useRecurring'
-import { useSalaries } from '@/hooks/useMembers'
+import { useSalaries } from '@/modules/members/hooks/useMembers'
 import { supabase } from '@/shared/lib/supabase'
 import { currentMonthKey, shiftMonth, todayISO } from '@/shared/lib/dates'
 import {

@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { supabase } from '@/shared/lib/supabase'
-import { useSalaries } from '@/hooks/useMembers'
-import { useIncomes } from '@/hooks/useIncomes'
+import { useSalaries } from '@/modules/members/hooks/useMembers'
+import { useIncomes } from '@/modules/members/hooks/useIncomes'
 import { runWithOfflineFallback, invalidateIfOnline } from '@/shared/lib/offline/offlineSafe'
 import {
   enqueueExpenseAdd,

@@ -8,11 +8,11 @@ import {
   useSalaryRows,
   useUpdatePayday,
   useUpsertSalary,
-} from '@/hooks/useMembers'
+} from '@/modules/members/hooks/useMembers'
 import { useExpenses } from '@/hooks/useExpenses'
-import { useIncomes } from '@/hooks/useIncomes'
+import { useIncomes } from '@/modules/members/hooks/useIncomes'
 import { useHousehold } from '@/modules/profile/hooks/useHousehold'
-import IncomeSection from '@/components/members/IncomeSection'
+import IncomeSection from '@/modules/members/components/IncomeSection'
 import UserAvatar from '@/shared/components/ui/UserAvatar'
 import MonthPicker from '@/shared/components/ui/MonthPicker'
 import SelectInput from '@/shared/components/ui/SelectInput'
@@ -23,7 +23,7 @@ import QueryError from '@/shared/components/ui/QueryError'
 import MoneyInput from '@/shared/components/ui/MoneyInput'
 import { useToast } from '@/shared/components/ui/Toast'
 import { errorMessage } from '@/shared/lib/utils'
-import { payDateForMonth } from '@/lib/salaries'
+import { payDateForMonth } from '@/modules/members/lib/salaries'
 import { monthLabel, todayISO } from '@/shared/lib/dates'
 import { formatCurrency, parseMoneyInput } from '@/shared/lib/money'
 import type { EffectiveSalary, Profile } from '@/shared/lib/types'

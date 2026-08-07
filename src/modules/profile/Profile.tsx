@@ -20,14 +20,14 @@ import { useAuth } from '@/shared/hooks/useAuth'
 import { useSettings } from '@/modules/profile/hooks/useSettings'
 import { PALETTES } from '@/shared/lib/palettes'
 import { useHousehold } from '@/modules/profile/hooks/useHousehold'
-import { useMembers } from '@/hooks/useMembers'
+import { useMembers } from '@/modules/members/hooks/useMembers'
 import {
   useDeleteHousehold,
   useLeaveHousehold,
   useRemoveAvatar,
   useUpdateAvatar,
   useUpdateProfile,
-} from '@/hooks/useMembers'
+} from '@/modules/members/hooks/useMembers'
 import ConfirmDialog from '@/shared/components/ui/ConfirmDialog'
 import PageSkeleton from '@/shared/components/ui/PageSkeleton'
 import Toggle from '@/shared/components/ui/Toggle'
