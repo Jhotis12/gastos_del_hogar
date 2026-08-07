@@ -262,8 +262,12 @@ export default function Layout() {
                     )
                   }
                 >
-                  <item.icon size={18} className="text-ink/40" />
-                  {item.label}
+                  {({ isActive }) => (
+                    <>
+                      <item.icon size={18} className={isActive ? '' : 'text-ink/40'} />
+                      {item.label}
+                    </>
+                  )}
                 </NavLink>
               ))}
               <InstallAppButton />
