@@ -179,7 +179,7 @@ export default function Dashboard() {
         <div className="pointer-events-none absolute -bottom-14 left-1/3 h-40 w-40 rounded-full bg-pine-400/20 blur-2xl" />
         <div className="relative">
           <p className="text-sm font-medium text-pine-200">Saldo disponible · {monthLabel(month)}</p>
-          <p
+          <div
             data-testid="hero-saldo"
             className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-5xl"
           >
@@ -188,7 +188,7 @@ export default function Dashboard() {
             ) : (
               formatCurrency(balanceAnimated)
             )}
-          </p>
+          </div>
           <p className="mt-1 text-xs text-pine-200/80">
             Incluye el sobrante de meses anteriores
           </p>

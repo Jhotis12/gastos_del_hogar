@@ -238,6 +238,10 @@ otp_expiry = 3600
 subject = "Confirma tu correo · Gastos del Hogar"
 content_path = "./supabase/email-templates/confirm-signup.html"
 
+[auth.email.template.recovery]
+subject = "Restablece tu contraseña · Gastos del Hogar"
+content_path = "./supabase/email-templates/recovery.html"
+
 # Use a production-ready SMTP server
 # [auth.email.smtp]
 # enabled = true

@@ -121,6 +121,28 @@ export default function Login() {
   }
 
   const [notice, setNotice] = useState('')
+  const [capsLock, setCapsLock] = useState(false)
+  const [view, setView] = useState<'login' | 'forgot'>('login')
+
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    if (!EMAIL_RE.test(email.trim())) {
+      setFieldErrors({ email: 'Ingresa un correo electrónico válido' })
+      return
+    }
+    setBusy(true)
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/recuperar`,
+    })
+    setBusy(false)
+    if (resetError) {
+      setError(resetError.message)
+      return
+    }
+    setView('login')
+    setNotice('Te enviamos un enlace a tu correo para restablecer la contraseña.')
+  }
 
   return (
     <div className="force-light flex min-h-screen bg-cream lg:bg-surface">
@@ -160,24 +182,91 @@ export default function Login() {
 
       {/* Formulario */}
       <div className="flex w-full items-center justify-center px-4 py-10 lg:w-1/2 lg:px-12">
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-surface p-6 shadow-sm sm:p-8 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
           {/* Cabecera */}
-          <div key={`header-${mode}`} className="animate-form-in mb-8 text-center lg:text-left">
+          <div key={`header-${mode}-${view}`} className="animate-form-in mb-8 text-center lg:text-left">
             <AppLogo size={64} className="mx-auto mb-4 lg:hidden" />
             <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-pine-600">
               Fondo común
             </p>
             <h2 className="font-display text-2xl font-bold tracking-tight text-ink">
-              {mode === 'login' ? '¡Hola de nuevo!' : 'Crea tu cuenta'}
+              {view === 'forgot'
+                ? 'Restablecer contraseña'
+                : mode === 'login'
+                  ? '¡Hola de nuevo!'
+                  : 'Crea tu cuenta'}
             </h2>
             <p className="mt-1.5 text-sm text-ink/50">
-              {mode === 'login'
-                ? 'Ingresa para gestionar las finanzas de tu hogar'
-                : 'Empieza a organizar los gastos de tu hogar'}
+              {view === 'forgot'
+                ? 'Te enviaremos un enlace a tu correo para crear una nueva'
+                : mode === 'login'
+                  ? 'Ingresa para gestionar las finanzas de tu hogar'
+                  : 'Empieza a organizar los gastos de tu hogar'}
             </p>
           </div>
 
-          {/* Formulario (se anima al cambiar de modo) */}
+          {/* Formulario (se anima al cambiar de modo/vista) */}
+          {view === 'forgot' ? (
+            <form key="form-forgot" onSubmit={handleForgot} noValidate className="animate-form-in space-y-4">
+              <div>
+                <label htmlFor="forgot-email" className="mb-1.5 block text-sm font-medium text-ink/70">
+                  Correo electrónico
+                </label>
+                <div className="relative">
+                  <Mail
+                    size={16}
+                    className={cn(
+                      'pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2',
+                      fieldErrors.email ? 'text-coral-500' : 'text-ink/35',
+                    )}
+                  />
+                  <input
+                    id="forgot-email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value)
+                      if (fieldErrors.email) setFieldErrors((f) => ({ ...f, email: undefined }))
+                    }}
+                    className={cn(inputBase, fieldErrors.email ? inputBad : inputOk)}
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    inputMode="email"
+                    enterKeyHint="done"
+                    aria-invalid={!!fieldErrors.email}
+                    placeholder="correo@ejemplo.com"
+                  />
+                </div>
+                <FieldError message={fieldErrors.email} />
+              </div>
+
+              {error && (
+                <p role="alert" className="flex items-start gap-2 rounded-xl bg-coral-100/60 px-4 py-3 text-sm text-coral-600">
+                  <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={busy}
+                className="min-h-12 w-full rounded-xl bg-gradient-to-br from-pine-600 to-pine-800 py-3 text-base font-semibold text-white shadow-lg shadow-pine-900/25 transition-all hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50 disabled:hover:translate-y-0"
+              >
+                {busy ? 'Enviando…' : 'Enviar enlace'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setView('login')
+                  setError('')
+                }}
+                className="w-full rounded-lg py-2 text-sm font-medium text-ink/50 transition-colors hover:text-ink/75"
+              >
+                Volver a iniciar sesión
+              </button>
+            </form>
+          ) : (
           <form
             key={`form-${mode}`}
             onSubmit={handleSubmit}
@@ -186,7 +275,7 @@ export default function Login() {
           >
             {mode === 'register' && (
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-ink/70">Nombre</label>
+                <label htmlFor="login-nombre" className="mb-1.5 block text-sm font-medium text-ink/70">Nombre</label>
                 <div className="relative">
                   <User
                     size={16}
@@ -220,7 +309,7 @@ export default function Login() {
             )}
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-ink/70">
+              <label htmlFor="login-email" className="mb-1.5 block text-sm font-medium text-ink/70">
                 Correo electrónico
               </label>
               <div className="relative">
@@ -232,6 +321,7 @@ export default function Login() {
                   )}
                 />
                 <input
+                  id="login-email"
                   type="email"
                   required
                   value={email}
@@ -256,7 +346,22 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-ink/70">Contraseña</label>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label htmlFor="login-password" className="block text-sm font-medium text-ink/70">Contraseña</label>
+                {mode === 'login' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setView('forgot')
+                      setError('')
+                      setNotice('')
+                    }}
+                    className="text-xs font-medium text-pine-600 transition-colors hover:text-pine-700"
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                )}
+              </div>
               <div className="relative">
                 <Lock
                   size={16}
@@ -266,9 +371,12 @@ export default function Login() {
                   )}
                 />
                 <input
+                  id="login-password"
                   type={showPassword ? 'text' : 'password'}
                   required
                   minLength={8}
+                  onKeyDown={(e) => setCapsLock(e.getModifierState('CapsLock'))}
+                  onKeyUp={(e) => setCapsLock(e.getModifierState('CapsLock'))}
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value)
@@ -297,6 +405,12 @@ export default function Login() {
                 </button>
               </div>
               <FieldError message={fieldErrors.password} />
+              {capsLock && (
+                <p aria-live="polite" className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-gold-600">
+                  <AlertCircle size={13} className="shrink-0" />
+                  Bloq Mayús activado
+                </p>
+              )}
             </div>
 
             {notice && (
@@ -326,8 +440,10 @@ export default function Login() {
                   : 'Crear cuenta'}
             </button>
           </form>
+          )}
 
           {/* Cambio de apartado */}
+          {view !== 'forgot' && (
           <div key={`switch-${mode}`} className="animate-form-in mt-6 text-center">
             {mode === 'login' ? (
               <p className="text-sm text-ink/50">
@@ -361,6 +477,7 @@ export default function Login() {
               </p>
             )}
           </div>
+          )}
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import OfflineGate from '@/components/ui/OfflineGate'
 const Login = lazy(() => import('@/pages/Login'))
 const Setup = lazy(() => import('@/pages/Setup'))
 const AuthConfirm = lazy(() => import('@/pages/AuthConfirm'))
+const Recover = lazy(() => import('@/pages/Recover'))
 const Dashboard = lazy(() => import('@/pages/Dashboard'))
 const Calendar = lazy(() => import('@/pages/Calendar'))
 const History = lazy(() => import('@/pages/History'))
@@ -29,6 +30,7 @@ if (import.meta.env.DEV) {
     import('@/pages/Login'),
     import('@/pages/Setup'),
     import('@/pages/AuthConfirm'),
+    import('@/pages/Recover'),
     import('@/pages/Dashboard'),
     import('@/pages/Calendar'),
     import('@/pages/History'),
@@ -98,6 +100,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
         </Route>
         <Route path="/auth/confirm" element={<AuthConfirm />} />
+        <Route path="/recuperar" element={<Recover />} />
         <Route element={<RequireAuth />}>
           <Route element={<RequireSetup />}>
             <Route path="/setup" element={<Setup />} />

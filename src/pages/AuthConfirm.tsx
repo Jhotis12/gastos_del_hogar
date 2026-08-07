@@ -12,7 +12,7 @@ export default function AuthConfirm() {
   useEffect(() => {
     const tokenHash = params.get('token_hash')
     const type = params.get('type')
-    const next = params.get('next') || '/'
+    const next = params.get('next') || (type === 'recovery' ? '/recuperar' : '/')
 
     if (!tokenHash || !type) {
       setError('Enlace de confirmación inválido o expirado.')
@@ -25,7 +25,10 @@ export default function AuthConfirm() {
     }, 12000)
 
     supabase.auth
-      .verifyOtp({ token_hash: tokenHash, type: type as 'email' | 'sms' | 'email_change' })
+      .verifyOtp({
+        token_hash: tokenHash,
+        type: type as 'email' | 'sms' | 'email_change' | 'recovery',
+      })
       .then(({ error: verifyError }) => {
         clearTimeout(timer)
         if (verifyError) {
@@ -52,7 +55,13 @@ export default function AuthConfirm() {
           </svg>
         </div>
         <h1 className="font-display text-lg font-bold tracking-tight text-ink">
-          {done ? '¡Correo confirmado!' : 'Confirmando tu correo…'}
+          {done
+            ? params.get('type') === 'recovery'
+              ? '¡Contraseña verificada!'
+              : '¡Correo confirmado!'
+            : params.get('type') === 'recovery'
+              ? 'Verificando tu enlace…'
+              : 'Confirmando tu correo…'}
         </h1>
         {done ? (
           <p className="mt-2 text-sm text-pine-600">Redirigiendo a tu sesión…</p>
