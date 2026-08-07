@@ -12,8 +12,8 @@ import {
   fixedExpensesForMonth,
   monthlySurplusProjection,
   rangeFromMonthly,
-} from '@/lib/forecast'
-import type { ProjectionRange } from '@/lib/forecast'
+} from '@/modules/forecast/lib/forecast'
+import type { ProjectionRange } from '@/modules/forecast/lib/forecast'
 
 // Historial de gastos VARIABLES (no recurrentes) de los últimos meses
 // completos — la base para la mediana y los rangos p25/p75.

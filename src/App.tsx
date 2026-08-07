@@ -18,7 +18,7 @@ const Members = lazy(() => import('@/modules/members/Members'))
 const Expenses = lazy(() => import('@/modules/expenses/Expenses'))
 const Recurring = lazy(() => import('@/modules/services/Recurring'))
 const Savings = lazy(() => import('@/modules/savings/Savings'))
-const Forecast = lazy(() => import('@/pages/Forecast'))
+const Forecast = lazy(() => import('@/modules/forecast/Forecast'))
 const Categories = lazy(() => import('@/modules/categories/Categories'))
 const Profile = lazy(() => import('@/modules/profile/Profile'))
 
@@ -39,7 +39,7 @@ if (import.meta.env.DEV) {
     import('@/modules/expenses/Expenses'),
     import('@/modules/services/Recurring'),
     import('@/modules/savings/Savings'),
-    import('@/pages/Forecast'),
+    import('@/modules/forecast/Forecast'),
     import('@/modules/categories/Categories'),
     import('@/modules/profile/Profile'),
   ])

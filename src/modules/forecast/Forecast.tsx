@@ -9,7 +9,7 @@ import {
   Info,
   BarChart3,
 } from 'lucide-react'
-import { useForecast } from '@/hooks/useForecast'
+import { useForecast } from '@/modules/forecast/hooks/useForecast'
 import { useCountUp } from '@/shared/hooks/useCountUp'
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
 import QueryError from '@/shared/components/ui/QueryError'
@@ -17,7 +17,7 @@ import PageSkeleton from '@/shared/components/ui/PageSkeleton'
 import { cn } from '@/shared/lib/utils'
 import { shortMonthLabel } from '@/shared/lib/dates'
 import { formatCurrency } from '@/shared/lib/money'
-import { savingsInMonths } from '@/lib/forecast'
+import { savingsInMonths } from '@/modules/forecast/lib/forecast'
 
 const HORIZONS = [1, 3, 6]
 

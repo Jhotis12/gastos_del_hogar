@@ -13,7 +13,7 @@ import { cn, errorMessage } from '@/shared/lib/utils'
 import { formatCurrency } from '@/shared/lib/money'
 
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
-import { useForecast } from '@/hooks/useForecast'
+import { useForecast } from '@/modules/forecast/hooks/useForecast'
 import { shortMonthLabel, shiftMonth } from '@/shared/lib/dates'
 
 export default function Savings() {

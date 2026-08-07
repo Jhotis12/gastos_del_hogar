@@ -14,7 +14,7 @@ import {
 } from '@/modules/expenses/hooks/useExpenses'
 import { useHousehold } from '@/modules/profile/hooks/useHousehold'
 import { useMembers, useSalaries } from '@/modules/members/hooks/useMembers'
-import { useForecast } from '@/hooks/useForecast'
+import { useForecast } from '@/modules/forecast/hooks/useForecast'
 import StatCard from '@/shared/components/ui/StatCard'
 import EmptyState from '@/shared/components/ui/EmptyState'
 import QueryError from '@/shared/components/ui/QueryError'
@@ -37,7 +37,7 @@ import {
 import { formatCurrency } from '@/shared/lib/money'
 
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
-import { savingsInMonths } from '@/lib/forecast'
+import { savingsInMonths } from '@/modules/forecast/lib/forecast'
 import { useMonthParam } from '@/shared/hooks/useMonthParam'
 
 export default function Dashboard() {
