@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CheckCircle2, Clock } from 'lucide-react'
-import { useApplyRecurringOne } from '@/hooks/useRecurring'
+import { useApplyRecurringOne } from '@/modules/services/hooks/useRecurring'
 import Modal from '@/shared/components/ui/Modal'
 import CategoryBadge from '@/shared/components/ui/CategoryBadge'
 import { useToast } from '@/shared/components/ui/Toast'

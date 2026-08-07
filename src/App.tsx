@@ -16,7 +16,7 @@ const Calendar = lazy(() => import('@/pages/Calendar'))
 const History = lazy(() => import('@/pages/History'))
 const Members = lazy(() => import('@/modules/members/Members'))
 const Expenses = lazy(() => import('@/modules/expenses/Expenses'))
-const Recurring = lazy(() => import('@/pages/Recurring'))
+const Recurring = lazy(() => import('@/modules/services/Recurring'))
 const Savings = lazy(() => import('@/pages/Savings'))
 const Forecast = lazy(() => import('@/pages/Forecast'))
 const Categories = lazy(() => import('@/pages/Categories'))
@@ -37,7 +37,7 @@ if (import.meta.env.DEV) {
     import('@/pages/History'),
     import('@/modules/members/Members'),
     import('@/modules/expenses/Expenses'),
-    import('@/pages/Recurring'),
+    import('@/modules/services/Recurring'),
     import('@/pages/Savings'),
     import('@/pages/Forecast'),
     import('@/pages/Categories'),

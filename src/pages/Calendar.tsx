@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Plus, Zap, CalendarDays } from 'lucide-react'
 import { useAddExpense, useExpenses } from '@/modules/expenses/hooks/useExpenses'
-import { useRecurringExpenses } from '@/hooks/useRecurring'
+import { useRecurringExpenses } from '@/modules/services/hooks/useRecurring'
 import MonthPicker from '@/shared/components/ui/MonthPicker'
 import PageSkeleton from '@/shared/components/ui/PageSkeleton'
 import QueryError from '@/shared/components/ui/QueryError'

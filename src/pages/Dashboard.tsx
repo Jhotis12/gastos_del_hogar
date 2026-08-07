@@ -4,7 +4,7 @@ import { ArrowDownCircle, ArrowUpCircle, Sparkles, AlertTriangle, Plus, Wallet, 
 import { useAuth } from '@/shared/hooks/useAuth'
 import { useAddExpense } from '@/modules/expenses/hooks/useExpenses'
 import { useCountUp } from '@/shared/hooks/useCountUp'
-import { usePendingRecurring, useRecurringExpenses } from '@/hooks/useRecurring'
+import { usePendingRecurring, useRecurringExpenses } from '@/modules/services/hooks/useRecurring'
 import { useBudgets } from '@/hooks/useCategories'
 import {
   useExpenses,
@@ -20,7 +20,7 @@ import EmptyState from '@/shared/components/ui/EmptyState'
 import QueryError from '@/shared/components/ui/QueryError'
 import Skeleton from '@/shared/components/ui/Skeleton'
 import ExpenseForm from '@/modules/expenses/components/ExpenseForm'
-import ApplyRecurringModal from '@/components/services/ApplyRecurringModal'
+import ApplyRecurringModal from '@/modules/services/components/ApplyRecurringModal'
 import MonthPicker from '@/shared/components/ui/MonthPicker'
 import CategoryBadge from '@/shared/components/ui/CategoryBadge'
 import PageSkeleton from '@/shared/components/ui/PageSkeleton'
