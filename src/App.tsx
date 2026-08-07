@@ -11,9 +11,9 @@ const Login = lazy(() => import('@/modules/auth/Login'))
 const Setup = lazy(() => import('@/modules/auth/Setup'))
 const AuthConfirm = lazy(() => import('@/modules/auth/AuthConfirm'))
 const Recover = lazy(() => import('@/modules/auth/Recover'))
-const Dashboard = lazy(() => import('@/pages/Dashboard'))
-const Calendar = lazy(() => import('@/pages/Calendar'))
-const History = lazy(() => import('@/pages/History'))
+const Dashboard = lazy(() => import('@/modules/dashboard/Dashboard'))
+const Calendar = lazy(() => import('@/modules/calendar/Calendar'))
+const History = lazy(() => import('@/modules/history/History'))
 const Members = lazy(() => import('@/modules/members/Members'))
 const Expenses = lazy(() => import('@/modules/expenses/Expenses'))
 const Recurring = lazy(() => import('@/modules/services/Recurring'))
@@ -32,9 +32,9 @@ if (import.meta.env.DEV) {
     import('@/modules/auth/Setup'),
     import('@/modules/auth/AuthConfirm'),
     import('@/modules/auth/Recover'),
-    import('@/pages/Dashboard'),
-    import('@/pages/Calendar'),
-    import('@/pages/History'),
+    import('@/modules/dashboard/Dashboard'),
+    import('@/modules/calendar/Calendar'),
+    import('@/modules/history/History'),
     import('@/modules/members/Members'),
     import('@/modules/expenses/Expenses'),
     import('@/modules/services/Recurring'),
