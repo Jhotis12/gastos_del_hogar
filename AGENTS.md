@@ -11,9 +11,11 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
 
 ## Reglas que no se negocian
 
-- **Hooks por dominio**: cada dominio vive en su archivo en `src/hooks/`
-  (useMembers, useCategories, useExpenses, useRecurring, useSavings,
-  useReceipts). No crear god-files.
+- **Módulos por dominio**: cada dominio vive en `src/modules/<dominio>/`
+  con su página, hooks, componentes y libs propios; lo transversal en
+  `src/shared/`. Los hooks de datos viven en su módulo (p. ej.
+  `modules/expenses/hooks/useExpenses`) y el resto importa de ahí.
+  No crear god-files ni archivos nuevos en `src/hooks/` o `src/pages/`.
 - **Montos COP**: siempre `MoneyInput` + `parseMoneyInput` (formato
   colombiano: puntos = miles, coma = decimales). No usar inputs < 16px
   (zoom de iOS al enfocar); usar `SelectInput`/`DateInput` para selects y
@@ -23,7 +25,7 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
 - **Errores**: mutations con `try/catch` + `toast`; queries con `QueryError`.
 - **Hooks antes de returns condicionales** (regla de hooks — ya rompió el
   Dashboard una vez).
-- **Fecha/meses TZ-seguros**: usar `src/lib/dates.ts` (mediodía local), no
+- **Fecha/meses TZ-seguros**: usar `src/shared/lib/dates.ts` (mediodía local), no
   `Date.UTC` con getters locales.
 - **Siempre local primero**: cualquier cambio, prueba o borrado de datos se
   hace SOLO en el entorno local (Supabase local + `docker exec`). NUNCA se
