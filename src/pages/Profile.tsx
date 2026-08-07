@@ -172,8 +172,8 @@ export default function Profile() {
       toast.error('Selecciona una imagen (JPG, PNG o WebP)')
       return
     }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('La imagen pesa más de 2 MB')
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('La imagen pesa más de 10 MB')
       return
     }
     try {

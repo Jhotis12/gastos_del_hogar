@@ -50,6 +50,15 @@ Deno.serve(async (req) => {
 
     const { household_id, path } = await req.json()
     if (!household_id || !path) return json({ error: 'Faltan parámetros' }, 400)
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(household_id)) {
+      return json({ error: 'Parámetros inválidos' }, 400)
+    }
+    // El path debe vivir dentro de la carpeta del hogar del usuario: sin esta
+    // validación, la descarga con service_role (ignora RLS) podría leer
+    // objetos de cualquier hogar si se conociera la ruta.
+    if (!path.startsWith(`${household_id}/`)) {
+      return json({ error: 'Sin permisos sobre este archivo' }, 403)
+    }
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -118,9 +127,7 @@ Deno.serve(async (req) => {
 
     return json({ parsed }, 200)
   } catch (e) {
-    return json(
-      { error: e instanceof Error ? e.message : 'Error interno del servidor' },
-      500,
-    )
+    console.error('analyze-receipt error:', e)
+    return json({ error: 'Error interno del servidor' }, 500)
   }
 })

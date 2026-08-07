@@ -44,6 +44,7 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 ├── .env.example             # VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY
 ├── supabase/
 │   ├── schema.sql           # Esquema completo (idempotente, para instalación fresca)
+│   ├── migrations/          # Migraciones aplicadas en orden (incl. hardening de seguridad)
 │   └── functions/
 │       └── analyze-receipt/index.ts   # Edge Function (Deno) → Gemini
 ├── src/
@@ -106,6 +107,8 @@ recurring_expenses  household_id, category_id, paid_by, amount, description,
 savings_goals       household_id, name, target_amount (>0), saved_amount (>=0),
                     target_date (opcional)
 receipts            household_id, storage_path, uploaded_by, parsed_data (jsonb)
+invite_lookup_attempts  user_id (= auth.users.id), attempts, window_start
+                    → rate limit (10 intentos/10 min) de get_household_by_code
 ```
 
 - **Fondo común:** ingreso del mes = `SUM(salaries.amount)` + `SUM(incomes.amount)`
@@ -156,28 +159,65 @@ recursión infinita en políticas).
   (`profile_id = auth.uid()`).
 - Resto: CRUD solo para miembros del hogar.
 - Autorización basada en `auth.uid()` — nunca en `user_metadata`.
+- **Todas las políticas UPDATE llevan `WITH CHECK`** que replica el `USING`
+  (migración `20260806120000_hardening_security`): un miembro no puede mover
+  filas a otro hogar ni reasignar ownership (`salaries.profile_id`).
+
+### Códigos de invitación
+- Generados con `generate_invite_code()`: **10 hex mayúsculas (40 bits)**,
+  derivadas de `gen_random_uuid()` (sin dependencia de pgcrypto). El código
+  anterior (6 hex = 16.7M) era enumerable por fuerza bruta.
+- `get_household_by_code` tiene **rate limit por usuario: 10 búsquedas cada
+  10 minutos** (tabla `invite_lookup_attempts`, RLS sin políticas); al
+  superarlo lanza excepción que la UI muestra tal cual.
+- Al aplicar la migración de hardening se **regeneraron todos los códigos**
+  existentes (los impresos/compartidos quedaron inválidos).
 
 ### RPCs (funciones security definer)
 | RPC | Propósito |
 |-----|-----------|
 | `create_household(p_name)` | Crea hogar + código + perfil + 7 categorías por defecto, atómico. Evita `INSERT…RETURNING` (la RLS filtra antes de ser miembro → 403 PGRST106). |
-| `get_household_by_code(p_code)` | Busca hogar por código (solo con sesión). |
+| `get_household_by_code(p_code)` | Busca hogar por código (solo con sesión, con rate limit de 10 intentos/10 min por usuario). |
 | `apply_recurring_expense(p_recurring_id, p_month)` | Aplica **un** servicio vencido a `expenses` (con guarda anti-duplicados por mes) y avanza su `next_due_date` según `frequency` (1/2/3/12 meses). Se llama por servicio desde el wizard de "Aplicar al mes". |
 | `get_running_balance(p_date)` | Saldo acumulado del hogar a una fecha: Σ salarios (`pay_date <= p_date`) + Σ incomes (`income_date <= p_date`) − Σ gastos (`expense_date <= p_date`). Security definer con `auth.uid()`. |
 | `get_monthly_surpluses()` | Sobrantes por mes desde el primer mes con actividad hasta el actual: `(month, income, expenses, surplus)` — ingreso del mes = salarios + dinero extra (agrupados por pay_date/income_date/expense_date). Suma acumulada = saldo disponible. |
 
 ### Edge Function `analyze-receipt`
-- Deno + `@supabase/supabase-js`. Valida JWT y pertenencia al hogar del path.
+- Deno + `@supabase/supabase-js`. Valida JWT, pertenencia al hogar del path
+  **y que el `path` viva dentro de la carpeta `{household_id}/`** del usuario
+  (la descarga usa service_role, que ignora RLS).
 - Descarga la imagen del bucket `receipts` → **Gemini Flash**
   (`gemini-flash-latest`; modelo `gemini-2.0-flash` tiene cuota 0 con la key
   actual) → JSON `{comercio, fecha, items[], total}`.
 - CORS habilitado explícitamente (`Access-Control-Allow-Origin: *`).
+- Los errores internos se registran en los logs de la función; al cliente
+  solo llega un mensaje genérico.
 - La `GEMINI_API_KEY` vive **solo en los secrets** del Edge Function.
 - Deploy: `SUPABASE_ACCESS_TOKEN=<pat> supabase functions deploy analyze-receipt`.
 
 ### Storage
-Bucket privado `receipts`, rutas `{household_id}/{uuid}.jpg` con políticas
-de subida/lectura por hogar.
+Bucket privado `receipts` (límite 8MB, solo jpeg/png/webp), rutas
+`{household_id}/{uuid}.jpg` con políticas de subida/lectura por hogar.
+
+### Headers de seguridad (vercel.json)
+- **CSP** por hash del script inline del tema (`sha256-CXcr/…` verificado
+  contra `dist/index.html`): `default-src 'self'`, `connect-src` solo a
+  `*.supabase.co` (REST/storage/Edge Function + `wss://` de Realtime),
+  `script-src 'self' + hash` (sin `unsafe-inline`), `style-src` con
+  `unsafe-inline` (Tailwind runtime + acentos por atributo), `img-src` con
+  `blob:`/`data:`/supabase, `frame-ancestors 'none'`, `object-src 'none'`.
+- `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+  `Referrer-Policy: strict-origin-when-cross-origin`, HSTS
+  (`max-age=31536000; includeSubDomains; preload`),
+  `Permissions-Policy: camera=(self)…` (la cámara solo para el escaneo de
+  facturas) y `Cross-Origin-Opener/Resource-Policy: same-origin`.
+- ⚠️ Si cambia el script inline de `index.html`, hay que recalcular el hash
+  (`node -e` con `crypto.createHash('sha256')`) y actualizarlo en `vercel.json`.
+
+### Autenticación
+- `minimum_password_length = 8` (config.toml local; en producción se cambia
+  desde el dashboard de Supabase → Auth) y validación ≥8 en el registro
+  (Login.tsx).
 
 ---
 
@@ -256,7 +296,7 @@ Skill de referencia: `mobile-app-ui-design` (`.agents/skills/`).
   features) y móvil centrado; el **login es el apartado principal** y el
   registro se alcanza con un enlace ("Crea una aquí") que alterna la vista con
   animación (`animate-form-in`); validación por campo (nombre sin números,
-  correo válido, contraseña ≥6) con `animate-shake` en inválidos; toggle de
+  correo válido, contraseña ≥8) con `animate-shake` en inválidos; toggle de
   mostrar/ocultar contraseña, inputs y CTAs con `min-h-12` (44px+ de área
   táctil).
 - **Formularios = bottom-sheets en móvil**: el `Modal` compartido se ancla
@@ -419,6 +459,8 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
 | `node tests/e2e-mobile.mjs` | Suite e2e móvil (Chromium touch): sheets, arrastre, flick, acordeón |
 | `SUPABASE_SERVICE_ROLE=… bash tests/reset-sandbox.sh` | Reinicia usuario sandbox (proyecto del `.env`) |
 | `SUPABASE_URL=http://127.0.0.1:54331 SUPABASE_SERVICE_ROLE=<key local> bash tests/reset-sandbox.sh` | Reinicia el sandbox en el entorno LOCAL (`supabase start`) |
+| `supabase migration up --local` | Aplica migraciones pendientes al stack local |
+| `SUPABASE_ACCESS_TOKEN=… supabase db push` | Aplica las migraciones a producción (⚠️ la de hardening regenera los códigos de invitación) |
 | `SUPABASE_ACCESS_TOKEN=… supabase functions deploy analyze-receipt` | Deploy Edge Function |
 | `SUPABASE_ACCESS_TOKEN=… supabase secrets set GEMINI_API_KEY=…` | Secret de Gemini |
 
@@ -496,3 +538,24 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
    el hero muestra "Por llegar: $X (nombre, fecha)" por cada salario con
    `pay_date > hoy`. Los sobrantes/historial ya agrupaban por `pay_date`; la
    tarjeta "Salarios del mes" se alineó a esa misma base.
+10. **Auditoría de seguridad (migración `20260806120000_hardening_security`)**
+    — hallazgos corregidos y no reintroducir:
+    - **Códigos de invitación de 6 hex (16.7M)** eran enumerables por fuerza
+      bruta desde `get_household_by_code` (cualquiera con cuenta) → ahora
+      `generate_invite_code()`: 10 hex mayúsculas (40 bits) sin pgcrypto.
+    - **Unirse sin límites** → rate limit por usuario (10 intentos/10 min,
+      tabla `invite_lookup_attempts` con RLS sin políticas); superado →
+      excepción que la UI muestra.
+    - **UPDATEs sin `WITH CHECK`** permitían mover filas a otro hogar y
+      reasignar `salaries.profile_id` → todas las políticas UPDATE replican
+      su `USING` en el `WITH CHECK`.
+    - **Edge Function descargaba cualquier path del bucket** (service_role
+      ignora RLS) → valida que `path` empiece por `{household_id}/` + formato
+      UUID; errores internos solo a logs (mensaje genérico al cliente).
+    - **Bucket `receipts` sin límites** → 8MB y solo jpeg/png/webp.
+    - **Sin headers de seguridad en Vercel** → CSP con hash, HSTS,
+      frame-ancestors 'none', etc. (ver §5).
+    - **Contraseñas ≥6** → ≥8 (config.toml + validación frontend).
+    - React Router 7.18.2 con advisory HIGH (GHSA-qwww-vcr4-c8h2, CSRF en
+      modo RSC): **sin parche publicado** (exige 8.3.0) pero no explotable
+      aquí (router declarativo, sin RSC/actions) — vigilar `pnpm audit`.

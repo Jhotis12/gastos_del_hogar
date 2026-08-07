@@ -78,8 +78,8 @@ export default function Login() {
     if (!EMAIL_RE.test(email.trim())) {
       errors.email = 'Ingresa un correo electrónico válido'
     }
-    if (password.length < 6) {
-      errors.password = 'La contraseña debe tener al menos 6 caracteres'
+    if (password.length < 8) {
+      errors.password = 'La contraseña debe tener al menos 8 caracteres'
     }
     setFieldErrors(errors)
     return Object.keys(errors).length === 0
@@ -268,7 +268,7 @@ export default function Login() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  minLength={6}
+                  minLength={8}
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value)

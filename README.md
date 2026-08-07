@@ -125,7 +125,7 @@ pnpm dev
 
 Abrir `http://localhost:5173`:
 
-1. **Crear cuenta** (cualquier email y contraseña ≥ 6 caracteres). En el
+1. **Crear cuenta** (cualquier email y contraseña ≥ 8 caracteres). En el
    entorno local los emails se confirman automáticamente
    (`enable_confirmations = false` en `supabase/config.toml`).
 2. La app te lleva a **crear tu hogar** (nombre + código de invitación para

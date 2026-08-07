@@ -134,6 +134,21 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
+-- ---------- FUNCIÓN: código de invitación ----------
+-- 10 caracteres hex en mayúsculas (40 bits de entropía, ~1.1 billones de
+-- combinaciones; el alfabeto hex no tiene caracteres confundibles 0/O/1/I/L).
+-- El código anterior (6 chars hex = 16.7M) era enumerable por fuerza bruta.
+-- Solo usa funciones de pg_catalog (gen_random_uuid y replace), sin
+-- dependencia de la extensión pgcrypto.
+create or replace function public.generate_invite_code()
+returns text
+language sql
+volatile
+set search_path = public
+as $$
+  select upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 10))
+$$;
+
 -- ---------- FUNCIÓN: crear hogar ----------
 -- Crea el hogar, asigna al usuario como miembro e inserta las categorías
 -- por defecto, todo en una transacción. Se usa RPC en vez de INSERT
@@ -154,7 +169,7 @@ begin
   end if;
 
   insert into public.households (id, name, invite_code)
-  values (new_id, p_name, upper(substr(md5(random()::text), 1, 6)));
+  values (new_id, p_name, public.generate_invite_code());
 
   update public.profiles
   set household_id = new_id
@@ -177,17 +192,56 @@ $$;
 -- Se usa al unirse a un hogar: la RLS impide a los no-miembros leer
 -- la tabla households, por eso se resuelve vía RPC security definer.
 -- Exige sesión iniciada (auth.uid()) para no exponer el lookup a anon.
+-- Con RLS + rate limit por usuario (10 intentos cada 10 minutos) el código
+-- de 40 bits no se puede enumerar por fuerza bruta.
+create table if not exists public.invite_lookup_attempts (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  attempts int not null default 1,
+  window_start timestamptz not null default now()
+);
+
+alter table public.invite_lookup_attempts enable row level security;
+
 create or replace function public.get_household_by_code(p_code text)
 returns table (id uuid, name text, invite_code text)
-language sql
-stable
+language plpgsql
 security definer
 set search_path = public
 as $$
-  select h.id, h.name, h.invite_code
-  from public.households h
-  where h.invite_code = upper(p_code)
-    and auth.uid() is not null
+declare
+  uid uuid := auth.uid();
+  attempt record;
+begin
+  if uid is null then
+    return;
+  end if;
+
+  -- Ventana deslizante de 10 minutos, máximo 10 búsquedas por usuario.
+  select * into attempt
+  from public.invite_lookup_attempts
+  where user_id = uid
+  for update;
+
+  if attempt.user_id is null then
+    insert into public.invite_lookup_attempts (user_id)
+    values (uid);
+  elsif attempt.window_start < now() - interval '10 minutes' then
+    update public.invite_lookup_attempts
+    set attempts = 1, window_start = now()
+    where user_id = uid;
+  elsif attempt.attempts >= 10 then
+    raise exception 'Demasiados intentos de unión. Espera 10 minutos e inténtalo de nuevo.';
+  else
+    update public.invite_lookup_attempts
+    set attempts = attempts + 1
+    where user_id = uid;
+  end if;
+
+  return query
+    select h.id, h.name, h.invite_code
+    from public.households h
+    where h.invite_code = upper(p_code);
+end;
 $$;
 
 -- ---------- FUNCIÓN: aplicar un gasto recurrente ----------
@@ -285,7 +339,8 @@ create policy "profiles: crear propio"
 
 create policy "profiles: editar propio"
   on public.profiles for update
-  using (auth.uid() = id);
+  using (auth.uid() = id)
+  with check (auth.uid() = id);
 
 -- households
 alter table public.households enable row level security;
@@ -300,7 +355,8 @@ create policy "households: crear hogar"
 
 create policy "households: editar del hogar"
   on public.households for update
-  using (public.is_household_member(id));
+  using (public.is_household_member(id))
+  with check (public.is_household_member(id));
 
 create policy "households: eliminar del hogar"
   on public.households for delete
@@ -319,7 +375,8 @@ create policy "salaries: registrar el propio"
 
 create policy "salaries: editar el propio"
   on public.salaries for update
-  using (profile_id = auth.uid());
+  using (profile_id = auth.uid())
+  with check (profile_id = auth.uid() and public.is_household_member(household_id));
 
 create policy "salaries: eliminar el propio"
   on public.salaries for delete
@@ -338,7 +395,8 @@ create policy "categories: crear del hogar"
 
 create policy "categories: editar del hogar"
   on public.categories for update
-  using (public.is_household_member(household_id));
+  using (public.is_household_member(household_id))
+  with check (public.is_household_member(household_id));
 
 create policy "categories: eliminar del hogar"
   on public.categories for delete
@@ -357,7 +415,8 @@ create policy "expenses: crear del hogar"
 
 create policy "expenses: editar del hogar"
   on public.expenses for update
-  using (public.is_household_member(household_id));
+  using (public.is_household_member(household_id))
+  with check (public.is_household_member(household_id));
 
 create policy "expenses: eliminar del hogar"
   on public.expenses for delete
@@ -376,7 +435,8 @@ create policy "incomes: crear del hogar"
 
 create policy "incomes: editar del hogar"
   on public.incomes for update
-  using (public.is_household_member(household_id));
+  using (public.is_household_member(household_id))
+  with check (public.is_household_member(household_id));
 
 create policy "incomes: eliminar del hogar"
   on public.incomes for delete
@@ -395,7 +455,8 @@ create policy "recurring: crear del hogar"
 
 create policy "recurring: editar del hogar"
   on public.recurring_expenses for update
-  using (public.is_household_member(household_id));
+  using (public.is_household_member(household_id))
+  with check (public.is_household_member(household_id));
 
 create policy "recurring: eliminar del hogar"
   on public.recurring_expenses for delete
@@ -414,7 +475,8 @@ create policy "budgets: crear del hogar"
 
 create policy "budgets: editar del hogar"
   on public.category_budgets for update
-  using (public.is_household_member(household_id));
+  using (public.is_household_member(household_id))
+  with check (public.is_household_member(household_id));
 
 create policy "budgets: eliminar del hogar"
   on public.category_budgets for delete
@@ -433,7 +495,8 @@ create policy "savings: crear del hogar"
 
 create policy "savings: editar del hogar"
   on public.savings_goals for update
-  using (public.is_household_member(household_id));
+  using (public.is_household_member(household_id))
+  with check (public.is_household_member(household_id));
 
 create policy "savings: eliminar del hogar"
   on public.savings_goals for delete
@@ -461,7 +524,8 @@ create policy "receipts: crear del hogar"
 
 create policy "receipts: editar del hogar"
   on public.receipts for update
-  using (public.is_household_member(household_id));
+  using (public.is_household_member(household_id))
+  with check (public.is_household_member(household_id));
 
 create policy "receipts: eliminar del hogar"
   on public.receipts for delete
@@ -490,9 +554,18 @@ grant usage, select on all sequences in schema public to authenticated;
 grant execute on all functions in schema public to authenticated;
 
 -- Storage: bucket privado receipts, rutas {household_id}/{uuid}.jpg
-insert into storage.buckets (id, name, public)
-values ('receipts', 'receipts', false)
-on conflict (id) do nothing;
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('receipts', 'receipts', false, 8388608, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update
+  set file_size_limit = excluded.file_size_limit,
+      allowed_mime_types = excluded.allowed_mime_types;
+
+-- Storage: bucket público avatars (fotos de perfil, hasta 10 MB)
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('avatars', 'avatars', true, 10485760, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update
+  set file_size_limit = excluded.file_size_limit,
+      allowed_mime_types = excluded.allowed_mime_types;
 
 create policy "receipts storage: subir del hogar"
   on storage.objects for insert
