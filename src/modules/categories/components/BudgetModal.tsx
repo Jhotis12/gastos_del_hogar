@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Modal from '@/shared/components/ui/Modal'
 import MoneyInput from '@/shared/components/ui/MoneyInput'
-import { useDeleteBudget, useUpsertBudget } from '@/hooks/useCategories'
+import { useDeleteBudget, useUpsertBudget } from '@/modules/categories/hooks/useCategories'
 import { useToast } from '@/shared/components/ui/Toast'
 import type { Category } from '@/shared/lib/types'
 import { parseMoneyInput } from '@/shared/lib/money'

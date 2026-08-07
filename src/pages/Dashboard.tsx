@@ -5,7 +5,7 @@ import { useAuth } from '@/shared/hooks/useAuth'
 import { useAddExpense } from '@/modules/expenses/hooks/useExpenses'
 import { useCountUp } from '@/shared/hooks/useCountUp'
 import { usePendingRecurring, useRecurringExpenses } from '@/modules/services/hooks/useRecurring'
-import { useBudgets } from '@/hooks/useCategories'
+import { useBudgets } from '@/modules/categories/hooks/useCategories'
 import {
   useExpenses,
   useRunningBalance,

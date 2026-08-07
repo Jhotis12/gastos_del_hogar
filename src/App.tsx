@@ -19,7 +19,7 @@ const Expenses = lazy(() => import('@/modules/expenses/Expenses'))
 const Recurring = lazy(() => import('@/modules/services/Recurring'))
 const Savings = lazy(() => import('@/modules/savings/Savings'))
 const Forecast = lazy(() => import('@/pages/Forecast'))
-const Categories = lazy(() => import('@/pages/Categories'))
+const Categories = lazy(() => import('@/modules/categories/Categories'))
 const Profile = lazy(() => import('@/modules/profile/Profile'))
 
 // Dev: no hay service worker, así que navegar a una ruta lazy sin red
@@ -40,7 +40,7 @@ if (import.meta.env.DEV) {
     import('@/modules/services/Recurring'),
     import('@/modules/savings/Savings'),
     import('@/pages/Forecast'),
-    import('@/pages/Categories'),
+    import('@/modules/categories/Categories'),
     import('@/modules/profile/Profile'),
   ])
 }
