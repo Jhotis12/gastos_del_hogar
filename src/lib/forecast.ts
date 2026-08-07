@@ -7,7 +7,7 @@
 //   2. Variables: mediana + rangos (p25/p75) de los gastos NO recurrentes de
 //      los últimos meses completos. La mediana es robusta a gastos one-off.
 //   3. Ingresos extra (no nómina): promedio de los últimos meses completos.
-import type { MonthlySurplus } from '@/hooks/useExpenses'
+import type { MonthlySurplus } from '@/modules/expenses/hooks/useExpenses'
 import type { RecurringExpenseWithRelations } from '@/shared/lib/types'
 import { shiftMonth } from '@/shared/lib/dates'
 

@@ -9,7 +9,7 @@ import {
   useUpdatePayday,
   useUpsertSalary,
 } from '@/modules/members/hooks/useMembers'
-import { useExpenses } from '@/hooks/useExpenses'
+import { useExpenses } from '@/modules/expenses/hooks/useExpenses'
 import { useIncomes } from '@/modules/members/hooks/useIncomes'
 import { useHousehold } from '@/modules/profile/hooks/useHousehold'
 import IncomeSection from '@/modules/members/components/IncomeSection'

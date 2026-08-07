@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Plus, Trash2, Repeat, Pencil, CheckCircle2, Clock } from 'lucide-react'
 import { useDeleteRecurring, useRecurringExpenses, useToggleRecurring } from '@/hooks/useRecurring'
-import { useExpenses } from '@/hooks/useExpenses'
+import { useExpenses } from '@/modules/expenses/hooks/useExpenses'
 import { useSalaries } from '@/modules/members/hooks/useMembers'
 import ConfirmDialog from '@/shared/components/ui/ConfirmDialog'
 import Toggle from '@/shared/components/ui/Toggle'

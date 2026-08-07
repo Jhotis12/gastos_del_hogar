@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowDownCircle, ArrowUpCircle, Wallet, History as HistoryIcon, Plus } from 'lucide-react'
-import { useMonthlySurpluses } from '@/hooks/useExpenses'
+import { useMonthlySurpluses } from '@/modules/expenses/hooks/useExpenses'
 import StatCard from '@/shared/components/ui/StatCard'
 import PageSkeleton from '@/shared/components/ui/PageSkeleton'
 import QueryError from '@/shared/components/ui/QueryError'
