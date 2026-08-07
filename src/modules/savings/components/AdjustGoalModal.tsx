@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import Modal from '@/shared/components/ui/Modal'
 import MoneyInput from '@/shared/components/ui/MoneyInput'
-import { useAdjustSavingsGoal } from '@/hooks/useSavings'
+import { useAdjustSavingsGoal } from '@/modules/savings/hooks/useSavings'
 import { useToast } from '@/shared/components/ui/Toast'
 import type { SavingsGoal } from '@/shared/lib/types'
 import { formatCurrency, parseMoneyInput } from '@/shared/lib/money'
