@@ -127,6 +127,7 @@ export default function Profile() {
   const { reduceAnimations, toggleReduceAnimations, palette, applyPalette } = useSettings()
   const { data: household } = useHousehold()
   const { data: members } = useMembers()
+  const isOnlyMember = (members?.length ?? 1) <= 1
   const updateProfile = useUpdateProfile()
   const leaveHousehold = useLeaveHousehold()
   const deleteHousehold = useDeleteHousehold()
@@ -475,7 +476,8 @@ export default function Profile() {
         <div className="flex flex-col gap-3 sm:flex-row">
           <button
             onClick={() => setConfirmLeave(true)}
-            disabled={!household || leaveHousehold.isPending}
+            disabled={!household || leaveHousehold.isPending || isOnlyMember}
+            title={isOnlyMember ? 'Eres el único miembro: salir dejaría los datos del hogar inaccesibles' : undefined}
             className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-coral-200 px-4 text-sm font-medium text-coral-600 hover:bg-coral-100/60 disabled:opacity-50"
           >
             <LogOut size={18} />
@@ -497,6 +499,14 @@ export default function Profile() {
             Cerrar sesión
           </button>
         </div>
+        {isOnlyMember && (
+          <p className="mt-3 flex items-start gap-2 rounded-xl bg-gold-100/60 px-4 py-3 text-xs leading-relaxed text-gold-600">
+            <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+            Eres el único miembro: al salir, los datos del hogar quedarían
+            inaccesibles. Si quieres borrarlos definitivamente, usa
+            &quot;Eliminar hogar&quot;.
+          </p>
+        )}
       </AccordionSection>
 
       <div className="flex items-center justify-center gap-2 opacity-60">
