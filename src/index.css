@@ -299,7 +299,10 @@ html.dark[data-palette="esmeralda"] {
 }
 
 /* Páginas previas al login (Login, Setup, Confirmación): siempre en claro,
-   aunque el usuario tenga activado el modo oscuro dentro de la app. */
+   aunque el usuario tenga activado el modo oscuro dentro de la app.
+   La marca (pine/gold/coral) se fija SIEMPRE en la paleta pino, aunque el
+   usuario cambie la paleta desde Ajustes → Apariencia: los !important
+   vencen a html[data-palette] y a html.dark[data-palette]. */
 .force-light {
   color-scheme: light;
   --cream: #f6f5f0;
@@ -316,14 +319,31 @@ html.dark[data-palette="esmeralda"] {
   --slate-700: #334155;
   --slate-800: #1e293b;
   --slate-900: #0f172a;
-  --pine-50: #eef7f3;
-  --pine-100: #d8ede4;
-  --pine-500: #2f876b;
-  --pine-600: #206c55;
-  --gold-100: #fdf3d7;
-  --gold-600: #b97a16;
-  --coral-100: #fde8e2;
-  --coral-600: #cc3d26;
+  --pine-50: #eef7f3 !important;
+  --pine-100: #d8ede4 !important;
+  --pine-200: #b3dcca !important;
+  --pine-300: #82c3aa !important;
+  --pine-400: #4fa387 !important;
+  --pine-500: #2f876b !important;
+  --pine-600: #206c55 !important;
+  --pine-700: #1b5745 !important;
+  --pine-800: #184639 !important;
+  --pine-900: #143a30 !important;
+  --pine-950: #0a211b !important;
+  --gold-100: #fdf3d7 !important;
+  --gold-200: #fae4a8 !important;
+  --gold-300: #f5cf6f !important;
+  --gold-400: #eeb73d !important;
+  --gold-500: #d99a1e !important;
+  --gold-600: #b97a16 !important;
+  --gold-700: #945b15 !important;
+  --coral-100: #fde8e2 !important;
+  --coral-200: #fbc8bb !important;
+  --coral-300: #f7a28c !important;
+  --coral-400: #ef7759 !important;
+  --coral-500: #e2553a !important;
+  --coral-600: #cc3d26 !important;
+  --coral-700: #a92f1d !important;
 }
 
 @theme {

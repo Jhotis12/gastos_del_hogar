@@ -1,14 +1,12 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   ArrowRight,
   Eye,
   EyeOff,
   Lock,
   Mail,
-  ShieldCheck,
   User,
-  Users,
-  ReceiptText,
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react'
@@ -17,12 +15,6 @@ import { supabase } from '@/shared/lib/supabase'
 import { cn } from '@/shared/lib/utils'
 
 type Mode = 'login' | 'register'
-
-const FEATURES = [
-  { icon: Users, text: 'Salarios por persona en un fondo común' },
-  { icon: ReceiptText, text: 'Escanea tus facturas y crea gastos automáticamente' },
-  { icon: ShieldCheck, text: 'Presupuestos, servicios y metas de ahorro' },
-]
 
 // Nombre: solo letras (con acentos y ñ) separadas por espacios, mínimo 2 letras
 const NAME_RE = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?: [A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$/
@@ -57,6 +49,7 @@ export default function Login() {
     name?: string
     email?: string
     password?: string
+    terms?: string
   }>({})
   const [busy, setBusy] = useState(false)
 
@@ -73,6 +66,9 @@ export default function Login() {
       const trimmed = name.trim()
       if (trimmed.length < 2 || !NAME_RE.test(trimmed)) {
         errors.name = 'El nombre solo puede tener letras y espacios'
+      }
+      if (!acceptedTerms) {
+        errors.terms = 'Debes aceptar los términos y condiciones'
       }
     }
     if (!EMAIL_RE.test(email.trim())) {
@@ -123,6 +119,7 @@ export default function Login() {
   const [notice, setNotice] = useState('')
   const [capsLock, setCapsLock] = useState(false)
   const [view, setView] = useState<'login' | 'forgot'>('login')
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
 
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -156,25 +153,28 @@ export default function Login() {
           <p className="font-display text-lg font-bold">Gastos del Hogar</p>
         </div>
 
-        <div className="relative">
-          <h1 className="font-display text-4xl font-bold leading-tight tracking-tight">
+        <div className="relative flex w-full flex-col items-center">
+          <h1 className="max-w-md text-center font-display text-3xl font-bold leading-tight tracking-tight xl:text-4xl">
             El presupuesto de tu hogar,
             <span className="text-gold-300"> en un solo lugar.</span>
           </h1>
-          <ul className="mt-10 space-y-5">
-            {FEATURES.map((f, i) => (
-              <li
-                key={f.text}
-                className="flex animate-form-in items-center gap-4 text-pine-100"
-                style={{ animationDelay: `${120 + i * 90}ms` }}
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface/10">
-                  <f.icon size={18} />
-                </span>
-                <span className="text-sm">{f.text}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="relative mt-8 w-full max-w-sm">
+            <div className="pointer-events-none absolute -inset-3 rounded-[28px] bg-gold-400/15 blur-2xl" />
+            <video
+              className="relative aspect-[4/5] max-h-[56vh] w-full rounded-3xl border border-white/15 shadow-2xl shadow-pine-950/60"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="none"
+              poster="/videos/promo-login-poster.jpg"
+              aria-hidden="true"
+              tabIndex={-1}
+              disablePictureInPicture
+            >
+              <source src="/videos/promo-login.mp4" type="video/mp4" />
+            </video>
+          </div>
         </div>
 
         <p className="relative text-sm text-pine-300">Hecho para hogares colombianos 🇨🇴</p>
@@ -405,6 +405,40 @@ export default function Login() {
                 </button>
               </div>
               <FieldError message={fieldErrors.password} />
+              {mode === 'register' && (
+                <label
+                  className={cn(
+                    'mt-2 flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors',
+                    fieldErrors.terms ? 'border-coral-200 bg-coral-100/40' : 'border-slate-200 bg-surface hover:border-pine-300',
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => {
+                      setAcceptedTerms(e.target.checked)
+                      if (fieldErrors.terms) setFieldErrors((f) => ({ ...f, terms: undefined }))
+                    }}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-pine-600"
+                    aria-invalid={!!fieldErrors.terms}
+                  />
+                  <span className="text-xs leading-relaxed text-ink/60">
+                    He leído y acepto los{' '}
+                    <Link to="/terminos" target="_blank" className="font-semibold text-pine-600 underline-offset-2 hover:underline">
+                      Términos y Condiciones
+                    </Link>{' '}
+                    y la{' '}
+                    <Link to="/privacidad" target="_blank" className="font-semibold text-pine-600 underline-offset-2 hover:underline">
+                      Política de Tratamiento de Datos
+                    </Link>
+                  </span>
+                </label>
+              )}
+              {fieldErrors.terms && (
+                <p role="alert" className="mt-1.5 text-xs font-medium text-coral-600">
+                  {fieldErrors.terms}
+                </p>
+              )}
               {capsLock && (
                 <p aria-live="polite" className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-gold-600">
                   <AlertCircle size={13} className="shrink-0" />

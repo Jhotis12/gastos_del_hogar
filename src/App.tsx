@@ -11,6 +11,8 @@ const Login = lazy(() => import('@/modules/auth/Login'))
 const Setup = lazy(() => import('@/modules/auth/Setup'))
 const AuthConfirm = lazy(() => import('@/modules/auth/AuthConfirm'))
 const Recover = lazy(() => import('@/modules/auth/Recover'))
+const Terms = lazy(() => import('@/modules/auth/Terms'))
+const Privacy = lazy(() => import('@/modules/auth/Privacy'))
 const Dashboard = lazy(() => import('@/modules/dashboard/Dashboard'))
 const Calendar = lazy(() => import('@/modules/calendar/Calendar'))
 const History = lazy(() => import('@/modules/history/History'))
@@ -32,6 +34,8 @@ if (import.meta.env.DEV) {
     import('@/modules/auth/Setup'),
     import('@/modules/auth/AuthConfirm'),
     import('@/modules/auth/Recover'),
+    import('@/modules/auth/Terms'),
+    import('@/modules/auth/Privacy'),
     import('@/modules/dashboard/Dashboard'),
     import('@/modules/calendar/Calendar'),
     import('@/modules/history/History'),
@@ -103,6 +107,8 @@ export default function App() {
         </Route>
         <Route path="/auth/confirm" element={<AuthConfirm />} />
         <Route path="/recuperar" element={<Recover />} />
+        <Route path="/terminos" element={<Terms />} />
+        <Route path="/privacidad" element={<Privacy />} />
         <Route element={<RequireAuth />}>
           <Route element={<RequireSetup />}>
             <Route path="/setup" element={<Setup />} />

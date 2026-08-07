@@ -20,6 +20,7 @@ import { useRealtimeSync } from '@/shared/hooks/useRealtimeSync'
 import { useDragToClose } from '@/shared/hooks/useDragToClose'
 import { cn } from '@/shared/lib/utils'
 import AppLogo from '@/shared/components/ui/AppLogo'
+import ConfirmDialog from '@/shared/components/ui/ConfirmDialog'
 import ThemeToggle from '@/shared/components/ui/ThemeToggle'
 import InstallAppButton from '@/shared/components/ui/InstallAppButton'
 import UserAvatar from '@/shared/components/ui/UserAvatar'
@@ -88,7 +89,13 @@ function SidebarNav() {
 export default function Layout() {
   const { profile, signOut } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
+  const [confirmSignOut, setConfirmSignOut] = useState(false)
   useRealtimeSync(profile?.household_id ?? null)
+
+  const handleSignOut = async () => {
+    setConfirmSignOut(false)
+    await signOut()
+  }
 
   const closeMore = () => setMoreOpen(false)
   const moreDrag = useDragToClose(closeMore)
@@ -139,7 +146,7 @@ export default function Layout() {
             </div>
             <ThemeToggle />
             <button
-              onClick={signOut}
+              onClick={() => setConfirmSignOut(true)}
               className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-ink/55 hover:bg-coral-100/60 hover:text-coral-600"
             >
               <LogOut size={18} />
@@ -262,7 +269,10 @@ export default function Layout() {
               <InstallAppButton />
               <ThemeToggle />
               <button
-                onClick={signOut}
+                onClick={() => {
+                  setMoreOpen(false)
+                  setConfirmSignOut(true)
+                }}
                 className="mt-1 flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-coral-600 hover:bg-coral-100/60"
               >
                 <LogOut size={18} />
@@ -272,6 +282,16 @@ export default function Layout() {
           </div>
         </div>
       )}
+
+      {/* Confirmación de cierre de sesión */}
+      <ConfirmDialog
+        open={confirmSignOut}
+        title="Cerrar sesión"
+        message="¿Seguro que quieres cerrar la sesión? Tendrás que volver a ingresar con tu correo y contraseña."
+        confirmLabel="Cerrar sesión"
+        onConfirm={() => void handleSignOut()}
+        onCancel={() => setConfirmSignOut(false)}
+      />
     </div>
   )
 }
