@@ -7,10 +7,10 @@ import PageSkeleton from '@/shared/components/ui/PageSkeleton'
 import OfflineGate from '@/shared/components/ui/OfflineGate'
 
 // Lazy loading: cada página se carga solo cuando se navega a ella
-const Login = lazy(() => import('@/pages/Login'))
-const Setup = lazy(() => import('@/pages/Setup'))
-const AuthConfirm = lazy(() => import('@/pages/AuthConfirm'))
-const Recover = lazy(() => import('@/pages/Recover'))
+const Login = lazy(() => import('@/modules/auth/Login'))
+const Setup = lazy(() => import('@/modules/auth/Setup'))
+const AuthConfirm = lazy(() => import('@/modules/auth/AuthConfirm'))
+const Recover = lazy(() => import('@/modules/auth/Recover'))
 const Dashboard = lazy(() => import('@/pages/Dashboard'))
 const Calendar = lazy(() => import('@/pages/Calendar'))
 const History = lazy(() => import('@/pages/History'))
@@ -28,10 +28,10 @@ const Profile = lazy(() => import('@/pages/Profile'))
 // producción el SW precachea todos los chunks (generateSW → precache).
 if (import.meta.env.DEV) {
   void Promise.allSettled([
-    import('@/pages/Login'),
-    import('@/pages/Setup'),
-    import('@/pages/AuthConfirm'),
-    import('@/pages/Recover'),
+    import('@/modules/auth/Login'),
+    import('@/modules/auth/Setup'),
+    import('@/modules/auth/AuthConfirm'),
+    import('@/modules/auth/Recover'),
     import('@/pages/Dashboard'),
     import('@/pages/Calendar'),
     import('@/pages/History'),
