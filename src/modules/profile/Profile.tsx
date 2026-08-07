@@ -17,9 +17,9 @@ import {
   X,
 } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
-import { useSettings } from '@/hooks/useSettings'
+import { useSettings } from '@/modules/profile/hooks/useSettings'
 import { PALETTES } from '@/shared/lib/palettes'
-import { useHousehold } from '@/hooks/useHousehold'
+import { useHousehold } from '@/modules/profile/hooks/useHousehold'
 import { useMembers } from '@/hooks/useMembers'
 import {
   useDeleteHousehold,

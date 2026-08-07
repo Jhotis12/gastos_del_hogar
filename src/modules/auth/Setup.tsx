@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Home, UserPlus } from 'lucide-react'
 import AppLogo from '@/shared/components/ui/AppLogo'
-import { useCreateHousehold, useJoinHousehold } from '@/hooks/useHousehold'
+import { useCreateHousehold, useJoinHousehold } from '@/modules/profile/hooks/useHousehold'
 
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'

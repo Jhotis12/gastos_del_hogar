@@ -20,7 +20,7 @@ const Recurring = lazy(() => import('@/pages/Recurring'))
 const Savings = lazy(() => import('@/pages/Savings'))
 const Forecast = lazy(() => import('@/pages/Forecast'))
 const Categories = lazy(() => import('@/pages/Categories'))
-const Profile = lazy(() => import('@/pages/Profile'))
+const Profile = lazy(() => import('@/modules/profile/Profile'))
 
 // Dev: no hay service worker, así que navegar a una ruta lazy sin red
 // falla (chunk no precacheado). Se pre-cargan todas las páginas al boot
@@ -41,7 +41,7 @@ if (import.meta.env.DEV) {
     import('@/pages/Savings'),
     import('@/pages/Forecast'),
     import('@/pages/Categories'),
-    import('@/pages/Profile'),
+    import('@/modules/profile/Profile'),
   ])
 }
 

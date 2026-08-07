@@ -11,7 +11,7 @@ import {
 } from '@/hooks/useMembers'
 import { useExpenses } from '@/hooks/useExpenses'
 import { useIncomes } from '@/hooks/useIncomes'
-import { useHousehold } from '@/hooks/useHousehold'
+import { useHousehold } from '@/modules/profile/hooks/useHousehold'
 import IncomeSection from '@/components/members/IncomeSection'
 import UserAvatar from '@/shared/components/ui/UserAvatar'
 import MonthPicker from '@/shared/components/ui/MonthPicker'

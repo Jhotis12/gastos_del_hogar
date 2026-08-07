@@ -12,7 +12,7 @@ import {
   useSummary,
   useMonthlySurpluses,
 } from '@/hooks/useExpenses'
-import { useHousehold } from '@/hooks/useHousehold'
+import { useHousehold } from '@/modules/profile/hooks/useHousehold'
 import { useMembers, useSalaries } from '@/hooks/useMembers'
 import { useForecast } from '@/hooks/useForecast'
 import StatCard from '@/shared/components/ui/StatCard'
