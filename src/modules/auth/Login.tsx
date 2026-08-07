@@ -158,10 +158,10 @@ export default function Login() {
             El presupuesto de tu hogar,
             <span className="text-gold-300"> en un solo lugar.</span>
           </h1>
-          <div className="relative mt-8 w-full max-w-sm">
+          <div className="relative mt-10 w-full max-w-2xl">
             <div className="pointer-events-none absolute -inset-3 rounded-[28px] bg-gold-400/15 blur-2xl" />
             <video
-              className="relative aspect-[4/5] max-h-[56vh] w-full rounded-3xl border border-white/15 shadow-2xl shadow-pine-950/60"
+              className="relative aspect-video w-full rounded-2xl border border-white/15 shadow-2xl shadow-pine-950/60"
               autoPlay
               muted
               loop

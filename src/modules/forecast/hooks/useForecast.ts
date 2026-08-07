@@ -107,11 +107,11 @@ export function useForecast() {
   const error = [surplusesError, recurringError, balanceError, variableError, extraError].find(Boolean)
   const isLoading =
     salariesPending || currentSalariesPending ||
-    (!surpluses && !surplusesError) ||
-    (!recurring && !recurringError) ||
-    (!runningBalance && !balanceError) ||
-    (!variableHistory && !variableError) ||
-    (!extraIncomeHistory && !extraError)
+    (surpluses === undefined && !surplusesError) ||
+    (recurring === undefined && !recurringError) ||
+    (runningBalance === undefined && !balanceError) ||
+    (variableHistory === undefined && !variableError) ||
+    (extraIncomeHistory === undefined && !extraError)
 
   const data = useMemo<ForecastData | null>(() => {
     if (error || surpluses === undefined || recurring === undefined || runningBalance === undefined) {
