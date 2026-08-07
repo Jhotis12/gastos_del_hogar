@@ -58,7 +58,14 @@ export default function AuthConfirm() {
           <p className="mt-2 text-sm text-pine-600">Redirigiendo a tu sesión…</p>
         ) : error ? (
           <>
-            <p className="mt-2 text-sm text-coral-600">{error}</p>
+            <h2 className="mt-2 font-display text-base font-bold text-coral-600">
+              Enlace inválido o expirado
+            </h2>
+            <p className="mt-1.5 text-sm text-ink/60">{error}</p>
+            <p className="mt-3 text-xs leading-relaxed text-ink/45">
+              Los enlaces de confirmación vencen en 1 hora. Inicia sesión y
+              vuelve a registrarte si el correo no te llegó para recibir uno nuevo.
+            </p>
             <Link
               to="/login"
               className="mt-6 inline-flex min-h-12 items-center justify-center rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
