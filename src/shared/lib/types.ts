@@ -131,3 +131,21 @@ export interface SavingsGoal {
   target_date: string | null
   created_at: string
 }
+
+export interface WishlistItem {
+  id: string
+  household_id: string
+  created_by: string | null
+  name: string
+  price: number
+  priority: 'necesidad' | 'deseo' | 'regalo'
+  status: 'pendiente' | 'comprado' | 'descartado'
+  payment_method: 'contado' | 'cuotas'
+  initial_payment: number | null
+  installments_count: number | null
+  interest_rate: number | null
+  cutoff_day: number | null
+  purchase_date: string | null
+  bought_at: string | null
+  created_at: string
+}

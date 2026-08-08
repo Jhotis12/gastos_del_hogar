@@ -21,6 +21,7 @@ const Expenses = lazy(() => import('@/modules/expenses/Expenses'))
 const Recurring = lazy(() => import('@/modules/services/Recurring'))
 const Savings = lazy(() => import('@/modules/savings/Savings'))
 const Forecast = lazy(() => import('@/modules/forecast/Forecast'))
+const Wishlist = lazy(() => import('@/modules/wishlist/Wishlist'))
 const Categories = lazy(() => import('@/modules/categories/Categories'))
 const Profile = lazy(() => import('@/modules/profile/Profile'))
 
@@ -44,6 +45,7 @@ if (import.meta.env.DEV) {
     import('@/modules/services/Recurring'),
     import('@/modules/savings/Savings'),
     import('@/modules/forecast/Forecast'),
+    import('@/modules/wishlist/Wishlist'),
     import('@/modules/categories/Categories'),
     import('@/modules/profile/Profile'),
   ])
@@ -119,6 +121,7 @@ export default function App() {
               <Route path="/calendario" element={<Calendar />} />
               <Route path="/historial" element={<History />} />
               <Route path="/proyeccion" element={<Forecast />} />
+              <Route path="/quiero-comprar" element={<Wishlist />} />
               <Route path="/miembros" element={<Members />} />
               <Route path="/gastos" element={<Expenses />} />
               <Route path="/recurrentes" element={<Recurring />} />

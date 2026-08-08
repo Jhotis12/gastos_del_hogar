@@ -527,6 +527,47 @@ await step('modo oscuro y claro', async () => {
   if (!light) throw new Error('modo claro no aplicado')
 })
 
+
+// Quiero comprar: deseo de contado con "te quedaría"
+await step('registrar deseo de contado y ver saldo restante', async () => {
+  await goTo('Quiero comprar', '/quiero-comprar')
+  await waitForText('Nuevo deseo')
+  await page.click('text=Nuevo deseo')
+  await page.fill('input[placeholder*="Nevera"]', 'Zapatos')
+  await page.fill('input[inputmode="decimal"]', '350.000')
+  await page.click('button:has-text("Registrar deseo")')
+  await waitForText('Zapatos')
+  await waitForText('Te quedaría')
+})
+
+// Quiero comprar: plan en cuotas con interés, abono inicial y proyección
+await step('registrar deseo en cuotas con interés y abono', async () => {
+  await page.click('text=Nuevo deseo')
+  await page.fill('input[placeholder*="Nevera"]', 'Nevera')
+  await page.fill('input[inputmode="decimal"]', '3.000.000')
+  await page.click('button[data-select] >> nth=1')
+  await page.click('[role="option"] >> text="En cuotas"')
+  await waitForText('Cuota mensual')
+  await page.click('button[data-select] >> nth=3')
+  await page.click('[role="option"] >> text="2%"')
+  await waitForText('404.145')
+  // abono inicial (2º input decimal del form de cuotas)
+  await page.locator('input[inputmode="decimal"]').nth(1).fill('500.000')
+  await waitForText('Se financia')
+  await waitForText('2.500.000')
+  await page.click('button:has-text("Registrar deseo")')
+  await waitForText('Nevera')
+  await waitForText('12 cuotas al 2% · abono')
+})
+
+// Quiero comprar: marcar comprado y descartar
+await step('estados de deseo: comprado y descartado', async () => {
+  await page.click('button:has-text("Compré") >> nth=0')
+  await waitForText('Comprado')
+  await page.click('button:has-text("Descartar") >> nth=0')
+  await waitForText('Descartado')
+})
+
 // Perfil: cambiar nombre
 await step('cambiar nombre en perfil', async () => {
   await goTo('Perfil y Hogar', '/perfil')

@@ -14,6 +14,7 @@ import {
   Settings,
   History,
   TrendingUp,
+  ShoppingBag,
 } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { useRealtimeSync } from '@/shared/hooks/useRealtimeSync'
@@ -30,6 +31,7 @@ const NAV_ITEMS = [
   { to: '/calendario', label: 'Calendario', icon: CalendarDays },
   { to: '/historial', label: 'Historial', icon: History },
   { to: '/proyeccion', label: 'Proyección', icon: TrendingUp },
+  { to: '/quiero-comprar', label: 'Quiero comprar', icon: ShoppingBag },
   { to: '/miembros', label: 'Miembros y Salarios', icon: Users },
   { to: '/gastos', label: 'Gastos', icon: Receipt },
   { to: '/recurrentes', label: 'Servicios', icon: Repeat },
