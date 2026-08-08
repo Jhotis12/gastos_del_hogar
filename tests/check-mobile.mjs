@@ -40,11 +40,26 @@ for (const [label, url] of [
   ['categorias', '/categorias'],
   ['miembros', '/miembros'],
   ['historial', '/historial'],
+  ['proyeccion', '/proyeccion'],
+  ['quiero-comprar', '/quiero-comprar'],
   ['perfil', '/perfil'],
 ]) {
   await page.goto(`${BASE}${url}`, { waitUntil: 'domcontentloaded' })
   await checkOverflow(label)
 }
+
+// Pasada a 320px (pantallas muy angostas): el MonthPicker, el selector de
+// horizonte de Proyección y los grids deben seguir sin desbordar.
+page.setViewportSize({ width: 320, height: 700 })
+for (const [label, url] of [
+  ['dashboard 320px', '/'],
+  ['proyeccion 320px', '/proyeccion'],
+  ['historial 320px', '/historial'],
+]) {
+  await page.goto(`${BASE}${url}`, { waitUntil: 'domcontentloaded' })
+  await checkOverflow(label)
+}
+page.setViewportSize({ width: 375, height: 812 })
 
 // FAB + action-sheet de Gastos
 await page.goto(`${BASE}/gastos`, { waitUntil: 'domcontentloaded' })
