@@ -22,7 +22,7 @@ export default function MonthPicker({ month, onChange }: MonthPickerProps) {
   }, [month])
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex w-full items-center gap-2 sm:w-auto">
       <button
         onClick={() => onChange(shiftMonth(month, -1))}
         className="rounded-lg border border-slate-200 p-2.5 text-ink/50 hover:bg-cream"
