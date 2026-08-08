@@ -21,6 +21,7 @@ import { formatDate, shiftMonth } from '@/shared/lib/dates'
 import { formatCurrency } from '@/shared/lib/money'
 
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
+import Fab from '@/shared/components/ui/Fab'
 import { useMonthParam } from '@/shared/hooks/useMonthParam'
 
 export default function Recurring() {
@@ -108,7 +109,7 @@ export default function Recurring() {
               setEditing(null)
               setFormOpen(true)
             }}
-            className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+            className="hidden min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800 lg:inline-flex"
           >
             <Plus size={16} />
             Nuevo servicio
@@ -263,6 +264,8 @@ export default function Recurring() {
           </ul>
         </div>
       )}
+
+      <Fab onClick={() => { setEditing(null); setFormOpen(true) }} label="Nuevo servicio" />
 
       <ServiceForm
         open={formOpen}

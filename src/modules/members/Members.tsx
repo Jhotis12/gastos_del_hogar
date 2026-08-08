@@ -218,6 +218,7 @@ function SalaryInput({
 }
 
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
+import Fab from '@/shared/components/ui/Fab'
 import { useMonthParam } from '@/shared/hooks/useMonthParam'
 
 export default function Members() {
@@ -328,6 +329,15 @@ export default function Members() {
         </div>
       </div>
 
+      <Fab
+        onClick={() =>
+          document
+            .getElementById('registrar-salario')
+            ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+        label="Registrar salario"
+      />
+
       <div className="card animate-fade-up" style={{ animationDelay: '180ms' }}>
         <div className="border-b border-slate-100 px-5 py-4">
           <h2 className="text-sm font-semibold text-ink">Saldos del mes</h2>
@@ -375,7 +385,7 @@ export default function Members() {
         </div>
       </div>
 
-      <div className="card animate-fade-up" style={{ animationDelay: '260ms' }}>
+      <div id="registrar-salario" className="card animate-fade-up scroll-mt-24" style={{ animationDelay: '260ms' }}>
         <div className="border-b border-slate-100 px-5 py-4">
           <h2 className="text-sm font-semibold text-ink">
             Personas del hogar

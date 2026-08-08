@@ -71,18 +71,18 @@ await page.click('button[aria-label="Cerrar"]')
 
 // Formularios vía bottom-sheet
 await page.goto(`${BASE}/recurrentes`, { waitUntil: 'domcontentloaded' })
-await page.click('button[aria-label="Cerrar"], text=Nuevo servicio').catch(() => {})
-await page.click('text=Nuevo servicio')
+await page.click('button[aria-label="Cerrar"]').catch(() => {})
+await page.click('button[aria-label="Nuevo servicio"]')
 await checkOverflow('modal nuevo servicio')
 await page.click('button[aria-label="Cerrar"]')
 
 await page.goto(`${BASE}/ahorros`, { waitUntil: 'domcontentloaded' })
-await page.click('text=Nueva meta')
+await page.click('button[aria-label="Nueva meta de ahorro"]')
 await checkOverflow('modal nueva meta')
 await page.click('button[aria-label="Cerrar"]')
 
 await page.goto(`${BASE}/categorias`, { waitUntil: 'domcontentloaded' })
-await page.click('text=Nueva categoría')
+await page.click('button[aria-label="Nueva categoría"]')
 await checkOverflow('modal nueva categoria')
 await page.click('button[aria-label="Cerrar"]')
 

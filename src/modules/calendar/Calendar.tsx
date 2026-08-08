@@ -13,6 +13,7 @@ import type { ExpenseWithRelations } from '@/shared/lib/types'
 import { cn, errorMessage } from '@/shared/lib/utils'
 import { WEEKDAYS } from '@/shared/lib/constants'
 import { daysInMonth, formatDate, monthLabel, todayISO } from '@/shared/lib/dates'
+import Fab from '@/shared/components/ui/Fab'
 import { formatCurrency } from '@/shared/lib/money'
 
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
@@ -258,6 +259,8 @@ export default function Calendar() {
           </div>
         )}
       </Modal>
+
+      <Fab onClick={() => setFormDate(todayISO())} label="Agregar gasto de hoy" />
 
       <ExpenseForm
         open={!!formDate}

@@ -21,6 +21,7 @@ import { formatDate, monthKey } from '@/shared/lib/dates'
 import { formatCurrency } from '@/shared/lib/money'
 
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
+import Fab from '@/shared/components/ui/Fab'
 import { useMonthParam } from '@/shared/hooks/useMonthParam'
 
 export default function Expenses() {
@@ -341,13 +342,7 @@ export default function Expenses() {
       />
 
       {/* FAB + action-sheet (móvil): nuevo gasto o escanear factura */}
-      <button
-        onClick={() => setFabOpen(true)}
-        aria-label="Agregar gasto"
-        className="fixed bottom-[calc(env(safe-area-inset-bottom)+4.75rem)] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-pine-700 text-white shadow-lg shadow-pine-900/30 transition-transform active:scale-95 lg:hidden"
-      >
-        <Plus size={26} />
-      </button>
+      <Fab onClick={() => setFabOpen(true)} label="Agregar gasto" />
 
       {fabOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">

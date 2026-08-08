@@ -28,6 +28,7 @@ import { currentMonthKey, formatDate, shiftMonth, shortMonthLabel } from '@/shar
 import { formatCurrency } from '@/shared/lib/money'
 import { cn, errorMessage } from '@/shared/lib/utils'
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
+import Fab from '@/shared/components/ui/Fab'
 import type { WishlistItem } from '@/shared/lib/types'
 
 const PRIORITY_STYLE: Record<WishlistItem['priority'], string> = {
@@ -113,7 +114,7 @@ export default function Wishlist() {
             setEditing(null)
             setFormOpen(true)
           }}
-          className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+          className="hidden min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800 lg:inline-flex"
         >
           <Plus size={16} />
           Nuevo deseo
@@ -353,6 +354,8 @@ export default function Wishlist() {
           })}
         </div>
       )}
+
+      <Fab onClick={() => { setEditing(null); setFormOpen(true) }} label="Nuevo deseo" />
 
       <WishlistItemForm
         open={formOpen}

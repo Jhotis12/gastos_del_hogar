@@ -15,6 +15,7 @@ import { currentMonthKey } from '@/shared/lib/dates'
 import { formatCurrency } from '@/shared/lib/money'
 
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
+import Fab from '@/shared/components/ui/Fab'
 
 export default function Categories() {
   usePageTitle('Categorías')
@@ -78,7 +79,7 @@ export default function Categories() {
         </div>
         <button
           onClick={() => setFormOpen(true)}
-          className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+          className="hidden min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800 lg:inline-flex"
         >
           <Plus size={16} />
           Nueva categoría
@@ -149,6 +150,8 @@ export default function Categories() {
           })}
         </div>
       )}
+
+      <Fab onClick={() => setFormOpen(true)} label="Nueva categoría" />
 
       <Modal open={formOpen} title="Nueva categoría" onClose={() => setFormOpen(false)}>
         <form onSubmit={submit} className="space-y-4">

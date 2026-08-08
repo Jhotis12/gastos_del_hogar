@@ -13,6 +13,7 @@ import { cn, errorMessage } from '@/shared/lib/utils'
 import { formatCurrency } from '@/shared/lib/money'
 
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
+import Fab from '@/shared/components/ui/Fab'
 import { useForecast } from '@/modules/forecast/hooks/useForecast'
 import { shortMonthLabel, shiftMonth } from '@/shared/lib/dates'
 
@@ -60,7 +61,7 @@ export default function Savings() {
             setEditing(null)
             setFormOpen(true)
           }}
-          className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+          className="hidden min-h-12 items-center gap-2 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800 lg:inline-flex"
         >
           <Plus size={16} />
           Nueva meta
@@ -219,6 +220,8 @@ export default function Savings() {
           })}
         </div>
       )}
+
+      <Fab onClick={() => { setEditing(null); setFormOpen(true) }} label="Nueva meta de ahorro" />
 
       <GoalForm
         open={formOpen}
