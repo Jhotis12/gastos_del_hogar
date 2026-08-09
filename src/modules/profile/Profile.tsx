@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   AlertTriangle,
   Camera,
@@ -36,6 +36,9 @@ import { useToast } from '@/shared/components/ui/Toast'
 import AppLogo from '@/shared/components/ui/AppLogo'
 import { cn, errorMessage } from '@/shared/lib/utils'
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
+import { useSearchParams } from 'react-router-dom'
+import AvatarLightbox from '@/shared/components/ui/AvatarLightbox'
+import { supabase } from '@/shared/lib/supabase'
 
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
@@ -140,6 +143,23 @@ export default function Profile() {
   const [checkingUpdate, setCheckingUpdate] = useState(false)
   // Acordeón: varias secciones abiertas a la vez (Tu cuenta por defecto)
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['cuenta']))
+  const [viewerOpen, setViewerOpen] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // Si llegamos desde el avatar de la barra superior (?seccion=cuenta),
+  // aseguramos la sección abierta y hacemos scroll hasta la foto.
+  useEffect(() => {
+    if (searchParams.get('seccion') !== 'cuenta') return
+    setOpenSections((s) => new Set(s).add('cuenta'))
+    const t = setTimeout(() => {
+      const el = document.getElementById('cuenta-panel')
+      if (!el) return
+      el.style.scrollMarginTop = '100px'
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 350)
+    setSearchParams({}, { replace: true })
+    return () => clearTimeout(t)
+  }, [searchParams, setSearchParams])
   const toggleSection = (id: string) =>
     setOpenSections((prev) => {
       const next = new Set(prev)
@@ -266,7 +286,12 @@ export default function Profile() {
       >
         <div className="mb-5 flex items-center gap-4 sm:gap-5">
           <div className="relative shrink-0">
-            <UserAvatar name={profile.full_name} avatarPath={profile.avatar_path} size="xl" />
+            <UserAvatar
+              name={profile.full_name}
+              avatarPath={profile.avatar_path}
+              size="xl"
+              onClick={profile.avatar_path ? () => setViewerOpen(true) : undefined}
+            />
             <button
               type="button"
               onClick={() => avatarInputRef.current?.click()}
@@ -522,6 +547,16 @@ export default function Profile() {
         onConfirm={() => leaveHousehold.mutateAsync().then(() => setConfirmLeave(false))}
         onCancel={() => setConfirmLeave(false)}
         busy={leaveHousehold.isPending}
+      />
+
+      <AvatarLightbox
+        src={
+          viewerOpen && profile.avatar_path
+            ? supabase.storage.from('avatars').getPublicUrl(profile.avatar_path).data.publicUrl
+            : null
+        }
+        name={profile.full_name}
+        onClose={() => setViewerOpen(false)}
       />
 
       <ConfirmDialog

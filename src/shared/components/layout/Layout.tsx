@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   Users,
@@ -90,6 +90,8 @@ function SidebarNav() {
 
 export default function Layout() {
   const { profile, signOut } = useAuth()
+  const navigate = useNavigate()
+  const goToProfilePhoto = () => navigate('/perfil?seccion=cuenta')
   const [moreOpen, setMoreOpen] = useState(false)
   const [confirmSignOut, setConfirmSignOut] = useState(false)
   useRealtimeSync(profile?.household_id ?? null)
@@ -133,7 +135,12 @@ export default function Layout() {
           </nav>
 
           <div className="border-t border-slate-200/70 p-4">
-            <div className="mb-4 flex items-center gap-3 px-3">
+            <button
+              type="button"
+              onClick={goToProfilePhoto}
+              title="Ir a mi perfil"
+              className="mb-4 flex w-full items-center gap-3 rounded-xl px-3 py-1 text-left transition-colors hover:bg-cream"
+            >
               <UserAvatar
                 name={profile?.full_name}
                 avatarPath={profile?.avatar_path}
@@ -145,7 +152,7 @@ export default function Layout() {
                 </p>
                 <p className="text-xs text-ink/40">Miembro de este hogar</p>
               </div>
-            </div>
+            </button>
             <ThemeToggle />
             <button
               onClick={() => setConfirmSignOut(true)}
@@ -167,11 +174,18 @@ export default function Layout() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle compact />
-            <UserAvatar
-              name={profile?.full_name}
-              avatarPath={profile?.avatar_path}
-              size="sm"
-            />
+            <button
+              type="button"
+              onClick={goToProfilePhoto}
+              aria-label="Ir a mi perfil"
+              className="rounded-full transition-transform hover:scale-105 active:scale-95"
+            >
+              <UserAvatar
+                name={profile?.full_name}
+                avatarPath={profile?.avatar_path}
+                size="sm"
+              />
+            </button>
           </div>
         </header>
 

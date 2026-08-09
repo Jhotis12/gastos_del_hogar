@@ -17,6 +17,7 @@ interface UserAvatarProps {
   avatarPath?: string | null
   size?: keyof typeof SIZES
   className?: string
+  onClick?: () => void
 }
 
 export default function UserAvatar({
@@ -24,6 +25,7 @@ export default function UserAvatar({
   avatarPath,
   size = 'md',
   className,
+  onClick,
 }: UserAvatarProps) {
   const src = avatarPath
     ? supabase.storage.from('avatars').getPublicUrl(avatarPath).data.publicUrl
@@ -35,8 +37,10 @@ export default function UserAvatar({
         src={src}
         alt={name ? `Foto de ${name}` : 'Foto de perfil'}
         loading="lazy"
+        onClick={onClick}
         className={cn(
           'shrink-0 rounded-full object-cover ring-1 ring-ink/10',
+          onClick && 'cursor-pointer transition-transform hover:scale-105 active:scale-95',
           SIZES[size],
           className,
         )}
