@@ -425,3 +425,20 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
     - React Router 7.18.2 con advisory HIGH (GHSA-qwww-vcr4-c8h2, CSRF en
       modo RSC): **sin parche publicado** (exige 8.3.0) pero no explotable
       aquí (router declarativo, sin RSC/actions) — vigilar `pnpm audit`.
+11. **Login apareciendo al guardar un gasto sin red (PWA)** — `useAuth.tsx`
+    aceptaba eventos de auth con sesión nula como cierre de sesión:
+    - `INITIAL_SESSION` llega con `null` cuando el token expiró y el
+      refresh falla sin red, y se emitía DESPUÉS del respaldo
+      `readStoredSession()` de `bootSession`, sobrescribiéndolo → login.
+    - `SIGNED_OUT` llega cuando auth-js clasifica el fallo de refresh como
+      no-reintentable (WiFi "conectado" sin internet, portal cautivo, proxy
+      que responde no-JSON/4xx): `_removeSession()` borra localStorage y
+      notifica `SIGNED_OUT`; ocurría justo al guardar un gasto (el insert
+      dispara `getSession()` → refresh) → login.
+    - Fix: el handler de `onAuthStateChange` nunca cierra sesión por un
+      evento nulo si existe una sesión conocida (ref `sessionRef` o
+      localStorage): sin red restaura y **re-persiste** la sesión en
+      localStorage (auth-js pudo borrarla) para que al reconectar el
+      refresh la renueve y la cola drene; con red confirma con `getUser()`
+      y solo cierra si el servidor rechaza explícitamente. `signOut()`
+      explícito marca un flag para no "resucitar" un cierre real.

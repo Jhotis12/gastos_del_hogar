@@ -1,7 +1,7 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAuthRetryableFetchError } from '@supabase/supabase-js'
-import { supabase } from '@/shared/lib/supabase'
+import { supabase, supabaseUrl } from '@/shared/lib/supabase'
 import type { Session, User } from '@supabase/supabase-js'
 import type { Profile } from '@/shared/lib/types'
 import { clearPersistedCache } from '@/shared/lib/offline/persister'
@@ -26,31 +26,86 @@ const AuthContext = createContext<AuthContextValue>({
   refreshProfile: async () => {},
 })
 
-// Boot sin red: getSession() puede colgarse intentando refrescar el token.
-// Si no responde a tiempo, leemos la sesión que supabase-js dejó en
-// localStorage (claves "sb-*-auth-token"). Al volver a estar en línea,
-// syncNow() restaura la sesión en memoria antes de drenar.
-function readStoredSession(): Session | null {
+// Clave canónica donde auth-js persiste la sesión: `sb-<ref>-auth-token`,
+// con el ref = subdominio de la URL de Supabase (misma regla de supabase-js).
+function computedAuthStorageKey(): string | null {
+  try {
+    const host = new URL(supabaseUrl ?? '').hostname.split('.')[0]
+    return host ? `sb-${host}-auth-token` : null
+  } catch {
+    return null
+  }
+}
+
+// Escaneo de respaldo: cubre orígenes que compartieron otra URL de Supabase
+// (dev ↔ prod en el mismo origen) o claves de versiones previas.
+function findAuthStorageKey(): string | null {
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)
-    if (!key || !key.startsWith('sb-') || !key.endsWith('-auth-token')) continue
-    try {
-      const raw = JSON.parse(localStorage.getItem(key) ?? '')
-      if (raw?.access_token && raw?.user) {
-        return {
-          access_token: raw.access_token,
-          refresh_token: raw.refresh_token ?? null,
-          expires_in: raw.expires_in ?? 3600,
-          expires_at: raw.expires_at ?? null,
-          token_type: raw.token_type ?? 'bearer',
-          user: raw.user,
-        } as Session
-      }
-    } catch {
-      /* clave corrupta — se ignora */
-    }
+    if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) return key
   }
   return null
+}
+
+function parseStoredSession(raw: string | null): Session | null {
+  if (!raw) return null
+  try {
+    const data = JSON.parse(raw)
+    if (data?.access_token && data?.user) {
+      return {
+        access_token: data.access_token,
+        refresh_token: data.refresh_token ?? null,
+        expires_in: data.expires_in ?? 3600,
+        expires_at: data.expires_at ?? null,
+        token_type: data.token_type ?? 'bearer',
+        user: data.user,
+      } as Session
+    }
+  } catch {
+    /* clave corrupta — se ignora */
+  }
+  return null
+}
+
+// Boot sin red: getSession() puede colgarse intentando refrescar el token.
+// Si no responde a tiempo, leemos la sesión que supabase-js dejó en
+// localStorage (clave "sb-*-auth-token"). Al volver a estar en línea,
+// syncNow() restaura la sesión en memoria antes de drenar.
+function readStoredSession(): Session | null {
+  const computed = computedAuthStorageKey()
+  if (computed) {
+    const session = parseStoredSession(localStorage.getItem(computed))
+    if (session) return session
+  }
+  const key = findAuthStorageKey()
+  return key ? parseStoredSession(localStorage.getItem(key)) : null
+}
+
+// Re-persiste la sesión en localStorage en el formato que auth-js espera.
+// Necesario cuando auth-js la borró al clasificar como fatal un fallo de
+// refresh que en realidad fue de red (sin conexión real, portal cautivo…):
+// sin esta copia, al volver en línea getSession() no encontraría nada que
+// refrescar y la cola offline nunca se drenaría.
+function persistSessionToStorage(session: Session): void {
+  const key = computedAuthStorageKey() ?? findAuthStorageKey()
+  if (!key) return
+  try {
+    localStorage.setItem(
+      key,
+      JSON.stringify({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+        expires_in: session.expires_in,
+        expires_at: session.expires_at,
+        token_type: session.token_type,
+        provider_token: session.provider_token,
+        provider_refresh_token: session.provider_refresh_token,
+        user: session.user,
+      }),
+    )
+  } catch {
+    /* storage lleno o inaccesible — se ignora */
+  }
 }
 
 async function bootSession(): Promise<Session | null> {
@@ -73,19 +128,81 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const queryClient = useQueryClient()
 
+  // Última sesión conocida: los eventos de auth con sesión nula
+  // (INITIAL_SESSION fallido / SIGNED_OUT) llegan sin datos, así que el
+  // respaldo para restaurar la sesión ante un fallo de refresh es esta ref.
+  const sessionRef = useRef<Session | null>(null)
+  // Cierre de sesión explícito desde la app: un SIGNED_OUT posterior no
+  // debe "resucitar" la sesión vía el respaldo offline.
+  const signOutRef = useRef(false)
+
+  const applySession = (s: Session | null) => {
+    sessionRef.current = s
+    setSession(s)
+    setLoading(false)
+  }
+
   useEffect(() => {
     let active = true
     void bootSession().then((s) => {
       if (!active) return
-      setSession(s)
-      setLoading(false)
+      applySession(s)
     })
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession)
-      setLoading(false)
+    } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+      if (newSession) {
+        applySession(newSession)
+        return
+      }
+
+      // Sesión nula: un INITIAL_SESSION fallido (token expirado sin red)
+      // o un SIGNED_OUT por un refresh que auth-js consideró fatal. Ambos
+      // suceden sin red real, y auth-js solo preserva la sesión ante
+      // errores puramente de red (AuthRetryableFetchError); un portal
+      // cautivo, un proxy o un WiFi "conectado" sin internet responden
+      // con algo no-JSON/4xx y auth-js borra la sesión. Aquí se restaura
+      // la última sesión conocida y se re-persiste: al reconectar, el
+      // refresh (syncNow/heartbeat) la renueva sola y la cola drena.
+      if (signOutRef.current) {
+        signOutRef.current = false
+        applySession(null)
+        return
+      }
+
+      const fallback = sessionRef.current ?? readStoredSession()
+      if (!fallback) {
+        applySession(null)
+        return
+      }
+
+      if (!navigator.onLine) {
+        applySession(fallback)
+        persistSessionToStorage(fallback)
+        return
+      }
+
+      // Con red, confirmar contra el servidor antes de cerrar sesión:
+      // solo una respuesta explícita (sesión revocada / 401) cierra; los
+      // fallos de red o respuestas no-JSON se tratan como transitorios.
+      try {
+        const { data } = await supabase.auth.getUser()
+        if (!active) return
+        if (data.user) {
+          // getUser pudo refrescar el token: preferir lo que auth-js
+          // acaba de guardar en storage a la sesión que traíamos.
+          const restored = readStoredSession() ?? fallback
+          applySession(restored)
+          persistSessionToStorage(restored)
+        } else {
+          applySession(null)
+        }
+      } catch {
+        if (!active) return
+        applySession(fallback)
+        persistSessionToStorage(fallback)
+      }
     })
 
     return () => {
@@ -137,8 +254,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signOut = async () => {
+    signOutRef.current = true
     await supabase.auth.signOut()
-    setSession(null)
+    applySession(null)
     queryClient.clear()
     await clearPersistedCache()
   }
