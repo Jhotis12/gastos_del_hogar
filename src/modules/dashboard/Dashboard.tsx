@@ -131,6 +131,7 @@ export default function Dashboard() {
 
   const monthSurplus = totalIncome - totalExpenses
   const pendingSalaries = (salaries ?? []).filter((s) => s.pay_date > todayISO())
+  const pendingTotal = pendingSalaries.reduce((sum, s) => sum + Number(s.amount), 0)
   const pendingLabel = pendingSalaries
     .map((s) => {
       const name = members?.find((m) => m.id === s.profile_id)?.full_name ?? 'Miembro'
@@ -208,6 +209,11 @@ export default function Dashboard() {
           icon={<ArrowUpCircle size={20} />}
           tone="positive"
           delay={80}
+          hint={
+            pendingTotal > 0
+              ? `Por llegar: ${formatCurrency(pendingTotal)} (se suman el día de pago)`
+              : undefined
+          }
         />
         <StatCard
           label="Gastos del mes"
@@ -432,8 +438,16 @@ export default function Dashboard() {
                       </span>
                     )}
                   </span>
-                  <span className="font-semibold text-pine-600">
-                    +{formatCurrency(Number(s.amount))}
+                  <span className="text-right">
+                    <span className="font-semibold text-pine-600">
+                      +{formatCurrency(Number(s.amount))}
+                    </span>
+                    {s.pay_date > todayISO() && (
+                      <span className="block text-xs text-ink/40">
+                        Llega el {Number(s.pay_date.slice(-2))} de{' '}
+                        {shortMonthLabel(s.pay_date)}
+                      </span>
+                    )}
                   </span>
                 </li>
               ))}
@@ -526,8 +540,9 @@ export default function Dashboard() {
                     />
                   </div>
                   <p className="mt-1.5 text-xs text-ink/50">
-                    Ahorro {s.income > 0 ? Math.round(ratio * 100) : 0}% de los
-                    ingresos
+                    {s.income > 0
+                      ? `Ahorro ${Math.round(ratio * 100)}% de los ingresos`
+                      : 'Sin ingresos registrados'}
                   </p>
                 </div>
               )

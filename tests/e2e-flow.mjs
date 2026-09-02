@@ -186,6 +186,16 @@ await step('salario heredado al mes siguiente', async () => {
   await waitForText('Heredado de')
   await waitForText('2.500.000')
   await waitForText('Llega el 15 de')
+  // Cash basis: el salario heredado NO suma al ingreso hasta su fecha de
+  // pago (mes siguiente, día 15 = futura) → ingreso unificado en $0.
+  const incomeBlock = page.locator('p:has-text("Salarios + dinero extra")').locator('..')
+  const incomeText = (await incomeBlock.textContent()) ?? ''
+  if (!/\$\s*0/.test(incomeText)) {
+    throw new Error(`El ingreso unificado debería ser $0 con salario pendiente: ${incomeText}`)
+  }
+  if (incomeText.includes('2.500.000')) {
+    throw new Error(`El salario heredado suma antes de su fecha de pago: ${incomeText}`)
+  }
   await page.click('button[aria-label="Mes anterior"]')
   await waitGone('Heredado de')
 })
@@ -204,6 +214,8 @@ await step('fecha real de pago editable (nómina no pagada no infla el saldo)', 
   const nextFirst = `${now.getFullYear()}-${String(now.getMonth() + 2).padStart(2, '0')}-01`
   await page.fill('input[type="date"]', nextFirst)
   await page.click('text=Guardar')
+  // Guard: fecha de pago en otro mes → aviso antes de guardar (evita pisar nóminas)
+  await page.click('[data-testid="confirm-dialog-confirm"]')
   await waitForText('Llega el 1 de')
   const heroSaldo = page.locator('[data-testid="hero-saldo"]')
   await goTo('Dashboard', '/')
@@ -215,6 +227,20 @@ await step('fecha real de pago editable (nómina no pagada no infla el saldo)', 
   await page.click('text=Guardar')
   await goTo('Dashboard', '/')
   await heroSaldo.locator('text=2.300.000').waitFor({ timeout: 8000 })
+})
+
+await step('registrar salario del mes siguiente NO pisa el del mes anterior', async () => {
+  await goTo('Miembros y Salarios', '/miembros')
+  await waitForText('2.500.000')
+  await page.click('button[aria-label="Mes siguiente"]')
+  await waitForText('Heredado de')
+  await page.click('button[aria-label="Editar salario heredado"]')
+  await page.click('text=Guardar')
+  await waitGone('Heredado de')
+  // Volver al mes actual: la nómina original sigue intacta (no fue reemplazada)
+  await page.click('button[aria-label="Mes anterior"]')
+  await waitGone('Heredado de')
+  await waitForText('2.500.000')
 })
 
 await step('registrar dinero extra (ingreso no nómina suma al general)', async () => {

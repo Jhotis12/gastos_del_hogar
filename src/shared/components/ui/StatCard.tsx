@@ -9,6 +9,7 @@ interface StatCardProps {
   icon: ReactNode
   tone?: 'default' | 'positive' | 'negative'
   delay?: number
+  hint?: string
 }
 
 export default function StatCard({
@@ -17,6 +18,7 @@ export default function StatCard({
   icon,
   tone = 'default',
   delay = 0,
+  hint,
 }: StatCardProps) {
   const animated = useCountUp(value)
 
@@ -48,6 +50,7 @@ export default function StatCard({
       >
         {formatCurrency(animated)}
       </p>
+      {hint && <p className="mt-1 text-xs text-ink/40">{hint}</p>}
     </div>
   )
 }

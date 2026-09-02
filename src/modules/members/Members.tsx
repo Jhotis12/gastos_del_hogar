@@ -23,8 +23,8 @@ import QueryError from '@/shared/components/ui/QueryError'
 import MoneyInput from '@/shared/components/ui/MoneyInput'
 import { useToast } from '@/shared/components/ui/Toast'
 import { errorMessage } from '@/shared/lib/utils'
-import { payDateForMonth } from '@/modules/members/lib/salaries'
-import { monthLabel, todayISO } from '@/shared/lib/dates'
+import { payDateForMonth, receivedSalariesForMonth } from '@/modules/members/lib/salaries'
+import { formatDate, monthLabel, todayISO } from '@/shared/lib/dates'
 import { formatCurrency, parseMoneyInput } from '@/shared/lib/money'
 import type { EffectiveSalary, Profile } from '@/shared/lib/types'
 
@@ -56,6 +56,7 @@ function SalaryInput({
     row ? row.pay_date : payDateForMonth(payday, month),
   )
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [dateMismatchOpen, setDateMismatchOpen] = useState(false)
 
   const startEdit = () => {
     setAmount(
@@ -65,22 +66,40 @@ function SalaryInput({
     setEditing(true)
   }
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const value = parseMoneyInput(amount)
-    if (value === null) return
+  const doSave = async (value: number, date: string) => {
     try {
       await upsert.mutateAsync({
         profileId,
         month,
         amount: value,
-        payDate,
+        payDate: date,
       })
       toast.success('Salario guardado')
       setEditing(false)
     } catch (err) {
       toast.error(errorMessage(err))
     }
+  }
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const value = parseMoneyInput(amount)
+    if (value === null) return
+    // Guarda: la fecha de pago en un mes distinto al que se está viendo
+    // es la causa de que una nómina se registre en el mes equivocado y
+    // pise la del mes correcto. Se avisa antes de guardar.
+    if (payDate.slice(0, 7) !== month.slice(0, 7)) {
+      setDateMismatchOpen(true)
+      return
+    }
+    await doSave(value, payDate)
+  }
+
+  const confirmDateMismatch = () => {
+    setDateMismatchOpen(false)
+    const value = parseMoneyInput(amount)
+    if (value === null) return
+    void doSave(value, payDate)
   }
 
   const handleDelete = async () => {
@@ -213,6 +232,15 @@ function SalaryInput({
           Cancelar
         </button>
       </div>
+      <ConfirmDialog
+        open={dateMismatchOpen}
+        title="Fecha de pago en otro mes"
+        message={`La fecha de pago (${formatDate(payDate)}) no está en ${monthLabel(month)}, el mes que estás viendo. Si es la nómina de otro mes, cambia el mes con el selector de arriba para no pisar el registro de este mes. ¿Guardarla aquí de todas formas?`}
+        confirmLabel="Guardar aquí"
+        onConfirm={confirmDateMismatch}
+        onCancel={() => setDateMismatchOpen(false)}
+        busy={upsert.isPending}
+      />
     </form>
   )
 }
@@ -259,13 +287,19 @@ export default function Members() {
       />
     )
 
+  // Cash basis: solo salarios cuyo pay_date ya llegó (el heredado se
+  // agrega en su fecha de pago) — consistente con el Dashboard y los RPCs.
+  const receivedSalaries = receivedSalariesForMonth(salaries ?? [], month)
+
   const totalIncome =
-    (salaries?.reduce((sum, s) => sum + Number(s.amount), 0) ?? 0) +
+    receivedSalaries.reduce((sum, s) => sum + Number(s.amount), 0) +
     (incomes?.reduce((sum, i) => sum + Number(i.amount), 0) ?? 0)
 
   const balances = (members ?? []).map((m) => {
     const aportado =
-      (salaries?.filter((s) => s.profile_id === m.id).reduce((sum, s) => sum + Number(s.amount), 0) ??
+      (receivedSalaries
+        ?.filter((s) => s.profile_id === m.id)
+        .reduce((sum, s) => sum + Number(s.amount), 0) ??
         0) +
       (incomes
         ?.filter((i) => i.member_id === m.id)

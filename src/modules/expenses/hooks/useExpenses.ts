@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { supabase } from '@/shared/lib/supabase'
 import { useSalaries } from '@/modules/members/hooks/useMembers'
+import { receivedSalariesForMonth } from '@/modules/members/lib/salaries'
 import { useIncomes } from '@/modules/members/hooks/useIncomes'
 import { runWithOfflineFallback, invalidateIfOnline } from '@/shared/lib/offline/offlineSafe'
 import {
@@ -133,8 +134,12 @@ export function useSummary(month: string) {
   const { data: expenses } = useExpenses(month)
   const { data: incomes } = useIncomes(month)
 
+  // Cash basis: el salario (registrado o heredado) solo suma al ingreso
+  // cuando su pay_date llegó — consistente con get_monthly_surpluses.
+  const receivedSalaries = receivedSalariesForMonth(salaries ?? [], month)
+
   const totalIncome =
-    (salaries?.reduce((sum, s) => sum + Number(s.amount), 0) ?? 0) +
+    receivedSalaries.reduce((sum, s) => sum + Number(s.amount), 0) +
     (incomes?.reduce((sum, i) => sum + Number(i.amount), 0) ?? 0)
   const totalExpenses =
     expenses?.reduce((sum, e) => sum + Number(e.amount), 0) ?? 0
