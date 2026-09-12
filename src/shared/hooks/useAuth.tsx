@@ -5,6 +5,7 @@ import { supabase, supabaseUrl } from '@/shared/lib/supabase'
 import type { Session, User } from '@supabase/supabase-js'
 import type { Profile } from '@/shared/lib/types'
 import { clearPersistedCache } from '@/shared/lib/offline/persister'
+import { isNetworkError } from '@/shared/lib/offline/isNetworkError'
 
 interface AuthContextValue {
   user: User | null
@@ -178,6 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (!navigator.onLine) {
+        if (import.meta.env.DEV) console.debug('[auth] restored session after null event (offline)', _event)
         applySession(fallback)
         persistSessionToStorage(fallback)
         return
@@ -185,10 +187,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Con red, confirmar contra el servidor antes de cerrar sesión:
       // solo una respuesta explícita (sesión revocada / 401) cierra; los
-      // fallos de red o respuestas no-JSON se tratan como transitorios.
+      // fallos de red (isNetworkError) o AuthRetryableFetchError se tratan
+      // como transitorios aunque navigator.onLine sea true (portal cautivo).
       try {
-        const { data } = await supabase.auth.getUser()
+        const { data, error: getUserError } = await supabase.auth.getUser()
         if (!active) return
+        if (getUserError && (isAuthRetryableFetchError(getUserError) || isNetworkError(getUserError))) {
+          if (import.meta.env.DEV) console.debug('[auth] restored session after null event (retryable getUser)', _event, getUserError)
+          applySession(fallback)
+          persistSessionToStorage(fallback)
+          return
+        }
         if (data.user) {
           // getUser pudo refrescar el token: preferir lo que auth-js
           // acaba de guardar en storage a la sesión que traíamos.
@@ -198,10 +207,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           applySession(null)
         }
-      } catch {
+      } catch (err) {
         if (!active) return
-        applySession(fallback)
-        persistSessionToStorage(fallback)
+        if (import.meta.env.DEV) console.debug('[auth] restored session after null event (catch)', _event, err)
+        // Cualquier excepción en getUser se considera transitoria si es de red
+        if (isNetworkError(err) || isAuthRetryableFetchError(err as Error)) {
+          applySession(fallback)
+          persistSessionToStorage(fallback)
+        } else {
+          // Incluso errores no retryable en catch se tratan como transitorios
+          // para no cerrar sesión por un fallo de red mal clasificado
+          applySession(fallback)
+          persistSessionToStorage(fallback)
+        }
       }
     })
 
@@ -225,12 +243,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ['profile', userId],
     queryFn: async () => {
       // Valida que el usuario siga existiendo. Un fallo de RED
-      // (AuthRetryableFetchError) NO cierra la sesión: sin validación se
-      // continúa y la query se pausa (offlineFirst) hasta reconectar.
+      // (AuthRetryableFetchError / isNetworkError) NO cierra la sesión: sin
+      // validación se continúa y la query se pausa (offlineFirst) hasta
+      // reconectar. Solo error no retryable y no de red cierra.
       const { data: userData, error: userError } = await supabase.auth
         .getUser()
-        .catch(() => ({ data: { user: null }, error: null }))
-      if (!userData.user && userError && !isAuthRetryableFetchError(userError)) {
+        .catch((err) => ({ data: { user: null }, error: err as Error }))
+      if (!userData.user && userError && !isAuthRetryableFetchError(userError) && !isNetworkError(userError)) {
         // Sesión obsoleta confirmada por el servidor → ir al login.
         await supabase.auth.signOut().catch(() => {})
         return null

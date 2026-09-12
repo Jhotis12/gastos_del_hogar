@@ -1,5 +1,6 @@
 import { listOps, removeOp, type PendingOp } from './queue'
-import { isNetworkError } from './offlineSafe'
+import { isNetworkError } from './isNetworkError'
+import { isAuthRetryableFetchError } from '@supabase/supabase-js'
 import { emitToast } from '@/shared/components/ui/Toast'
 import { supabase } from '@/shared/lib/supabase'
 import { errorMessage } from '@/shared/lib/utils'
@@ -140,13 +141,13 @@ async function replay(op: PendingOp): Promise<'ok' | 'retry' | 'fail'> {
     }
 
     if (error) {
-      if (isNetworkError(error)) return 'retry'
+      if (isNetworkError(error) || isAuthRetryableFetchError(error as unknown as Error)) return 'retry'
       emitToast('error', `No se pudo sincronizar: ${error.message}`)
       return 'fail'
     }
     return 'ok'
   } catch (err) {
-    if (isNetworkError(err)) return 'retry'
+    if (isNetworkError(err) || isAuthRetryableFetchError(err as Error)) return 'retry'
     emitToast('error', `No se pudo sincronizar: ${errorMessage(err)}`)
     return 'fail'
   }
@@ -169,8 +170,22 @@ export async function syncNow(): Promise<void> {
   let synced = 0
   try {
     for (;;) {
-      const { data } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }))
-      if (!data.session) break
+      let session = null
+      try {
+        const { data, error } = await supabase.auth.getSession()
+        if (error && (isNetworkError(error) || isAuthRetryableFetchError(error as unknown as Error))) {
+          if (import.meta.env.DEV) console.debug('[sync] getSession retryable', error)
+          break
+        }
+        session = data.session
+      } catch (err) {
+        if (isNetworkError(err) || isAuthRetryableFetchError(err as Error)) {
+          if (import.meta.env.DEV) console.debug('[sync] getSession catch retryable', err)
+          break
+        }
+        break
+      }
+      if (!session) break
       const [op] = await listOps()
       if (!op) break
       const result = await replay(op)
@@ -211,7 +226,10 @@ async function handleOnline() {
     // Tras un boot offline la sesión puede no estar en memoria: esto la
     // restaura desde localStorage antes de drenar.
     await supabase.auth.getSession()
-  } catch {
+  } catch (err) {
+    if (import.meta.env.DEV && (isNetworkError(err) || isAuthRetryableFetchError(err as Error))) {
+      console.debug('[sync] handleOnline getSession retryable', err)
+    }
     /* sin red — el heartbeat reintentará */
   }
   emitToast('success', 'De vuelta en línea')

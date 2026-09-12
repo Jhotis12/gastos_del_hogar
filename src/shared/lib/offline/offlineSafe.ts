@@ -1,20 +1,15 @@
 import type { QueryClient } from '@tanstack/react-query'
+import { isNetworkError as isPureNetworkError } from './isNetworkError'
 
-// Detección de errores de red y fallback offline para mutaciones.
-
+// Re-export puro + wrapper que considera navigator.onLine como offline.
+// La fuente de verdad es `isPureNetworkError(err) || !navigator.onLine` en los callers;
+// se mantiene este wrapper para compatibilidad y para `runWithOfflineFallback`.
 export function isNetworkError(err: unknown): boolean {
   if (!navigator.onLine) return true
-  if (err instanceof TypeError && /fetch|network|load/i.test(err.message)) {
-    return true
-  }
-  const msg =
-    typeof err === 'object' && err !== null && 'message' in err
-      ? String((err as { message: unknown }).message)
-      : String(err)
-  return /fetch failed|failed to fetch|network error|network request failed|load failed|ERR_INTERNET_DISCONNECTED/i.test(
-    msg,
-  )
+  return isPureNetworkError(err)
 }
+
+export { isPureNetworkError }
 
 // Las invalidaciones offline disparan refetches que el navegador bloquea
 // (ruido CORS en consola). Sin red solo se actualiza la caché en memoria;
