@@ -8,8 +8,9 @@ description: "Use when making ANY change in this repo, or when the user says 'ha
 ## Regla de oro
 
 **Nunca** commit ni push directo a `master`. Todo cambio va en una rama nueva
-y se integra por Pull Request. `master` está protegida y solo **Jhotis12**
-aprueba y mergea. El agente **no mergea**.
+y se integra por Pull Request. Solo **Jhotis12** aprueba y mergea. El agente
+**no mergea**. (La branch protection de GitHub no está disponible en el plan
+Free privado; el flujo se cumple por convención + CI. Ver §6.)
 
 ```
 cambio → rama → validar local → push rama → PR → CI (GitHub) → Jhotis12 aprueba/mergea
@@ -92,6 +93,9 @@ En cada PR a `master` corren:
 - No necesita secretos: todo corre contra el stack local del runner.
 - No mergear con checks en rojo. Si un check falla, se arregla en la misma rama
   (nuevos commits) y la PR se actualiza sola.
+- Si Actions no está disponible en algún momento, la validación obligatoria es
+  la local: build + lint + todas las suites aplicables, y se declara en la PR
+  qué se corrió y qué no.
 
 ## 5. Después del merge
 
@@ -105,16 +109,19 @@ En cada PR a `master` corren:
 
 ## 6. Setup que hace el humano una sola vez
 
-1. **Branch protection** en GitHub → Settings → Branches → `master`:
-   - Require a pull request before merging (1 aprobación: Jhotis12).
+1. **Branch protection**: no disponible en repos privados del plan Free
+   (GitHub responde 403). El flujo se cumple por convención + CI. Si el repo
+   pasa a GitHub Pro o se hace público, configurar:
+   - Require a pull request before merging.
    - Require status checks to pass: `build + lint` y `Supabase local + suites`.
+   - **No** exigir approvals si eres el único mantenedor: GitHub no permite
+     aprobar tu propia PR.
 2. **Secrets** para el workflow de migraciones (Settings → Secrets and variables → Actions):
-   - `SUPABASE_ACCESS_TOKEN` (obligatorio).
+   - `SUPABASE_ACCESS_TOKEN` (obligatorio, ya configurado).
    - `SUPABASE_DB_PASSWORD` (opcional: sin él la CLI crea un rol temporal).
    - Variable opcional `SUPABASE_PROJECT_REF` (default `xqfemqgokoedpenmqsmq`).
-3. Opcional: `gh` ya está instalado en `~/.local/bin/gh`; solo falta
-   `gh auth login` una vez. A partir de ahí el agente abre la PR solo
-   (`gh pr create --base master --fill`) y el humano revisa checks y mergea.
+3. **`gh` autenticado** (`gh auth status`). El agente abre la PR solo con
+   `gh pr create --base master --fill`; el humano revisa checks y mergea.
 
 ## 7. Prohibiciones
 
@@ -123,3 +130,13 @@ En cada PR a `master` corren:
 - No `supabase db push`, deploys ni cambios remotos sin orden explícita.
 - No commitear secretos: `tools/seed-local/.env`, `backups/` y `*.local` están
   gitignored y deben seguir estándolo.
+
+## 8. Checklist rápido antes de decir "listo"
+
+- [ ] Rama nueva (nunca `master`).
+- [ ] `pnpm build` y `pnpm lint` verdes en local.
+- [ ] e2e local verde (o justificado qué no se pudo correr).
+- [ ] Si toca BD: `supabase db reset --local` / `migration up --local` OK.
+- [ ] Rama subida y PR creada con `gh pr create --base master --fill`.
+- [ ] Checks de GitHub (`build + lint`, `Supabase local + suites`) verdes.
+- [ ] No se mergeó ni se tocó producción.

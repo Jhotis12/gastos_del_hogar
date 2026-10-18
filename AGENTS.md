@@ -53,6 +53,8 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
 - GitHub corre los workflows `CI` (build + lint) y `E2E` (Supabase local +
   suites) en cada PR. No se mergea con checks en rojo.
 - La PR la revisa, aprueba y mergea **Jhotis12**; el agente no mergea.
+  (Branch protection no está disponible en GitHub Free privado: el flujo se
+  cumple por convención + CI.)
 - Al mergear a `master`, si hay migraciones nuevas,
   `supabase-migrations.yml` las aplica a producción.
 - Detalle y comandos: `.agents/skills/pull-request-workflow/SKILL.md`.

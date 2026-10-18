@@ -36,16 +36,20 @@ bash tools/db/repair-history.sh -y 20260901235402 20260902010806
 Usa las mismas credenciales que el seed: `tools/seed-local/.env`
 (`SUPABASE_ACCESS_TOKEN`; el `SUPABASE_DB_PASSWORD` es opcional).
 
-## Estado conocido (2026-10-18)
+## Estado (2026-10-18)
 
-Producción tiene el esquema al día, pero su historial no registra:
+- **Historial reparado.** `20260901235402_salary_inheritance_surpluses` y
+  `20260902010806_fix_missing_july_salaries_spotify` quedaron marcadas como
+  aplicadas (no se re-ejecutó SQL). Verificado con `db push --dry-run`.
+- Pendiente en producción solo `20261018120000_wishlist_realtime_hardening`,
+  que aplica el workflow `supabase-migrations.yml` al mergear a `master`.
+- El secret `SUPABASE_ACCESS_TOKEN` del repo ya está configurado; el
+  `SUPABASE_DB_PASSWORD` no hace falta (la CLI usa un rol temporal).
 
-- `20260901235402_salary_inheritance_surpluses` — solo `create or replace
-  function get_monthly_surpluses` (idempotente).
-- `20260902010806_fix_missing_july_salaries_spotify` — fix de datos de
-  julio/agosto 2026; simulado contra los datos reales: `INSERT 0 0`,
-  `UPDATE 0` (no-op).
+Verificar en cualquier momento:
 
-La tercera pendiente es la migración nueva del repo
-(`20261018120000_wishlist_realtime_hardening`), que sí debe aplicar el
-workflow cuando se haga push a `master`.
+```bash
+set -a; . tools/seed-local/.env; set +a
+supabase db push --project-ref "$SUPABASE_PROJECT_REF" --dry-run
+# "Would push these migrations:" + lo que quede pendiente (idealmente nada)
+```

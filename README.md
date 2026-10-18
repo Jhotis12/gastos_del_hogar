@@ -266,8 +266,9 @@ node tests/e2e-flow.mjs       # corre los 47 pasos y muestra el resumen
 
 ### Flujo de PR y CI
 
-Todo cambio va en **rama nueva + Pull Request**; `master` está protegida y la
-aprueba/mergea Jhotis12. En cada PR, GitHub Actions corre:
+Todo cambio va en **rama nueva + Pull Request**; la aprueba/mergea Jhotis12
+(la branch protection de GitHub no está disponible en el plan Free privado:
+el flujo se cumple por convención + CI). En cada PR, GitHub Actions corre:
 
 - **`CI`** — `pnpm install --frozen-lockfile` + `pnpm build` + `pnpm lint`.
 - **`E2E`** — Supabase local (aplica las migraciones) + `e2e-flow`,

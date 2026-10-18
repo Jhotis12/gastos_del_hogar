@@ -43,6 +43,12 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 
 ```
 ├── .env.example             # VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY
+├── .github/
+│   ├── workflows/ci.yml     # PR: build + lint
+│   ├── workflows/e2e.yml    # PR: Supabase local + suites e2e
+│   ├── workflows/supabase-migrations.yml  # master: supabase db push
+│   ├── CODEOWNERS           # revisión de @Jhotis12
+│   └── pull_request_template.md
 ├── supabase/
 │   ├── schema.sql           # Snapshot histórico: la fuente de verdad son las migraciones
 │   ├── migrations/          # Migraciones aplicadas en orden (incl. hardening de seguridad)
@@ -74,6 +80,9 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 │       ├── forecast/        #   Forecast + hooks/useForecast + lib/forecast (proyección)
 │       └── wishlist/        #   Wishlist ("Quiero comprar") + hooks/useWishlist + components/WishlistItemForm + lib/installments
 ├── backups/                 # Dumps de BD (gitignored — datos sensibles)
+├── tools/
+│   ├── seed-local/          # .env + script + tutorial: datos de producción al local
+│   └── db/                  # repair-history.sh + README (historial de migraciones)
 ├── tests/
 │   ├── e2e-flow.mjs         # Suite e2e de 47 pasos (navegación SPA)
 │   ├── e2e-mobile.mjs       # Suite e2e móvil: 9 pasos táctiles (drag-to-close, sheets)
@@ -82,7 +91,7 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 │   ├── reset-sandbox.sh     # Reinicia el usuario sandbox (requiere SUPABASE_SERVICE_ROLE)
 │   ├── screenshots.mjs      # Capturas de las páginas (dev)
 │   └── fixtures/factura.jpg # Factura de prueba para el escaneo
-└── .agents/skills/          # Skills de opencode del proyecto
+└── .agents/skills/          # Skills de opencode del proyecto (incl. pull-request-workflow)
 ```
 
 ## 6. Patrones de diseño (frontend)
