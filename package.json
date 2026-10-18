@@ -1,7 +1,8 @@
 {
   "name": "app-gastos",
   "private": true,
-  "version": "1.0.51",
+  "version": "1.0.59",
+  "packageManager": "pnpm@12.14.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

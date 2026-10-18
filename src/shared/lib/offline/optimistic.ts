@@ -34,8 +34,8 @@ export function enqueueExpenseAdd(
   queryClient: QueryClient,
   householdId: string,
   input: ExpenseInput,
+  id = crypto.randomUUID(),
 ): void {
-  const id = crypto.randomUUID()
   void enqueueOp({
     entity: 'expenses',
     op: 'add',
@@ -114,8 +114,8 @@ export function enqueueIncomeAdd(
   queryClient: QueryClient,
   householdId: string,
   input: IncomeInput,
+  id = crypto.randomUUID(),
 ): void {
-  const id = crypto.randomUUID()
   void enqueueOp({
     entity: 'incomes',
     op: 'add',

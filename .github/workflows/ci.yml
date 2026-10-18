@@ -1,0 +1,47 @@
+name: CI
+
+# Validación rápida en cada PR a master: typecheck + build + lint.
+# El flujo completo (Supabase local + suites e2e) corre en e2e.yml.
+# Rama master protegida: exigir estos checks antes de aceptar la PR.
+# Ver .agents/skills/pull-request-workflow/SKILL.md
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: build + lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck + build
+        run: pnpm build
+
+      - name: Lint
+        run: pnpm lint

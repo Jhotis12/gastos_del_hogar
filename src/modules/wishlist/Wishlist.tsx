@@ -321,7 +321,7 @@ export default function Wishlist() {
                       </button>
                     </>
                   )}
-                  {!isPending && item.status === 'pendiente' ? null : (
+                  {!isPending && (
                     <button
                       onClick={() => void setStatus.mutateAsync({ id: item.id, status: 'pendiente' })}
                       className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-cream px-3 py-2 text-xs font-medium text-ink/55 hover:bg-surface"

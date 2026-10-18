@@ -623,3 +623,4 @@ if (issues.length) {
   console.log(issues.join('\n'))
 }
 await browser.close()
+process.exit(failed ? 1 : 0)

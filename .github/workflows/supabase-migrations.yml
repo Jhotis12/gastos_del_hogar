@@ -1,0 +1,72 @@
+name: Supabase migrations
+
+# Aplica a producción las migraciones que lleguen a master.
+#
+# GARANTÍA: este workflow SOLO se ejecuta con push a master (merge de la PR)
+# o con workflow_dispatch lanzado desde master. Una PR (abierta o actualizada)
+# NUNCA aplica migraciones: el guard `if: github.ref == 'refs/heads/master'`
+# salta el job si se lanza desde una rama.
+#
+# Requiere en el repo:
+#   secrets: SUPABASE_ACCESS_TOKEN (obligatorio)
+#            SUPABASE_DB_PASSWORD (opcional: si falta, la CLI crea un rol
+#            temporal vía API, igual que en los dumps)
+#   opcional: variable SUPABASE_PROJECT_REF (default: xqfemqgokoedpenmqsmq)
+#
+# Flujo canónico: se crea la migración, se prueba en local, se hace push a
+# git y este workflow la aplica con `supabase db push` recién al mergear.
+# Ver ARQUITECTURA.md §8 (Flujo de migraciones). Si una migración se aplicó a
+# mano en el dashboard, primero hay que poner al día el historial con
+# tools/db/repair-history.sh (nunca meter SQL a mano sin reparar).
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'supabase/migrations/**'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Mostrar migraciones pendientes sin aplicar'
+        type: boolean
+        default: false
+
+concurrency:
+  group: supabase-migrations
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Aplicar migraciones a producción
+    # Solo desde master: evita que un dispatch manual desde una rama aplique.
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF || 'xqfemqgokoedpenmqsmq' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Validar secretos
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo "::error::Falta el secret SUPABASE_ACCESS_TOKEN"; exit 1; }
+          if [ -z "$SUPABASE_DB_PASSWORD" ]; then
+            echo "::warning::SUPABASE_DB_PASSWORD no configurado; la CLI usará un rol temporal vía API."
+          fi
+
+      - name: Migraciones pendientes (dry-run)
+        run: supabase db push --project-ref "$SUPABASE_PROJECT_REF" --dry-run
+
+      - name: Aplicar migraciones
+        if: ${{ github.event_name == 'push' || inputs.dry_run != true }}
+        run: supabase db push --project-ref "$SUPABASE_PROJECT_REF" --yes

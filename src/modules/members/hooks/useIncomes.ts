@@ -59,13 +59,16 @@ export function useAddIncome() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (input: IncomeInput) =>
-      runWithOfflineFallback(
+    mutationFn: (input: IncomeInput) => {
+      // Mismo id en el intento online y en el fallback: un replay tras una
+      // respuesta perdida no duplica el ingreso.
+      const id = crypto.randomUUID()
+      return runWithOfflineFallback(
         async () => {
           if (!profile?.household_id) throw new Error('Sin hogar')
           const { data, error } = await supabase
             .from('incomes')
-            .insert({ ...input, id: crypto.randomUUID(), household_id: profile.household_id })
+            .insert({ ...input, id, household_id: profile.household_id })
             .select()
             .single()
           if (error) throw error
@@ -73,9 +76,10 @@ export function useAddIncome() {
         },
         () => {
           if (!profile?.household_id) throw new Error('Sin hogar')
-          enqueueIncomeAdd(queryClient, profile.household_id, input)
+          enqueueIncomeAdd(queryClient, profile.household_id, input, id)
         },
-      ),
+      )
+    },
     onSuccess: () => invalidateIncomeQueries(queryClient),
   })
 }

@@ -147,7 +147,19 @@ export default function Dashboard() {
     currentSurplus && prevSurplus ? currentSurplus.surplus - prevSurplus.surplus : null
 
   if (!profile?.household_id) return null
-  if (!household) return <PageSkeleton />
+  if (!household) {
+    // Un error inicial del hogar debe mostrar QueryError, no un skeleton
+    // infinito: la query queda sin data y el early-return anterior se lo
+    // comía antes de llegar al banner de error.
+    if (householdError) {
+      return (
+        <div className="space-y-6">
+          <QueryError error={householdError} onRetry={retryAll} />
+        </div>
+      )
+    }
+    return <PageSkeleton />
+  }
 
   return (
     <div className="space-y-6">

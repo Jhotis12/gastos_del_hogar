@@ -51,7 +51,7 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
     setError('')
   }, [receipt])
 
-  const items = receipt?.parsed_data.items ?? []
+  const items = useMemo(() => receipt?.parsed_data.items ?? [], [receipt])
   const itemsTotal = items.reduce((s, i) => s + Number(i.subtotal ?? 0), 0)
 
   const submit = async (e: React.FormEvent) => {

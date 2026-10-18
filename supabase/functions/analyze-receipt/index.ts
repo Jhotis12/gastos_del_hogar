@@ -110,7 +110,6 @@ Deno.serve(async (req) => {
     )
 
     if (!geminiRes.ok) {
-      const body = await geminiRes.text()
       return json({ error: `Gemini respondió con error (${geminiRes.status})` }, 502)
     }
 

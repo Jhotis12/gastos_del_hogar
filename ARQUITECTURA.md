@@ -16,8 +16,9 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 - **Servicios/gastos fijos** (renta, luz, internet…) con frecuencia
   configurable y estado pagado/pendiente.
 - **Calendario mensual**, **presupuestos por categoría**, **saldos entre
-  miembros** (quién debe a quién), **metas de ahorro** y **escaneo de
-  facturas con IA** (Gemini) para crear gastos desde una foto.
+  miembros** (quién debe a quién), **metas de ahorro**, **proyección de
+  sobrantes**, **lista de deseos con cuotas/interés/corte de tarjeta** y
+  **escaneo de facturas con IA** (Gemini) para crear gastos desde una foto.
 - Moneda: **COP (pesos colombianos)**. Formato de entrada "450.000" = 450 mil.
 
 ---
@@ -42,8 +43,14 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 
 ```
 ├── .env.example             # VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY
+├── .github/
+│   ├── workflows/ci.yml     # PR: build + lint
+│   ├── workflows/e2e.yml    # PR: Supabase local + suites e2e
+│   ├── workflows/supabase-migrations.yml  # master: supabase db push
+│   ├── CODEOWNERS           # revisión de @Jhotis12
+│   └── pull_request_template.md
 ├── supabase/
-│   ├── schema.sql           # Esquema completo (idempotente, para instalación fresca)
+│   ├── schema.sql           # Snapshot histórico: la fuente de verdad son las migraciones
 │   ├── migrations/          # Migraciones aplicadas en orden (incl. hardening de seguridad)
 │   └── functions/
 │       └── analyze-receipt/index.ts   # Edge Function (Deno) → Gemini
@@ -70,17 +77,21 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 │       ├── savings/         #   Savings + hooks/useSavings + components/GoalForm, AdjustGoalModal
 │       ├── categories/      #   Categories + hooks/useCategories + components/BudgetModal
 │       ├── profile/         #   Profile + hooks/useHousehold, useSettings
-│       └── forecast/        #   Forecast + hooks/useForecast + lib/forecast (proyección)
+│       ├── forecast/        #   Forecast + hooks/useForecast + lib/forecast (proyección)
+│       └── wishlist/        #   Wishlist ("Quiero comprar") + hooks/useWishlist + components/WishlistItemForm + lib/installments
 ├── backups/                 # Dumps de BD (gitignored — datos sensibles)
+├── tools/
+│   ├── seed-local/          # .env + script + tutorial: datos de producción al local
+│   └── db/                  # repair-history.sh + README (historial de migraciones)
 ├── tests/
-│   ├── e2e-flow.mjs         # Suite e2e de 43 pasos (navegación SPA)
+│   ├── e2e-flow.mjs         # Suite e2e de 47 pasos (navegación SPA)
 │   ├── e2e-mobile.mjs       # Suite e2e móvil: 9 pasos táctiles (drag-to-close, sheets)
 │   ├── e2e-realtime.mjs     # Sincronización en tiempo real entre 2 miembros
-│   ├── check-mobile.mjs     # Verificación móvil (375px, sin overflow)
+│   ├── check-mobile.mjs     # Verificación móvil 375/320px: 11 rutas + modales sin overflow
 │   ├── reset-sandbox.sh     # Reinicia el usuario sandbox (requiere SUPABASE_SERVICE_ROLE)
 │   ├── screenshots.mjs      # Capturas de las páginas (dev)
 │   └── fixtures/factura.jpg # Factura de prueba para el escaneo
-└── .agents/skills/          # Skills de opencode del proyecto
+└── .agents/skills/          # Skills de opencode del proyecto (incl. pull-request-workflow)
 ```
 
 ## 6. Patrones de diseño (frontend)
@@ -101,6 +112,7 @@ en su módulo y el resto de módulos importa de ahí.
 | `categories` | `useCategories` (categorías + presupuestos) |
 | `profile` | `useHousehold` (crear/unirse/eliminar hogar) · `useSettings` |
 | `forecast` | `useForecast` (proyección; lib `forecast.ts`) |
+| `wishlist` | `useWishlist` (deseos + plan de cuotas; lib `installments.ts`) |
 | `dashboard` · `calendar` · `history` | — (consumen hooks de los módulos de datos) |
 
 Convención: cada hook = `useQuery`/`useMutation` con `queryKey` por dominio
@@ -181,7 +193,8 @@ Skill de referencia: `mobile-app-ui-design` (`.agents/skills/`).
 - **Inputs ≥16px**: regla global `input/select/textarea { font-size:
   max(1rem, inherit) }` + `touch-action: manipulation` (evita zoom de iOS).
 - Regla de oro: **sin overflow horizontal a 375px** (verificado por
-  `tests/check-mobile.mjs`, que recorre las 9 rutas y los modales/sheets).
+  `tests/check-mobile.mjs`, que recorre las 11 rutas a 375/320px y los
+  modales/sheets).
 
 ### Modo oscuro
 - Tokens temáticos como variables CSS (`@theme inline`): `cream`, `ink`,
@@ -204,13 +217,16 @@ Skill de referencia: `mobile-app-ui-design` (`.agents/skills/`).
 
 ### Sincronización en tiempo real
 - **Supabase Realtime** (`useRealtimeSync` en Layout): un canal por hogar
-  (`postgres_changes` en las 9 tablas del hogar, filtrado por
+  (`postgres_changes` en las tablas del hogar, incluida `wishlist_items`,
+  filtrado por
   `household_id`) que invalida las queries de React Query correspondientes
   al recibir cualquier cambio. Si un miembro registra un gasto, salario o
   edita algo, **los demás lo ven al instante sin recargar** (la publicación
-  `supabase_realtime` está habilitada en `schema.sql`).
-- Mapa tabla → claves invalidadas (ej. `expenses` → `['expenses'], ['receipts']`;
-  `profiles` además refresca el perfil propio).
+  `supabase_realtime` se habilita en las migraciones; `schema.sql` es solo un
+  snapshot).
+- Mapa tabla → claves invalidadas (ej. `expenses` y `salaries` invalidan
+  también `running-balance` y `monthly-surpluses`; `wishlist_items` invalida
+  `wishlist`; `profiles` además refresca el perfil propio).
 
 ### Lazy loading y caché
 - **Code splitting por ruta** (`React.lazy` + `Suspense` en `App.tsx`): cada
@@ -225,12 +241,12 @@ salarios (crear/editar/eliminar) y para **ver los últimos datos** cargados.
 Nada de esto requiere cambios en la BD: es todo frontend.
 
 - **Caché de lecturas**: `persister` por query en `main.tsx`
-  (`@tanstack/query-persist-client-core` + `idb`, `src/lib/offline/persister.ts`):
+  (`@tanstack/query-persist-client-core` + `idb`, `src/shared/lib/offline/persister.ts`):
   cada query exitosa se guarda en IndexedDB y se sirve en un arranque sin red
   (últimos datos conocidos). `networkMode: 'offlineFirst'` hace que sin red las
   queries sirvan la caché y **se pausen** (no marcan error); al reconectar
   reintentan solas.
-- **Cola de escrituras** (`src/lib/offline/queue.ts`): outbox FIFO en
+- **Cola de escrituras** (`src/shared/lib/offline/queue.ts`): outbox FIFO en
   IndexedDB. Las mutaciones de gastos/incomes/salarios van envueltas en
   `runWithOfflineFallback` (`offlineSafe.ts`): si fallan por error de red,
   se encolan + **actualización optimista** de la caché (la fila aparece al
@@ -238,7 +254,7 @@ Nada de esto requiere cambios en la BD: es todo frontend.
   + toast "Guardado sin conexión". El id de las filas nuevas se genera en el
   cliente (`crypto.randomUUID()`), así el replay no duplica y el realtime
   converge en sitio (mismo id).
-- **Sincronización** (`src/lib/offline/sync.ts`): al reconectar se drena la
+- **Sincronización** (`src/shared/lib/offline/sync.ts`): al reconectar se drena la
   cola en orden FIFO y se notifica ("N cambios sincronizados"); el ícono de
   esquina (o un toque sobre él) dispara sync manual + heartbeat cada 15s si
   hay pendientes. Tras un sync exitoso se invalidan todas las queries para
@@ -311,6 +327,16 @@ un **wizard modal por servicio**: muestra cada pendiente (vencido y sin gasto
 del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
 "Saltar" (queda pendiente, no se descuenta ni avanza su fecha).
 
+### Quiero comprar (wishlist)
+`/quiero-comprar` registra deseos con precio, prioridad y forma de pago
+(contado o cuotas). Para cuotas calcula la **amortización francesa**
+(`modules/wishlist/lib/installments.ts`): cuota, interés total, primera cuota
+según el **día de corte** de la tarjeta y abono inicial. El resumen muestra
+saldo disponible, cuotas que vencen este mes (solo mientras el plan está
+activo) y cuántos meses faltan ahorrando el sobrante de la proyección. Los
+estados son `pendiente`, `comprado` y `descartado`; Realtime sincroniza la
+lista entre miembros.
+
 ---
 
 ## 8. Comandos
@@ -321,36 +347,63 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
 | `pnpm build` | `tsc -b` + Vite build |
 | `pnpm lint` | oxlint |
 | `node tests/e2e-flow.mjs` | Suite e2e (requiere dev server arriba) |
-| `node tests/check-mobile.mjs` | Verificación mobile 375px: 9 rutas + modales sin overflow |
+| `node tests/check-mobile.mjs` | Verificación mobile 375/320px: 11 rutas + modales sin overflow |
 | `node tests/e2e-mobile.mjs` | Suite e2e móvil (Chromium touch): sheets, arrastre, flick, acordeón |
 | `SUPABASE_SERVICE_ROLE=… bash tests/reset-sandbox.sh` | Reinicia usuario sandbox (proyecto del `.env`) |
 | `SUPABASE_URL=http://127.0.0.1:54331 SUPABASE_SERVICE_ROLE=<key local> bash tests/reset-sandbox.sh` | Reinicia el sandbox en el entorno LOCAL (`supabase start`) |
 | `supabase migration up --local` | Aplica migraciones pendientes al stack local |
+| `supabase db push --dry-run` | Lista las migraciones que se aplicarían a producción (no aplica) |
 | `SUPABASE_ACCESS_TOKEN=… supabase db push` | Aplica las migraciones a producción (⚠️ la de hardening regenera los códigos de invitación) |
+| `bash tools/db/repair-history.sh` | Pone al día el historial de migraciones aplicadas a mano (solo historial, no re-ejecuta SQL) |
 | `SUPABASE_ACCESS_TOKEN=… supabase functions deploy analyze-receipt` | Deploy Edge Function |
 | `SUPABASE_ACCESS_TOKEN=… supabase secrets set GEMINI_API_KEY=…` | Secret de Gemini |
 
-> **Entorno local (Supabase CLI + Docker):** `supabase start` levanta la pila
-> en `127.0.0.1:54331` (API), `54332` (Postgres), `54333` (Studio) y `54334`
-> (Mailpit). Los puertos difieren de los por defecto porque el proyecto usa
-> una serie propia (54330-54339) para no chocar con otros proyectos locales.
-> `.env.local` (gitignored por `*.local`) apunta el dev server al
-> local; Vercel usa sus variables del dashboard, por lo que el deploy de
-> producción nunca ve el `.env.local`. La anon key del local es un JWT firmado
-> con el secret por defecto de `config.toml` (sin `jwt_secret` definido, la
-> service role local se deriva del mismo secret: rol `service_role`, mismos
-> `iat`/`exp`). El entorno local se siembra con un backup de producción
-> (`supabase db dump --linked -p … --data-only` + `psql`) para probar contra
-> datos reales.
+> **Flujo de migraciones (canónico):** se crea
+> `supabase/migrations/<timestamp>_nombre.sql`, se prueba en local
+> (`supabase db reset` / `supabase migration up --local`), se corre
+> build+lint+e2e, se hace commit y **push a `master`**; el workflow
+> `.github/workflows/supabase-migrations.yml` aplica `supabase db push` contra
+> producción (necesita el secret `SUPABASE_ACCESS_TOKEN`; `SUPABASE_DB_PASSWORD`
+> es opcional, sin él la CLI crea un rol temporal, y opcionalmente la variable
+> `SUPABASE_PROJECT_REF`). **Nunca** se pega SQL a mano en el dashboard de
+> Supabase; si por una urgencia pasa, el historial queda desincronizado y se
+> repara con `bash tools/db/repair-history.sh -y <version>` (solo escribe el
+> historial; no vuelve a ejecutar el SQL). Detalle: `tools/db/README.md`.
+
+> **Entorno local (Supabase CLI + Docker o Podman rootless):** `supabase start`
+> levanta la pila en `127.0.0.1:54331` (API), `54332` (Postgres), `54333`
+> (Studio) y `54334` (Mailpit). Los puertos difieren de los por defecto porque
+> el proyecto usa una serie propia (54330-54339) para no chocar con otros
+> proyectos locales. `.env.local` (gitignored por `*.local`) apunta el dev
+> server al local; Vercel usa sus variables del dashboard, por lo que el
+> deploy de producción nunca ve el `.env.local`. La anon key del local es un
+> JWT firmado con el secret por defecto de `config.toml` (sin `jwt_secret`
+> definido, la service role local se deriva del mismo secret: rol
+> `service_role`, mismos `iat`/`exp`).
+>
+> Si no tienes permisos sobre el socket de Docker, el stack también funciona
+> con **Podman rootless**:
+>
+> ```bash
+> systemctl --user enable --now podman.socket
+> export DOCKER_HOST=unix:///run/user/$UID/podman/podman.sock
+> supabase start
+> ```
+>
+> El entorno local se siembra con un backup de producción con
+> `bash tools/seed-local/seed-local.sh -y` (lee credenciales de
+> `tools/seed-local/.env`, gitignored; ver el tutorial
+> `tools/seed-local/README.md`). El dump se guarda en `backups/` (gitignored)
+> y las imágenes de Storage no vienen incluidas.
 >
 > **E2e contra local (local == desplegado):** con `.env.local` presente y el
-> dev server reiniciado, `node tests/e2e-flow.mjs` corre los 43 pasos contra
-> el stack local (`supabase db push --local` aplica las migraciones pendientes;
-> `reset-sandbox.sh` acepta `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE` como
-> overrides). La Edge Function `analyze-receipt` no se sirve local sin
-> `supabase functions serve` (requiere Docker): el paso de facturas detecta el
-> backend local y verifica el flujo de error (la subida y el análisis reales
-> se cubren en el e2e contra producción).
+> dev server reiniciado, `node tests/e2e-flow.mjs` corre los 47 pasos contra
+> el stack local (`supabase migration up --local` aplica las migraciones
+> pendientes; `reset-sandbox.sh` acepta `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE`
+> como overrides). La Edge Function `analyze-receipt` no se sirve local sin
+> `supabase functions serve`: el paso de facturas detecta el backend local y
+> verifica el flujo de error (la subida y el análisis reales se cubren en el
+> e2e contra producción).
 
 > ⚠️ **Trampa operativa:** tras ediciones masivas de archivos, el watcher de
 > Vite puede servir transformaciones obsoletas. Si el dev server se comporta
@@ -360,17 +413,27 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
 
 ## 9. Testing
 
-- Suite e2e de 43 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios
+- Suite e2e de 47 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios
   (día de pago + herencia al mes siguiente), gastos, calendario, saldos,
   saldo acumulado, sobrantes por mes (tarjeta Dashboard + `/historial`),
   recarga de página con salarios visibles, presupuestos, servicios, metas,
-  escaneo de facturas (con fixture + Gemini real).
+  escaneo de facturas (con fixture + Gemini real), modo offline, modo oscuro,
+  lista de deseos (contado/cuotas/estados) y perfil.
 - Usa **navegación SPA** (clics en el sidebar, no `page.goto` a rutas
   protegidas), esperas por selector y `data-testid="confirm-dialog-confirm"`
   para los diálogos.
 - El usuario sandbox se crea/elimina con `reset-sandbox.sh` (la eliminación
   limpia su hogar y datos en cascada).
-- Antes de cerrar una fase: `pnpm build` + `pnpm lint` + suite e2e completa.
+- **CI en cada PR a `master`**: `.github/workflows/ci.yml` (build + lint) y
+  `.github/workflows/e2e.yml` (Supabase local + `e2e-flow`, `e2e-mobile`,
+  `check-mobile` y `e2e-realtime`). No se mergea con checks en rojo; la PR la
+  aprueba y mergea Jhotis12. Flujo completo:
+  `.agents/skills/pull-request-workflow/SKILL.md`.
+- **Al mergear a `master`** con migraciones nuevas,
+  `.github/workflows/supabase-migrations.yml` aplica `supabase db push` a
+  producción (ver §8, Flujo de migraciones).
+- Antes de cerrar una fase: `pnpm build` + `pnpm lint` + suite e2e completa en
+  local, y PR con CI en verde.
 
 ---
 
@@ -442,3 +505,20 @@ del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
       refresh la renueve y la cola drene; con red confirma con `getUser()`
       y solo cierra si el servidor rechaza explícitamente. `signOut()`
       explícito marca un flag para no "resucitar" un cierre real.
+12. **`supabase db reset` roto en bases limpias** — la migración de datos
+    `20260902010806_fix_missing_july_salaries_spotify.sql` insertaba
+    hogar/perfiles/categoría con IDs de producción y violaba FKs en un
+    entorno local vacío. Ahora cada INSERT valida que las filas padre existan
+    (`WHERE EXISTS`): es un no-op fuera de producción.
+13. **Duplicados offline con respuesta perdida** — en los `add` de gastos e
+    ingresos el UUID se generaba dentro del intento online y el fallback
+    generaba otro distinto; si el servidor alcanzaba a guardar pero se perdía
+    la respuesta, el replay insertaba una fila duplicada. Ahora el id se
+    genera una vez y se comparte entre el intento online y la cola.
+14. **Wishlist: botón fantasma, cuotas infinitas y Realtime ausente** — el
+    botón “Volver a pendiente” se pintaba siempre (condición imposible),
+    `monthlyDue` no se acotaba al número de cuotas (una compra antigua seguía
+    sumando al compromiso mensual) y `wishlist_items` no estaba en la
+    publicación `supabase_realtime`. Corregidos en
+    `installments.ts`, `Wishlist.tsx`, `useRealtimeSync.ts` y la migración
+    `20261018120000_wishlist_realtime_hardening.sql`.

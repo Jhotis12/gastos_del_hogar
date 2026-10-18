@@ -7,7 +7,10 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
 1. **Lee `ARQUITECTURA.md`** — es la guía canónica: tecnologías, modelo de
    datos, RLS/RPCs, patrones de diseño y bugs ya corregidos.
 2. Revisa las skills del proyecto en `.agents/skills/` (supabase,
-   frontend-design, web-design-guidelines, request-refactor-plan).
+   frontend-design, web-design-guidelines, request-refactor-plan,
+   pull-request-workflow).
+3. En un clon nuevo: `README.md` §0 (ruta rápida) y
+   `tools/seed-local/README.md` (datos reales de producción para pruebas).
 
 ## Reglas que no se negocian
 
@@ -31,8 +34,30 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
   hace SOLO en el entorno local (Supabase local + `docker exec`). NUNCA se
   toca producción (datos, usuarios, esquema, migraciones, deploys) hasta que
   el usuario lo pida explícitamente ("súbelo", "manda la migración", etc.).
-  Los commits son locales; el `git push` y el `supabase db push` esperan
-  orden.
+  Los cambios se integran por **rama + PR** (ver abajo); el merge a `master`
+  y cualquier escritura a producción esperan la aprobación de Jhotis12.
+- **Migraciones**: se crean y prueban en local; a producción se aplican SOLO
+  por el workflow de GitHub (`.github/workflows/supabase-migrations.yml`,
+  `supabase db push` al push a `master`) o con un `supabase db push`
+  revisado. Nunca SQL a mano en el dashboard; si algo se aplicó a mano,
+  `bash tools/db/repair-history.sh -y <version>` (solo historial).
+
+## Flujo de trabajo (rama + PR + CI)
+
+- **Nunca** commit ni push directo a `master`: todo cambio va en una rama
+  nueva y se integra por Pull Request.
+- Antes de abrir la PR: `pnpm build` + `pnpm lint` + `node tests/e2e-flow.mjs`
+  (con Supabase local, dev server y sandbox reseteados a 47 pasos). Si el
+  cambio toca UI móvil o realtime, sumar `e2e-mobile`/`check-mobile`/
+  `e2e-realtime`.
+- GitHub corre los workflows `CI` (build + lint) y `E2E` (Supabase local +
+  suites) en cada PR. No se mergea con checks en rojo.
+- La PR la revisa, aprueba y mergea **Jhotis12**; el agente no mergea.
+  (Branch protection no está disponible en GitHub Free privado: el flujo se
+  cumple por convención + CI.)
+- Al mergear a `master`, si hay migraciones nuevas,
+  `supabase-migrations.yml` las aplica a producción.
+- Detalle y comandos: `.agents/skills/pull-request-workflow/SKILL.md`.
 
 ## Comandos
 
@@ -41,9 +66,19 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
 - `pnpm lint` — oxlint
 - `node tests/e2e-flow.mjs` — suite e2e (dev server arriba; antes:
   `SUPABASE_SERVICE_ROLE=… bash tests/reset-sandbox.sh`)
+- `git push -u origin <rama>` + `gh pr create --base master --fill` — subir
+  el cambio y abrir la PR (si `gh` no está autenticado, pasar la URL de
+  compare al usuario)
+- `bash tools/seed-local/seed-local.sh -y` — trae datos de producción al
+  local (solo lectura en producción; credenciales en `tools/seed-local/.env`,
+  tutorial en `tools/seed-local/README.md`)
+- `bash tools/db/repair-history.sh` — pone al día el historial de migraciones
+  aplicadas a mano (solo historial; ver `tools/db/README.md`)
 - `SUPABASE_ACCESS_TOKEN=… supabase functions deploy analyze-receipt` —
   desplegar la Edge Function de facturas
 
 ## Verificación antes de terminar
 
-`pnpm build` + `pnpm lint` + suite e2e completa (43 pasos).
+`pnpm build` + `pnpm lint` + suite e2e completa (47 pasos) en local, y luego
+**PR con CI en verde** (`CI` + `E2E`). Si algún test no se pudo correr en
+local, decirlo explícitamente en la PR.
