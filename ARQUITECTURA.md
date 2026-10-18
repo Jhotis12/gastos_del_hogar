@@ -80,6 +80,10 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 │       ├── forecast/        #   Forecast + hooks/useForecast + lib/forecast (proyección)
 │       └── wishlist/        #   Wishlist ("Quiero comprar") + hooks/useWishlist + components/WishlistItemForm + lib/installments
 ├── backups/                 # Dumps de BD (gitignored — datos sensibles)
+├── openspec/                # Cambios spec-driven (proposal → specs → design → tasks)
+│   ├── config.yaml          # contexto + reglas (rama + PR + CI) para los agentes
+│   ├── changes/             # changes activos y archive/
+│   └── specs/               # capacidades principales
 ├── tools/
 │   ├── seed-local/          # .env + script + tutorial: datos de producción al local
 │   └── db/                  # repair-history.sh + README (historial de migraciones)
@@ -369,6 +373,14 @@ lista entre miembros.
 > Supabase; si por una urgencia pasa, el historial queda desincronizado y se
 > repara con `bash tools/db/repair-history.sh -y <version>` (solo escribe el
 > historial; no vuelve a ejecutar el SQL). Detalle: `tools/db/README.md`.
+
+> **Cambios con OpenSpec:** las funcionalidades se planifican en
+> `openspec/changes/<change>/` (proposal → specs → design → tasks) con el
+> schema `spec-driven`. `openspec/config.yaml` inyecta el flujo de este repo
+> (rama + PR + CI + merge de Jhotis12) en los artefactos y en las guías de
+> apply/archive; el archive va en una PR aparte después del merge. Comandos:
+> `openspec list`, `openspec status --change <change>` y
+> `openspec validate <change>`.
 
 > **Entorno local (Supabase CLI + Docker o Podman rootless):** `supabase start`
 > levanta la pila en `127.0.0.1:54331` (API), `54332` (Postgres), `54333`

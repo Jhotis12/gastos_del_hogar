@@ -1,0 +1,55 @@
+schema: spec-driven
+
+# Contexto del proyecto para OpenSpec.
+# Solo restricciones que un agente no puede inferir leyendo el código.
+context: |
+  Proyecto: app de gastos del hogar (React 19 + TypeScript + Supabase, en español).
+
+  Flujo git OBLIGATORIO (detalle en .agents/skills/pull-request-workflow/SKILL.md):
+  - Nunca commit ni push directo a master. Cada change se implementa en una rama
+    nueva y se integra por Pull Request.
+  - Jhotis12 es quien revisa, aprueba y mergea; el agente nunca mergea.
+  - CI en cada PR: `CI` (build + lint) y `E2E` (Supabase local + suites).
+    No se mergea con checks en rojo.
+  - Las migraciones a producción se aplican SOLO al mergear a master
+    (workflow supabase-migrations.yml). Nunca SQL a mano en el dashboard.
+  - GitHub Free privado no permite branch protection: el flujo se cumple por
+    convención + CI.
+
+  Verificación local antes de subir: pnpm build, pnpm lint y la suite e2e
+  aplicable (ver README §6 y ARQUITECTURA §9). Si toca base de datos:
+  supabase db reset --local / supabase migration up --local.
+
+# Reglas por artefacto (se inyectan en openspec instructions <artifact>).
+rules:
+  proposal:
+    - 'Escribe el artefacto en español.'
+    - 'Incluye una sección "Git y PR" con la rama propuesta (feat/… o fix/…), el impacto en migraciones (si aplica) y los checks de CI que deben pasar.'
+    - 'Declara explícitamente qué queda fuera de alcance.'
+  specs:
+    - 'Escribe el artefacto en español.'
+  design:
+    - 'Escribe el artefacto en español.'
+    - 'Si hay cambios de esquema, incluye el plan de migración, RLS/datos y cómo probarlo en local.'
+  tasks:
+    - 'Escribe las tareas en español.'
+    - 'Cada tarea debe ser pequeña y verificable: incluye en la propia tarea cómo comprobarla (comando, test o comportamiento observable).'
+    - 'Cierra con un grupo rastreado "Git y PR" con tareas para crear la rama, hacer commits, push y abrir la PR con gh; verificar CI en verde.'
+    - 'En "## Workflow follow-up" deja como bullets NO rastreados el merge por Jhotis12 y el archive posterior (rama nueva + PR).'
+
+# Guía para las operaciones apply y archive (separada de las reglas de artefacto).
+operations:
+  apply:
+    guidance:
+      - 'Crea una rama nueva desde master al empezar (feat/<change> o fix/<change>); nunca trabajes ni commitees en master.'
+      - 'Commits por bloques lógicos con la convención del repo (feat/fix/chore/docs).'
+      - 'Antes de abrir la PR: pnpm build, pnpm lint y la suite e2e aplicable (e2e-flow; sumar e2e-mobile/check-mobile/e2e-realtime si toca UI móvil o realtime). Si toca BD, supabase db reset --local.'
+      - 'Al terminar: git push -u origin <rama> y gh pr create --base master --fill. No mergees: Jhotis12 revisa y mergea.'
+      - 'Si algún test no se puede correr, dilo explícitamente en la PR.'
+      - 'No toques producción (ni db push, ni deploys, ni SQL a mano) durante el apply.'
+  archive:
+    guidance:
+      - 'Archiva solo cuando la PR esté mergeada y todas las tareas rastreadas estén completas; nunca archives con tareas pendientes.'
+      - 'Hazlo en una rama nueva (chore/archive-<change>) desde master y abre PR con gh; nunca directo a master.'
+      - 'Ejecuta openspec archive <change> en esa rama, verifica specs sincronizadas y el move a openspec/changes/archive/.'
+      - 'Resume el resultado del archive en la PR y espera el merge de Jhotis12.'
