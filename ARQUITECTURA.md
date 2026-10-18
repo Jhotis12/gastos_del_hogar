@@ -415,7 +415,16 @@ lista entre miembros.
   para los diálogos.
 - El usuario sandbox se crea/elimina con `reset-sandbox.sh` (la eliminación
   limpia su hogar y datos en cascada).
-- Antes de cerrar una fase: `pnpm build` + `pnpm lint` + suite e2e completa.
+- **CI en cada PR a `master`**: `.github/workflows/ci.yml` (build + lint) y
+  `.github/workflows/e2e.yml` (Supabase local + `e2e-flow`, `e2e-mobile`,
+  `check-mobile` y `e2e-realtime`). No se mergea con checks en rojo; la PR la
+  aprueba y mergea Jhotis12. Flujo completo:
+  `.agents/skills/pull-request-workflow/SKILL.md`.
+- **Al mergear a `master`** con migraciones nuevas,
+  `.github/workflows/supabase-migrations.yml` aplica `supabase db push` a
+  producción (ver §8, Flujo de migraciones).
+- Antes de cerrar una fase: `pnpm build` + `pnpm lint` + suite e2e completa en
+  local, y PR con CI en verde.
 
 ---
 

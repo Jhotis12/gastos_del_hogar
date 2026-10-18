@@ -263,6 +263,19 @@ node tests/e2e-flow.mjs       # corre los 47 pasos y muestra el resumen
 > `DOCKER_HOST=unix:///run/user/$UID/podman/podman.sock` antes de
 > `supabase status`/`supabase start`.
 
+### Flujo de PR y CI
+
+Todo cambio va en **rama nueva + Pull Request**; `master` está protegida y la
+aprueba/mergea Jhotis12. En cada PR, GitHub Actions corre:
+
+- **`CI`** — `pnpm install --frozen-lockfile` + `pnpm build` + `pnpm lint`.
+- **`E2E`** — Supabase local (aplica las migraciones) + `e2e-flow`,
+  `e2e-mobile`, `check-mobile` y `e2e-realtime`.
+
+Al mergear a `master` con migraciones nuevas,
+`.github/workflows/supabase-migrations.yml` las aplica a producción. Detalle y
+comandos: `.agents/skills/pull-request-workflow/SKILL.md`.
+
 ## 7. Comandos útiles
 
 | Comando | Descripción |
@@ -281,6 +294,10 @@ node tests/e2e-flow.mjs       # corre los 47 pasos y muestra el resumen
 | `supabase db push` | Aplicar migraciones al proyecto remoto enlazado |
 | `supabase functions deploy analyze-receipt` | Desplegar la Edge Function |
 | `node tests/e2e-flow.mjs` | Suite e2e (requiere dev server + sandbox reseteado) |
+| `node tests/e2e-mobile.mjs` | Suite e2e móvil (Chromium touch) |
+| `node tests/check-mobile.mjs` | Verificación de overflow a 375/320px |
+| `node tests/e2e-realtime.mjs` | Realtime entre 2 miembros |
+| `gh pr create --base master --fill` | Abrir la PR (requiere `gh` autenticado) |
 
 ## 8. Solución de problemas
 

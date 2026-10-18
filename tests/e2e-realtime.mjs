@@ -26,6 +26,7 @@ const PASS_A = 'Sandbox123!'
 const EMAIL_B = `miembro2-${Date.now()}@test.com`
 const PASS_B = 'Miembro2123!'
 
+let failed = 0
 const browser = await firefox.launch()
 
 async function login(page, email, pass) {
@@ -117,6 +118,7 @@ try {
   await pageB.waitForSelector('text=Gasto Realtime', { timeout: 20000 })
   console.log('PASS: B vio "Gasto Realtime" en tiempo real sin recargar')
 } catch {
+  failed++
   console.log('FAIL: B no vio el gasto en 20s')
 }
 
@@ -135,6 +137,7 @@ try {
   await pageA.waitForSelector('text=1.800.000', { timeout: 20000 })
   console.log('PASS: el dashboard de A reflejó el salario de B en tiempo real')
 } catch {
+  failed++
   console.log('FAIL: el dashboard de A no reflejó el salario de B en 20s')
 }
 
@@ -146,3 +149,4 @@ await h(await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${bUser.id}`, {
 
 await browser.close()
 console.log('Limpieza completada (miembro B eliminado)')
+process.exit(failed ? 1 : 0)
