@@ -11,6 +11,9 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
    pull-request-workflow).
 3. En un clon nuevo: `README.md` §0 (ruta rápida) y
    `tools/seed-local/README.md` (datos reales de producción para pruebas).
+4. Los cambios funcionales se planifican con **OpenSpec** (`openspec/`):
+   `openspec/config.yaml` ya impone rama + PR + CI + merge de Jhotis12 en los
+   artefactos y guías de apply/archive. No dupliques esas reglas.
 
 ## Reglas que no se negocian
 

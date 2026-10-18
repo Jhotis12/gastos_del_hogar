@@ -136,7 +136,21 @@ En cada PR a `master` corren:
 - No commitear secretos: `tools/seed-local/.env`, `backups/` y `*.local` están
   gitignored y deben seguir estándolo.
 
-## 8. Checklist rápido antes de decir "listo"
+## 8. Cambios con OpenSpec
+
+Los cambios funcionales se planifican con OpenSpec (`openspec/`):
+
+- `openspec/config.yaml` ya inyecta **este mismo flujo** (rama + PR + CI +
+  merge de Jhotis12) en `proposal`, `tasks`, `apply` y `archive`. No dupliques
+  esas reglas dentro de los artefactos; se aplican solas.
+- Al aplicar un change: rama `feat/<change>` (o `fix/<change>`) desde master,
+  tareas en orden, commits por bloque, validaciones locales y PR con `gh`.
+- El archive (`openspec archive <change>`) va en una **rama/PR aparte**,
+  después de que la PR de implementación esté mergeada y sin tareas pendientes.
+- Comandos útiles: `openspec list`, `openspec status --change <change>`,
+  `openspec validate <change>`, `openspec instructions apply --change <change>`.
+
+## 9. Checklist rápido antes de decir "listo"
 
 - [ ] Rama nueva (nunca `master`).
 - [ ] `pnpm build` y `pnpm lint` verdes en local.

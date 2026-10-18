@@ -302,6 +302,8 @@ actualizar la PR **no** aplica nada: el workflow solo corre con push a
 | `node tests/check-mobile.mjs` | Verificación de overflow a 375/320px |
 | `node tests/e2e-realtime.mjs` | Realtime entre 2 miembros |
 | `gh pr create --base master --fill` | Abrir la PR (requiere `gh` autenticado) |
+| `openspec list` / `openspec status --change <change>` | Ver changes activos y su progreso |
+| `openspec validate <change>` | Validar un change/spec antes de la PR |
 
 ## 8. Solución de problemas
 
