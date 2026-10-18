@@ -49,9 +49,9 @@ export function firstPaymentDate(
   return d <= cutoffDay ? sameMonth : nextMonth
 }
 
-function shiftMonthKey(key: string): string {
+function shiftMonthKey(key: string, delta = 1): string {
   const [y, m] = key.split('-').map(Number)
-  const d = new Date(y, m, 1, 12)
+  const d = new Date(y, m - 1 + delta, 1, 12)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
 }
 
@@ -87,10 +87,16 @@ export function calculatePlan(
   let monthlyDueDate: string | null = null
   if (plan.cutoffDay && plan.purchaseDate) {
     firstPaymentDateValue = firstPaymentDate(plan.purchaseDate, plan.cutoffDay)
-    const currentCutoff = cutoffDateOf(currentMonthKey, plan.cutoffDay)
-    if (firstPaymentDateValue <= currentCutoff) {
+    // Solo hay cuota en los meses que cubre el plan: desde el mes de la
+    // primera cuota hasta n-1 meses después. Así una compra antigua no
+    // sigue sumando al compromiso mensual para siempre.
+    const firstMonth = `${firstPaymentDateValue.slice(0, 7)}-01`
+    const lastMonth = shiftMonthKey(firstMonth, n - 1)
+    const current = `${currentMonthKey.slice(0, 7)}-01`
+    if (current >= firstMonth && current <= lastMonth) {
       monthlyDue = 1
-      monthlyDueDate = firstPaymentDateValue
+      // La cuota que vence este mes se cobra en el corte de este mes.
+      monthlyDueDate = cutoffDateOf(currentMonthKey, plan.cutoffDay)
     }
   }
 

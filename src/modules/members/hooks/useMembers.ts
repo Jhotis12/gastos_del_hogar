@@ -144,7 +144,9 @@ export function useUpsertSalary() {
             amount,
             month,
             profileId: target,
-            payDate: payDate ?? '',
+            // Si no llega una fecha explícita, el replay no debe enviar ''
+            // (Postgres rechaza '' como date): se usa el primer día del mes.
+            payDate: payDate ?? `${month.slice(0, 7)}-01`,
           })
         },
       ),

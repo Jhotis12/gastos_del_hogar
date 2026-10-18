@@ -58,13 +58,17 @@ export function useAddExpense() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (input: ExpenseInput) =>
-      runWithOfflineFallback(
+    mutationFn: (input: ExpenseInput) => {
+      // El mismo id se usa en el intento online y en el fallback offline:
+      // si el servidor alcanzó a guardar pero se perdió la respuesta, el
+      // replay encuentra la PK existente y no duplica la fila.
+      const id = crypto.randomUUID()
+      return runWithOfflineFallback(
         async () => {
           if (!profile?.household_id) throw new Error('Sin hogar')
           const { data, error } = await supabase
             .from('expenses')
-            .insert({ ...input, id: crypto.randomUUID(), household_id: profile.household_id })
+            .insert({ ...input, id, household_id: profile.household_id })
             .select()
             .single()
           if (error) throw error
@@ -72,9 +76,10 @@ export function useAddExpense() {
         },
         () => {
           if (!profile?.household_id) throw new Error('Sin hogar')
-          enqueueExpenseAdd(queryClient, profile.household_id, input)
+          enqueueExpenseAdd(queryClient, profile.household_id, input, id)
         },
-      ),
+      )
+    },
     onSuccess: () => {
       invalidateIfOnline(queryClient, [
         ['expenses'],
