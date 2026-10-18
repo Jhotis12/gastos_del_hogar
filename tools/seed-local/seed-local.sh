@@ -7,6 +7,7 @@
 #   bash tools/seed-local/seed-local.sh            # pide confirmación
 #   bash tools/seed-local/seed-local.sh -y         # sin confirmación (agentes)
 #   bash tools/seed-local/seed-local.sh --dry-run  # muestra los comandos
+#   bash tools/seed-local/seed-local.sh --reuse-dump -y  # resetea local con el dump existente (no lee producción)
 #
 # Va a producción SOLO para leer (pg_dump). Nunca escribe en producción.
 # =============================================================
@@ -29,11 +30,13 @@ DUMP_EXCLUDES="--exclude storage.buckets --exclude storage.objects --exclude aut
 
 DRY_RUN=0
 ASSUME_YES=0
+REUSE_DUMP=0
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=1 ;;
+    --reuse-dump) REUSE_DUMP=1 ;;
     -y|--yes) ASSUME_YES=1 ;;
-    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
     *) echo "Argumento no reconocido: $arg" >&2; exit 1 ;;
   esac
 done
@@ -83,8 +86,8 @@ if [ -z "$PROJECT_REF" ] && [ -f "$REPO_ROOT/supabase/.temp/project-ref" ]; then
 fi
 PROJECT_REF="${PROJECT_REF:-xqfemqgokoedpenmqsmq}"
 
-if [ -z "${SUPABASE_DB_URL:-}" ] && [ -z "${SUPABASE_ACCESS_TOKEN:-}" ]; then
-  die "Falta SUPABASE_ACCESS_TOKEN en $ENV_FILE (o define SUPABASE_DB_URL)."
+if [ "$REUSE_DUMP" != 1 ] && [ -z "${SUPABASE_DB_URL:-}" ] && [ -z "${SUPABASE_ACCESS_TOKEN:-}" ]; then
+  die "Falta SUPABASE_ACCESS_TOKEN en $ENV_FILE (o define SUPABASE_DB_URL, o usa --reuse-dump)."
 fi
 
 # Estado del stack local: de aquí salen la URL real de la DB y el contenedor.
@@ -101,14 +104,19 @@ LOCAL_DB_CONTAINER="${LOCAL_DB_CONTAINER:-$(docker ps --format '{{.Names}}' | gr
 LOCAL_DB_CONTAINER="${LOCAL_DB_CONTAINER:-supabase_db_${PROJECT_ID}}"
 
 # ---------- 1) Dump de producción (solo lectura) ----------
-log "1/4 Dump de producción (solo lectura) → $BACKUPS_DIR"
 mkdir -p "$BACKUPS_DIR"
 
-if [ -n "${SUPABASE_DB_URL:-}" ]; then
+if [ "$REUSE_DUMP" = 1 ]; then
+  [ -f "$DATA_DUMP" ] \
+    || die "No existe $DATA_DUMP. Corre el seed una vez sin --reuse-dump."
+  log "1/4 Usando dump existente → $DATA_DUMP (sin leer producción)"
+elif [ -n "${SUPABASE_DB_URL:-}" ]; then
+  log "1/4 Dump de producción (solo lectura) → $BACKUPS_DIR"
   run "$SUPABASE_BIN" db dump --db-url "$SUPABASE_DB_URL" --data-only \
     $DUMP_EXCLUDES -f "$DATA_DUMP"
   run "$SUPABASE_BIN" db dump --db-url "$SUPABASE_DB_URL" --schema public -f "$SCHEMA_DUMP"
 else
+  log "1/4 Dump de producción (solo lectura) → $BACKUPS_DIR"
   # --project-ref funciona en un clon nuevo (no requiere `supabase link`).
   run "$SUPABASE_BIN" db dump --project-ref "$PROJECT_REF" --data-only \
     $DUMP_EXCLUDES -f "$DATA_DUMP"

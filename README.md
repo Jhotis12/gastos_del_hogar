@@ -121,6 +121,7 @@ Resumen:
 bash tools/seed-local/seed-local.sh        # pide confirmación
 bash tools/seed-local/seed-local.sh -y     # sin confirmación (agentes)
 bash tools/seed-local/seed-local.sh --dry-run  # muestra qué haría
+bash tools/seed-local/seed-local.sh --reuse-dump -y  # resetea con el dump ya descargado
 ```
 
 El script hace dump **solo de datos** a `backups/prod-data.sql` (gitignored),

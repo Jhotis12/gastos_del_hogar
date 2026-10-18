@@ -102,6 +102,9 @@ bash tools/seed-local/seed-local.sh
 
 # 3) Igual, pero sin confirmación (agentes/CI: solo local, nunca producción)
 bash tools/seed-local/seed-local.sh -y
+
+# 4) Repetir el reset local con el último dump descargado, sin leer producción
+bash tools/seed-local/seed-local.sh --reuse-dump -y
 ```
 
 Salida esperada al final:
@@ -109,6 +112,10 @@ Salida esperada al final:
 ```text
 ==> Listo. Datos de producción cargados en el entorno local.
 ```
+
+> `--reuse-dump` no necesita credenciales ni contacta a Supabase: solo
+> resetea el local y restaura `backups/prod-data.sql`. Úsalo cuando ya
+> tengas el dump y quieras volver a un estado limpio.
 
 ## 5. Pasos manuales (si el script falla)
 
