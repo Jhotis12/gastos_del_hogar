@@ -99,6 +99,9 @@ En cada PR a `master` corren:
 
 ## 5. Después del merge
 
+- Una PR **nunca** aplica migraciones: el workflow de migraciones solo corre
+  con push a `master` (el merge) o `workflow_dispatch` desde `master`; desde
+  una rama el job se salta (`if: github.ref == 'refs/heads/master'`).
 - Si la PR incluye `supabase/migrations/**`, el workflow
   `.github/workflows/supabase-migrations.yml` aplica `supabase db push` a
   producción automáticamente al mergear a `master`.
@@ -106,6 +109,8 @@ En cada PR a `master` corren:
   historial queda desincronizado: `bash tools/db/repair-history.sh -y <version>`
   (ver `tools/db/README.md`).
 - Vercel despliega el front solo al mergear a `master`.
+- Las migraciones son forward-only: revertir un cambio ya aplicado exige una
+  migración nueva (no hay rollback automático).
 
 ## 6. Setup que hace el humano una sola vez
 

@@ -1,6 +1,12 @@
 name: Supabase migrations
 
 # Aplica a producción las migraciones que lleguen a master.
+#
+# GARANTÍA: este workflow SOLO se ejecuta con push a master (merge de la PR)
+# o con workflow_dispatch lanzado desde master. Una PR (abierta o actualizada)
+# NUNCA aplica migraciones: el guard `if: github.ref == 'refs/heads/master'`
+# salta el job si se lanza desde una rama.
+#
 # Requiere en el repo:
 #   secrets: SUPABASE_ACCESS_TOKEN (obligatorio)
 #            SUPABASE_DB_PASSWORD (opcional: si falta, la CLI crea un rol
@@ -8,8 +14,8 @@ name: Supabase migrations
 #   opcional: variable SUPABASE_PROJECT_REF (default: xqfemqgokoedpenmqsmq)
 #
 # Flujo canónico: se crea la migración, se prueba en local, se hace push a
-# git y este workflow la aplica con `supabase db push`. Ver
-# ARQUITECTURA.md §8 (Flujo de migraciones). Si una migración se aplicó a
+# git y este workflow la aplica con `supabase db push` recién al mergear.
+# Ver ARQUITECTURA.md §8 (Flujo de migraciones). Si una migración se aplicó a
 # mano en el dashboard, primero hay que poner al día el historial con
 # tools/db/repair-history.sh (nunca meter SQL a mano sin reparar).
 
@@ -35,6 +41,8 @@ permissions:
 jobs:
   deploy:
     name: Aplicar migraciones a producción
+    # Solo desde master: evita que un dispatch manual desde una rama aplique.
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

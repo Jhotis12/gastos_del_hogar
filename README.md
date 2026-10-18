@@ -275,8 +275,10 @@ el flujo se cumple por convención + CI). En cada PR, GitHub Actions corre:
   `e2e-mobile`, `check-mobile` y `e2e-realtime`.
 
 Al mergear a `master` con migraciones nuevas,
-`.github/workflows/supabase-migrations.yml` las aplica a producción. Detalle y
-comandos: `.agents/skills/pull-request-workflow/SKILL.md`.
+`.github/workflows/supabase-migrations.yml` las aplica a producción. Abrir o
+actualizar la PR **no** aplica nada: el workflow solo corre con push a
+`master` (o dispatch desde `master`). Detalle y comandos:
+`.agents/skills/pull-request-workflow/SKILL.md`.
 
 ## 7. Comandos útiles
 
