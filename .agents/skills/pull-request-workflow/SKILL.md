@@ -64,7 +64,8 @@ faltó y por qué). **No** abras la PR con tests en rojo conocidos.
 git push -u origin <rama>
 ```
 
-Con GitHub CLI autenticado (`gh auth status`):
+Con GitHub CLI autenticado (`gh auth status`), **el agente crea la PR** (no se
+la deja pendiente al humano):
 
 ```bash
 gh pr create --base master --fill
@@ -108,10 +109,12 @@ En cada PR a `master` corren:
    - Require a pull request before merging (1 aprobación: Jhotis12).
    - Require status checks to pass: `build + lint` y `Supabase local + suites`.
 2. **Secrets** para el workflow de migraciones (Settings → Secrets and variables → Actions):
-   - `SUPABASE_ACCESS_TOKEN` y `SUPABASE_DB_PASSWORD`.
+   - `SUPABASE_ACCESS_TOKEN` (obligatorio).
+   - `SUPABASE_DB_PASSWORD` (opcional: sin él la CLI crea un rol temporal).
    - Variable opcional `SUPABASE_PROJECT_REF` (default `xqfemqgokoedpenmqsmq`).
-3. Opcional: instalar y autenticar `gh` (`gh auth login`) para que el agente
-   abra las PR solo.
+3. Opcional: `gh` ya está instalado en `~/.local/bin/gh`; solo falta
+   `gh auth login` una vez. A partir de ahí el agente abre la PR solo
+   (`gh pr create --base master --fill`) y el humano revisa checks y mergea.
 
 ## 7. Prohibiciones
 

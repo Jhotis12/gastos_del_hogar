@@ -169,8 +169,9 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
 
 En este repo las migraciones se aplican a producción automáticamente con el
 workflow `.github/workflows/supabase-migrations.yml` al hacer **push a
-`master`**. Requiere los secrets `SUPABASE_ACCESS_TOKEN` y
-`SUPABASE_DB_PASSWORD` (y opcionalmente la variable `SUPABASE_PROJECT_REF`).
+`master`**. Requiere el secret `SUPABASE_ACCESS_TOKEN` (el
+`SUPABASE_DB_PASSWORD` es opcional: sin él la CLI crea un rol temporal) y
+opcionalmente la variable `SUPABASE_PROJECT_REF`.
 
 Antes de aplicarlas puedes revisar qué se va a correr:
 

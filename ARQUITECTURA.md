@@ -354,8 +354,8 @@ lista entre miembros.
 > (`supabase db reset` / `supabase migration up --local`), se corre
 > build+lint+e2e, se hace commit y **push a `master`**; el workflow
 > `.github/workflows/supabase-migrations.yml` aplica `supabase db push` contra
-> producción (necesita los secrets `SUPABASE_ACCESS_TOKEN` y
-> `SUPABASE_DB_PASSWORD`, y opcionalmente la variable
+> producción (necesita el secret `SUPABASE_ACCESS_TOKEN`; `SUPABASE_DB_PASSWORD`
+> es opcional, sin él la CLI crea un rol temporal, y opcionalmente la variable
 > `SUPABASE_PROJECT_REF`). **Nunca** se pega SQL a mano en el dashboard de
 > Supabase; si por una urgencia pasa, el historial queda desincronizado y se
 > repara con `bash tools/db/repair-history.sh -y <version>` (solo escribe el

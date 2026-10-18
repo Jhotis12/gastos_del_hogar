@@ -2,7 +2,9 @@ name: Supabase migrations
 
 # Aplica a producción las migraciones que lleguen a master.
 # Requiere en el repo:
-#   secrets: SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD
+#   secrets: SUPABASE_ACCESS_TOKEN (obligatorio)
+#            SUPABASE_DB_PASSWORD (opcional: si falta, la CLI crea un rol
+#            temporal vía API, igual que en los dumps)
 #   opcional: variable SUPABASE_PROJECT_REF (default: xqfemqgokoedpenmqsmq)
 #
 # Flujo canónico: se crea la migración, se prueba en local, se hace push a
@@ -50,7 +52,9 @@ jobs:
       - name: Validar secretos
         run: |
           test -n "$SUPABASE_ACCESS_TOKEN" || { echo "::error::Falta el secret SUPABASE_ACCESS_TOKEN"; exit 1; }
-          test -n "$SUPABASE_DB_PASSWORD" || { echo "::error::Falta el secret SUPABASE_DB_PASSWORD"; exit 1; }
+          if [ -z "$SUPABASE_DB_PASSWORD" ]; then
+            echo "::warning::SUPABASE_DB_PASSWORD no configurado; la CLI usará un rol temporal vía API."
+          fi
 
       - name: Migraciones pendientes (dry-run)
         run: supabase db push --project-ref "$SUPABASE_PROJECT_REF" --dry-run
