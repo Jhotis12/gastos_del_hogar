@@ -35,6 +35,11 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
   el usuario lo pida explícitamente ("súbelo", "manda la migración", etc.).
   Los commits son locales; el `git push` y el `supabase db push` esperan
   orden.
+- **Migraciones**: se crean y prueban en local; a producción se aplican SOLO
+  por el workflow de GitHub (`.github/workflows/supabase-migrations.yml`,
+  `supabase db push` al push a `master`) o con un `supabase db push`
+  revisado. Nunca SQL a mano en el dashboard; si algo se aplicó a mano,
+  `bash tools/db/repair-history.sh -y <version>` (solo historial).
 
 ## Comandos
 
@@ -46,6 +51,8 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
 - `bash tools/seed-local/seed-local.sh -y` — trae datos de producción al
   local (solo lectura en producción; credenciales en `tools/seed-local/.env`,
   tutorial en `tools/seed-local/README.md`)
+- `bash tools/db/repair-history.sh` — pone al día el historial de migraciones
+  aplicadas a mano (solo historial; ver `tools/db/README.md`)
 - `SUPABASE_ACCESS_TOKEN=… supabase functions deploy analyze-receipt` —
   desplegar la Edge Function de facturas
 

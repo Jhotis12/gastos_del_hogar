@@ -1,0 +1,60 @@
+name: Supabase migrations
+
+# Aplica a producción las migraciones que lleguen a master.
+# Requiere en el repo:
+#   secrets: SUPABASE_ACCESS_TOKEN, SUPABASE_DB_PASSWORD
+#   opcional: variable SUPABASE_PROJECT_REF (default: xqfemqgokoedpenmqsmq)
+#
+# Flujo canónico: se crea la migración, se prueba en local, se hace push a
+# git y este workflow la aplica con `supabase db push`. Ver
+# ARQUITECTURA.md §8 (Flujo de migraciones). Si una migración se aplicó a
+# mano en el dashboard, primero hay que poner al día el historial con
+# tools/db/repair-history.sh (nunca meter SQL a mano sin reparar).
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'supabase/migrations/**'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Mostrar migraciones pendientes sin aplicar'
+        type: boolean
+        default: false
+
+concurrency:
+  group: supabase-migrations
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Aplicar migraciones a producción
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF || 'xqfemqgokoedpenmqsmq' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Validar secretos
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo "::error::Falta el secret SUPABASE_ACCESS_TOKEN"; exit 1; }
+          test -n "$SUPABASE_DB_PASSWORD" || { echo "::error::Falta el secret SUPABASE_DB_PASSWORD"; exit 1; }
+
+      - name: Migraciones pendientes (dry-run)
+        run: supabase db push --project-ref "$SUPABASE_PROJECT_REF" --dry-run
+
+      - name: Aplicar migraciones
+        if: ${{ github.event_name == 'push' || inputs.dry_run != true }}
+        run: supabase db push --project-ref "$SUPABASE_PROJECT_REF" --yes

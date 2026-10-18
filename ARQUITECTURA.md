@@ -343,9 +343,23 @@ lista entre miembros.
 | `SUPABASE_SERVICE_ROLE=… bash tests/reset-sandbox.sh` | Reinicia usuario sandbox (proyecto del `.env`) |
 | `SUPABASE_URL=http://127.0.0.1:54331 SUPABASE_SERVICE_ROLE=<key local> bash tests/reset-sandbox.sh` | Reinicia el sandbox en el entorno LOCAL (`supabase start`) |
 | `supabase migration up --local` | Aplica migraciones pendientes al stack local |
+| `supabase db push --dry-run` | Lista las migraciones que se aplicarían a producción (no aplica) |
 | `SUPABASE_ACCESS_TOKEN=… supabase db push` | Aplica las migraciones a producción (⚠️ la de hardening regenera los códigos de invitación) |
+| `bash tools/db/repair-history.sh` | Pone al día el historial de migraciones aplicadas a mano (solo historial, no re-ejecuta SQL) |
 | `SUPABASE_ACCESS_TOKEN=… supabase functions deploy analyze-receipt` | Deploy Edge Function |
 | `SUPABASE_ACCESS_TOKEN=… supabase secrets set GEMINI_API_KEY=…` | Secret de Gemini |
+
+> **Flujo de migraciones (canónico):** se crea
+> `supabase/migrations/<timestamp>_nombre.sql`, se prueba en local
+> (`supabase db reset` / `supabase migration up --local`), se corre
+> build+lint+e2e, se hace commit y **push a `master`**; el workflow
+> `.github/workflows/supabase-migrations.yml` aplica `supabase db push` contra
+> producción (necesita los secrets `SUPABASE_ACCESS_TOKEN` y
+> `SUPABASE_DB_PASSWORD`, y opcionalmente la variable
+> `SUPABASE_PROJECT_REF`). **Nunca** se pega SQL a mano en el dashboard de
+> Supabase; si por una urgencia pasa, el historial queda desincronizado y se
+> repara con `bash tools/db/repair-history.sh -y <version>` (solo escribe el
+> historial; no vuelve a ejecutar el SQL). Detalle: `tools/db/README.md`.
 
 > **Entorno local (Supabase CLI + Docker o Podman rootless):** `supabase start`
 > levanta la pila en `127.0.0.1:54331` (API), `54332` (Postgres), `54333`

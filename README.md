@@ -167,10 +167,21 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
 
 ### 3.3 Proyecto remoto (producción) — solo si vas a desplegar
 
+En este repo las migraciones se aplican a producción automáticamente con el
+workflow `.github/workflows/supabase-migrations.yml` al hacer **push a
+`master`**. Requiere los secrets `SUPABASE_ACCESS_TOKEN` y
+`SUPABASE_DB_PASSWORD` (y opcionalmente la variable `SUPABASE_PROJECT_REF`).
+
+Antes de aplicarlas puedes revisar qué se va a correr:
+
 ```bash
-supabase link --project-ref <ref-del-proyecto>
-supabase db push          # aplica las migraciones pendientes a la DB remota
+supabase db push --project-ref <ref-del-proyecto> --dry-run
 ```
+
+Si alguna vez se aplicó SQL a mano en el dashboard de Supabase, el historial
+queda desincronizado: repáralo con `bash tools/db/repair-history.sh -y
+<version>` (solo escribe el historial; no re-ejecuta SQL). Detalle:
+`tools/db/README.md`.
 
 Las variables `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` de producción se
 definen también en la plataforma de hosting (p. ej. Vercel → Project Settings
@@ -265,6 +276,8 @@ node tests/e2e-flow.mjs       # corre los 47 pasos y muestra el resumen
 | `supabase db reset` | Reaplicar migraciones desde cero (borra datos) |
 | `supabase migration up --local` | Aplicar migraciones nuevas conservando datos |
 | `supabase db dump --linked --data-only -f backups/prod-data.sql` | Copia solo datos de producción (solo lectura) |
+| `supabase db push --dry-run` | Lista migraciones pendientes para producción (no aplica) |
+| `bash tools/db/repair-history.sh` | Pone al día el historial de migraciones aplicadas a mano |
 | `supabase db push` | Aplicar migraciones al proyecto remoto enlazado |
 | `supabase functions deploy analyze-receipt` | Desplegar la Edge Function |
 | `node tests/e2e-flow.mjs` | Suite e2e (requiere dev server + sandbox reseteado) |
