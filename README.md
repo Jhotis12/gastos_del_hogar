@@ -2,10 +2,33 @@
 
 App de gestión de gastos del hogar: gastos compartidos, salarios con día de
 pago, sobrantes por mes, presupuestos por categoría, servicios recurrentes,
-metas de ahorro, escaneo de facturas (IA) y sincronización en tiempo real.
+metas de ahorro, proyección, lista de deseos con cuotas y escaneo de facturas
+(IA), con sincronización en tiempo real.
 
 **Stack:** React 19 · TypeScript · Vite · Tailwind CSS v4 · TanStack Query ·
 Supabase (Auth, Postgres + RLS, Realtime, Storage, Edge Functions) · PWA.
+
+---
+
+## 0. Ruta rápida (clon nuevo)
+
+```bash
+git clone <url-del-repositorio> App-gastos && cd App-gastos
+pnpm install
+supabase start                                  # Docker o Podman rootless
+cp .env.example .env.local                      # ya trae URL + anon key del local
+cp tools/seed-local/.env.example tools/seed-local/.env
+$EDITOR tools/seed-local/.env                   # pega tu SUPABASE_ACCESS_TOKEN
+bash tools/seed-local/seed-local.sh -y          # datos reales para pruebas
+pnpm dev
+```
+
+- El paso del seed es **opcional**: sin él el local arranca vacío (ideal para
+  probar el flujo desde “crear hogar”).
+- El seed copia datos, no Storage; y nunca escribe en producción.
+- Detalle completo: [`tools/seed-local/README.md`](tools/seed-local/README.md).
+- Si usas Podman rootless:
+  `export DOCKER_HOST=unix:///run/user/$UID/podman/podman.sock`.
 
 ---
 
@@ -13,9 +36,9 @@ Supabase (Auth, Postgres + RLS, Realtime, Storage, Edge Functions) · PWA.
 
 | Herramienta | Versión mínima | Para qué |
 |---|---|---|
-| [Node.js](https://nodejs.org) | ≥ 20.19 (recomendado: 22 LTS) | Runtime de Vite/TS |
+| [Node.js](https://nodejs.org) | ≥ 20.19 (recomendado: 24 LTS) | Runtime de Vite/TS |
 | [pnpm](https://pnpm.io/installation) | ≥ 9 | Gestor de paquetes |
-| [Docker](https://www.docker.com/products/docker-desktop/) | Cualquiera reciente | Supabase local (API, Postgres, Storage…) |
+| [Docker](https://www.docker.com/products/docker-desktop/) (o Podman rootless) | Cualquiera reciente | Supabase local (API, Postgres, Storage…) |
 | [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started) | ≥ 2 | Levantar/administrar Supabase y migraciones |
 | [git](https://git-scm.com/) | Cualquiera | Clonar el repositorio |
 
@@ -43,6 +66,9 @@ docker run --rm hello-world   # Docker levantado y con permisos
 
 > Si `docker` da error de permisos en Linux, agregar el usuario al grupo
 > `docker` (`sudo usermod -aG docker $USER`) y volver a iniciar sesión.
+> Alternativa sin sudo: Podman rootless
+> (`systemctl --user enable --now podman.socket` y
+> `export DOCKER_HOST=unix:///run/user/$UID/podman/podman.sock`).
 
 ## 2. Clonar e instalar dependencias
 
@@ -64,7 +90,14 @@ La primera vez descarga las imágenes de Docker (varios minutos). Al terminar,
 la API queda en `http://127.0.0.1:54331`, la DB en `54332`, el Studio
 (panel web) en `http://127.0.0.1:54333`. Verificar con `supabase status`.
 
-Aplicar el esquema (tablas, RLS, RPCs) desde las migraciones del repo:
+> Si usas **Podman rootless**, habilita el socket de usuario y exporta
+> `DOCKER_HOST` antes de `supabase start`:
+> `systemctl --user enable --now podman.socket` y
+> `export DOCKER_HOST=unix:///run/user/$UID/podman/podman.sock`.
+
+Aplicar el esquema (tablas, RLS, RPCs) desde las migraciones del repo. **Las
+migraciones son la fuente de verdad**; `schema.sql` es solo un snapshot
+histórico y no debe usarse para instalaciones nuevas:
 
 ```bash
 supabase db reset        # desde cero: borra la DB local y reaplica todo
@@ -73,6 +106,30 @@ supabase migration up --local
 ```
 
 > `supabase db reset` es **destructivo**: borra todos los datos locales.
+
+### 3.1.1 Sembrar el entorno local con datos de producción (solo lectura)
+
+Para probar con datos reales sin tocar producción hay un script y un tutorial
+completo en **[`tools/seed-local/README.md`](tools/seed-local/README.md)**.
+Resumen:
+
+1. Pon tus credenciales en `tools/seed-local/.env` (gitignored; ver
+   `.env.example`). Basta un `SUPABASE_ACCESS_TOKEN`.
+2. Ejecuta:
+
+```bash
+bash tools/seed-local/seed-local.sh        # pide confirmación
+bash tools/seed-local/seed-local.sh -y     # sin confirmación (agentes)
+bash tools/seed-local/seed-local.sh --dry-run  # muestra qué haría
+```
+
+El script hace dump **solo de datos** a `backups/prod-data.sql` (gitignored),
+resetea el local, restaura y verifica. No escribe en producción.
+
+> Esto copia datos sensibles a tu máquina: no subas `backups/` a git ni a
+> ningún servicio. Las imágenes de facturas/avatares (y sus metadatos) viven
+> en Storage y se excluyen del dump; para probar esos visores hay que
+> copiarlas aparte.
 
 Crear el bucket de almacenamiento para las facturas (una sola vez):
 en el Studio (`http://127.0.0.1:54333` → Storage → New bucket) crear el
@@ -86,7 +143,8 @@ insert into storage.buckets (id, name, public) values ('receipts', 'receipts', f
 ### 3.2 Variables de entorno
 
 La app necesita dos variables. **Nunca** se suben a git (`.env` y `.env.local`
-ya están en `.gitignore`).
+ya están en `.gitignore`). Hay una plantilla en **`.env.example`**; cópiala a
+`.env.local` para desarrollo:
 
 | Variable | Local (`.env.local`) | Producción (`.env`) |
 |---|---|---|
@@ -126,8 +184,10 @@ pnpm dev
 Abrir `http://localhost:5173`:
 
 1. **Crear cuenta** (cualquier email y contraseña ≥ 8 caracteres). En el
-   entorno local los emails se confirman automáticamente
-   (`enable_confirmations = false` en `supabase/config.toml`).
+   entorno local las confirmaciones están activadas
+   (`enable_confirmations = true` en `supabase/config.toml`): el correo de
+   confirmación se ve en **Mailpit** (`http://127.0.0.1:54334`). Para pruebas
+   automatizadas, `tests/reset-sandbox.sh` crea el usuario ya confirmado.
 2. La app te lleva a **crear tu hogar** (nombre + código de invitación para
    los demás miembros).
 
@@ -159,24 +219,19 @@ pnpm build     # typecheck (tsc) + build de producción
 pnpm lint      # oxlint
 ```
 
-Suite e2e (43 pasos, Playwright/Firefox) — requiere:
+Suite e2e (47 pasos, Playwright/Firefox) — requiere:
 
 1. Dev server corriendo (`pnpm dev`, puerto 5173).
-2. El `.env` apuntando al entorno contra el que se probará (la app puede
-   seguir usando local vía `.env.local`, pero el script de reset lee el URL
-   desde `.env`).
+2. El `.env`/`.env.local` apuntando al entorno contra el que se probará.
+   `reset-sandbox.sh` usa `SUPABASE_URL` si se pasa; si no, lee `.env`
+   (producción) y, si no existe, `.env.local` (local). Siempre imprime el
+   target antes de borrar/crear el usuario.
 3. La variable `SUPABASE_SERVICE_ROLE` con la key de *service role*:
 
 ```bash
-# Local: firmar un JWT service_role con el JWT secret de supabase/config.toml
-# (el default es 'super-secret-jwt-token-with-at-least-32-characters-long')
-export SUPABASE_SERVICE_ROLE=$(node -e "
-const c=require('crypto');
-const secret='super-secret-jwt-token-with-at-least-32-characters-long';
-const b64=(o)=>Buffer.from(JSON.stringify(o)).toString('base64url');
-const h=b64({alg:'HS256',typ:'JWT'})+'.'+b64({role:'service_role',iss:'supabase',iat:Math.floor(Date.now()/1000),exp:Math.floor(Date.now()/1000)+3600});
-console.log(h+'.'+c.createHmac('sha256',secret).update(h).digest('base64url'));
-")
+# Local: la key sale de `supabase status`
+export SUPABASE_SERVICE_ROLE=$(supabase status -o env \
+  | grep '^SERVICE_ROLE_KEY=' | cut -d= -f2- | tr -d '"')
 
 # Producción: key service_role del Dashboard (Settings → API)
 export SUPABASE_SERVICE_ROLE=eyJhbGciOi...
@@ -185,11 +240,16 @@ export SUPABASE_SERVICE_ROLE=eyJhbGciOi...
 Ejecutar:
 
 ```bash
-bash tests/reset-sandbox.sh   # crea el usuario sandbox-test@test.com / Sandbox123!
-node tests/e2e-flow.mjs       # corre los 43 pasos y muestra el resumen
+# Local (recomendado): apunta explícitamente al stack local
+SUPABASE_URL=http://127.0.0.1:54331 bash tests/reset-sandbox.sh
+node tests/e2e-flow.mjs       # corre los 47 pasos y muestra el resumen
 ```
 
-> El sandbox se elimina automáticamente al final del flujo.
+> El flujo termina eliminando el **hogar** del sandbox (queda en `/setup`);
+> el usuario se reinicia/elimina al inicio con `reset-sandbox.sh`.
+> Si usas Podman rootless, exporta
+> `DOCKER_HOST=unix:///run/user/$UID/podman/podman.sock` antes de
+> `supabase status`/`supabase start`.
 
 ## 7. Comandos útiles
 
@@ -200,8 +260,10 @@ node tests/e2e-flow.mjs       # corre los 43 pasos y muestra el resumen
 | `pnpm lint` | Lint con oxlint |
 | `pnpm preview` | Servir el build local |
 | `supabase start` / `stop` / `status` | Ciclo de vida de Supabase local |
+| `supabase login` / `supabase link` | Autenticar y enlazar el proyecto remoto |
 | `supabase db reset` | Reaplicar migraciones desde cero (borra datos) |
 | `supabase migration up --local` | Aplicar migraciones nuevas conservando datos |
+| `supabase db dump --linked --data-only -f backups/prod-data.sql` | Copia solo datos de producción (solo lectura) |
 | `supabase db push` | Aplicar migraciones al proyecto remoto enlazado |
 | `supabase functions deploy analyze-receipt` | Desplegar la Edge Function |
 | `node tests/e2e-flow.mjs` | Suite e2e (requiere dev server + sandbox reseteado) |
@@ -209,7 +271,9 @@ node tests/e2e-flow.mjs       # corre los 43 pasos y muestra el resumen
 ## 8. Solución de problemas
 
 - **`docker` deniega permisos** → agregar el usuario al grupo `docker` y
-  volver a iniciar sesión.
+  volver a iniciar sesión. Alternativa sin sudo: Podman rootless
+  (`systemctl --user enable --now podman.socket` y
+  `export DOCKER_HOST=unix:///run/user/$UID/podman/podman.sock`).
 - **Puertos ocupados (54331/54332/54333)** → cambiar los puertos en
   `supabase/config.toml` y ejecutar `supabase start` de nuevo.
 - **La app muestra datos de un entorno que no esperas** → revisar qué URL usa

@@ -24,10 +24,6 @@ async function step(label, fn) {
   }
 }
 
-async function waitForText(text, timeout = 8000) {
-  await page.waitForSelector(`text=${text}`, { timeout })
-}
-
 // Gesto táctil sobre el asa (la "rallita"): dispara touchstart/move/end
 async function swipeHandle(delta, opts = {}) {
   await page.evaluate(async ({ delta, steps, stepMs, flick }) => {

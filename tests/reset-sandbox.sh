@@ -7,11 +7,21 @@
 # secret por defecto del CLI cuando config.toml no define jwt_secret).
 set -euo pipefail
 
-URL="${SUPABASE_URL:-$(grep '^VITE_SUPABASE_URL' .env | cut -d= -f2)}"
+# URL explícita > .env (producción) > .env.local (desarrollo) > local por defecto.
+read_env_url() {
+  grep -m1 '^VITE_SUPABASE_URL=' "$1" 2>/dev/null | cut -d= -f2- || true
+}
+URL="${SUPABASE_URL:-}"
+if [ -z "$URL" ] && [ -f .env ]; then URL=$(read_env_url .env); fi
+if [ -z "$URL" ] && [ -f .env.local ]; then URL=$(read_env_url .env.local); fi
+URL="${URL:-http://127.0.0.1:54331}"
+
 SRV="${SUPABASE_SERVICE_ROLE:?Define SUPABASE_SERVICE_ROLE en el entorno}"
 
 EMAIL="sandbox-test@test.com"
 PASS="Sandbox123!"
+
+echo "Sandbox target: $URL"
 
 # Eliminar usuario existente (borra en cascada hogar, gastos, salarios, etc.)
 # NOTA: NO usar ?email= en el endpoint admin (filtra mal y puede borrar a otro

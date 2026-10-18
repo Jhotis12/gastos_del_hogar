@@ -10,8 +10,16 @@ if (!SRV) {
   console.error('Falta SUPABASE_SERVICE_ROLE')
   process.exit(1)
 }
-const URL = fs.readFileSync('.env', 'utf-8').match(/VITE_SUPABASE_URL=(.*)/)[1].trim()
-const ANON = fs.readFileSync('.env', 'utf-8').match(/VITE_SUPABASE_ANON_KEY=(.*)/)[1].trim()
+const envFile = fs.existsSync('.env') ? '.env' : '.env.local'
+if (!fs.existsSync(envFile)) {
+  console.error('Falta .env o .env.local con VITE_SUPABASE_URL/ANON_KEY')
+  process.exit(1)
+}
+const env = fs.readFileSync(envFile, 'utf-8')
+const SUPABASE_URL = env.match(/VITE_SUPABASE_URL=(.*)/)[1].trim()
+const ANON = env.match(/VITE_SUPABASE_ANON_KEY=(.*)/)[1].trim()
+// Clave donde auth-js persiste la sesión: sb-<ref>-auth-token
+const AUTH_KEY = `sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`
 
 const EMAIL_A = 'sandbox-test@test.com'
 const PASS_A = 'Sandbox123!'
@@ -55,26 +63,25 @@ if (pageA.url().includes('/setup')) {
 }
 
 // token + household de A
-const tokenA = await pageA.evaluate(() => {
-  const raw = localStorage.getItem('sb-xqfemqgokoedpenmqsmq-auth-token')
+const tokenA = await pageA.evaluate((authKey) => {
+  const raw = localStorage.getItem(authKey)
   if (!raw) return null
   try { return JSON.parse(raw).access_token } catch { return null }
-})
+}, AUTH_KEY)
 console.log('tokenA len:', tokenA ? tokenA.length : null)
-const hhRes = await fetch(`${URL}/rest/v1/households?select=id,invite_code`, {
+const hhRes = await fetch(`${SUPABASE_URL}/rest/v1/households?select=id,invite_code`, {
   headers: { Authorization: `Bearer ${tokenA}`, apikey: ANON },
 })
 console.log('households HTTP', hhRes.status)
 const hhJson = await hhRes.json()
 console.log('households body:', JSON.stringify(hhJson).slice(0, 200))
-const prof = await (await fetch(`${URL}/rest/v1/profiles?select=id,household_id&id=eq.` + tokenA.slice(0,0) , { headers: { Authorization: `Bearer ${tokenA}`, apikey: ANON } })).json().catch(() => null)
-const me = await (await fetch(`${URL}/auth/v1/user`, { headers: { Authorization: `Bearer ${tokenA}`, apikey: ANON } })).json().catch(() => null)
+const me = await (await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { Authorization: `Bearer ${tokenA}`, apikey: ANON } })).json().catch(() => null)
 console.log('auth/v1/user:', JSON.stringify(me).slice(0, 120))
 const household = hhJson[0]
 console.log('Hogar:', household.id, '| código:', household.invite_code)
 
 // 2) Crear miembro B (admin) y unirse al hogar
-const bUser = await h(await fetch(`${URL}/auth/v1/admin/users`, {
+const bUser = await h(await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
   method: 'POST',
   headers: { Authorization: `Bearer ${SRV}`, apikey: SRV, 'Content-Type': 'application/json' },
   body: JSON.stringify({ email: EMAIL_B, password: PASS_B, email_confirm: true, user_metadata: { full_name: 'Miembro B' } }),
@@ -132,7 +139,7 @@ try {
 }
 
 // Limpieza: borrar miembro B
-await h(await fetch(`${URL}/auth/v1/admin/users/${bUser.id}`, {
+await h(await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${bUser.id}`, {
   method: 'DELETE',
   headers: { Authorization: `Bearer ${SRV}`, apikey: SRV },
 }))

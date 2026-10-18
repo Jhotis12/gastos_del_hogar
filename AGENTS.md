@@ -8,6 +8,8 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
    datos, RLS/RPCs, patrones de diseño y bugs ya corregidos.
 2. Revisa las skills del proyecto en `.agents/skills/` (supabase,
    frontend-design, web-design-guidelines, request-refactor-plan).
+3. En un clon nuevo: `README.md` §0 (ruta rápida) y
+   `tools/seed-local/README.md` (datos reales de producción para pruebas).
 
 ## Reglas que no se negocian
 
@@ -41,9 +43,12 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
 - `pnpm lint` — oxlint
 - `node tests/e2e-flow.mjs` — suite e2e (dev server arriba; antes:
   `SUPABASE_SERVICE_ROLE=… bash tests/reset-sandbox.sh`)
+- `bash tools/seed-local/seed-local.sh -y` — trae datos de producción al
+  local (solo lectura en producción; credenciales en `tools/seed-local/.env`,
+  tutorial en `tools/seed-local/README.md`)
 - `SUPABASE_ACCESS_TOKEN=… supabase functions deploy analyze-receipt` —
   desplegar la Edge Function de facturas
 
 ## Verificación antes de terminar
 
-`pnpm build` + `pnpm lint` + suite e2e completa (43 pasos).
+`pnpm build` + `pnpm lint` + suite e2e completa (47 pasos).
