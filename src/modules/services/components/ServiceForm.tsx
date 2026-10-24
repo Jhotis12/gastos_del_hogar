@@ -6,6 +6,7 @@ import SelectInput from '@/shared/components/ui/SelectInput'
 import { useAddRecurring, useUpdateRecurring } from '@/modules/services/hooks/useRecurring'
 import { useCategories } from '@/modules/categories/hooks/useCategories'
 import { useMembers } from '@/modules/members/hooks/useMembers'
+import { useAuth } from '@/shared/hooks/useAuth'
 import { useToast } from '@/shared/components/ui/Toast'
 import type { Frequency, RecurringExpenseWithRelations } from '@/shared/lib/types'
 import { errorMessage } from '@/shared/lib/utils'
@@ -29,6 +30,7 @@ export default function ServiceForm({
   const toast = useToast()
   const { data: categories } = useCategories()
   const { data: members } = useMembers()
+  const { profile } = useAuth()
 
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
@@ -43,12 +45,12 @@ export default function ServiceForm({
       setAmount(initial ? String(initial.amount) : '')
       setDescription(initial?.description ?? '')
       setCategoryId(initial?.category_id ?? '')
-      setPaidBy(initial?.paid_by ?? '')
+      setPaidBy(initial ? (initial.paid_by ?? '') : (profile?.id ?? ''))
       setFrequency(initial?.frequency ?? 'monthly')
       setDate(initial?.next_due_date ?? todayISO())
       setError('')
     }
-  }, [open, initial])
+  }, [open, initial, profile?.id])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,11 +63,15 @@ export default function ServiceForm({
       setError('Describe el servicio (ej. Luz, Internet, Renta)')
       return
     }
+    if (!paidBy) {
+      setError('Selecciona quién paga el servicio')
+      return
+    }
     const payload = {
       amount: value,
       description: description.trim(),
       category_id: categoryId || null,
-      paid_by: paidBy || null,
+      paid_by: paidBy,
       frequency,
       next_due_date: date,
     }
@@ -138,7 +144,9 @@ export default function ServiceForm({
               value={paidBy}
               onChange={(e) => setPaidBy(e.target.value)}
             >
-              <option value="">Sin asignar</option>
+              <option value="" disabled>
+                Selecciona quién paga
+              </option>
               {members?.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.full_name}

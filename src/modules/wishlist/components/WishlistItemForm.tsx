@@ -5,11 +5,11 @@ import SelectInput from '@/shared/components/ui/SelectInput'
 import DateInput from '@/shared/components/ui/DateInput'
 import { useToast } from '@/shared/components/ui/Toast'
 import { useAddWishlistItem, useUpdateWishlistItem } from '@/modules/wishlist/hooks/useWishlist'
-import { useRunningBalance } from '@/modules/expenses/hooks/useExpenses'
+import { useMemberAvailable } from '@/modules/finance/hooks/useMemberAvailable'
 import { useForecast } from '@/modules/forecast/hooks/useForecast'
 import { calculatePlan, monthsToAfford } from '@/modules/wishlist/lib/installments'
 import { shiftMonth, shortMonthLabel } from '@/shared/lib/dates'
-import { currentMonthKey, formatDate } from '@/shared/lib/dates'
+import { currentMonthKey, formatDate, todayISO } from '@/shared/lib/dates'
 import { formatCurrency, parseMoneyInput } from '@/shared/lib/money'
 import { cn, errorMessage } from '@/shared/lib/utils'
 import type { WishlistItem } from '@/shared/lib/types'
@@ -41,7 +41,8 @@ export default function WishlistItemForm({ open, initial, onClose }: Props) {
   const add = useAddWishlistItem()
   const update = useUpdateWishlistItem()
   const toast = useToast()
-  const { data: balance } = useRunningBalance(currentMonthKey())
+  const { data: memberAvailable } = useMemberAvailable(todayISO())
+  const balance = memberAvailable?.available ?? null
   const { data: forecast } = useForecast()
 
   const [name, setName] = useState('')

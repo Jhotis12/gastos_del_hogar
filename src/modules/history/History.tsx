@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowDownCircle, ArrowUpCircle, Wallet, History as HistoryIcon, Plus } from 'lucide-react'
-import { useMonthlySurpluses } from '@/modules/expenses/hooks/useExpenses'
+import { useHouseholdMonthlyHistory } from '@/modules/finance/hooks/useHouseholdMonthlyHistory'
 import StatCard from '@/shared/components/ui/StatCard'
 import PageSkeleton from '@/shared/components/ui/PageSkeleton'
 import QueryError from '@/shared/components/ui/QueryError'
@@ -13,19 +13,13 @@ import { usePageTitle } from '@/shared/hooks/usePageTitle'
 
 export default function History() {
   usePageTitle('Historial')
-  const { data: surpluses, isLoading, error, refetch } = useMonthlySurpluses()
+  const { data: history, isLoading, error, refetch } = useHouseholdMonthlyHistory()
 
-  const rows = (surpluses ?? []).map((s, i) => ({
-    ...s,
-    accumulated: (surpluses ?? []).reduce(
-      (sum, x, j) => (j <= i ? sum + x.surplus : sum),
-      0,
-    ),
-  }))
+  const rows = history ?? []
 
   const totalIncome = rows.reduce((sum, r) => sum + r.income, 0)
   const totalExpenses = rows.reduce((sum, r) => sum + r.expenses, 0)
-  const finalAccumulated = rows.length > 0 ? rows[rows.length - 1].accumulated : 0
+  const finalAccumulated = rows.at(-1)?.accumulated ?? 0
 
   if (isLoading) return <PageSkeleton />
   if (error) return <QueryError error={error} onRetry={refetch} />
@@ -38,13 +32,13 @@ export default function History() {
           Historial
         </h1>
         <p className="text-sm text-ink/50">
-          Sobrantes por mes: cuánto quedó libre de cada mes, mes a mes
+          Ingresos, gastos, ahorro y libre por mes
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
-          label="Ahorro acumulado"
+          label="Acumulado"
           value={finalAccumulated}
           icon={<Wallet size={20} />}
           tone={finalAccumulated >= 0 ? 'positive' : 'negative'}
@@ -86,7 +80,6 @@ export default function History() {
           <>
             <div className="divide-y divide-slate-100 md:hidden">
             {rows.map((r) => {
-              const ratio = r.income > 0 ? r.surplus / r.income : 0
               return (
                 <div key={r.month} className="px-5 py-4">
                   <div className="flex items-center justify-between gap-3">
@@ -96,11 +89,11 @@ export default function History() {
                     <p
                       className={cn(
                         'text-sm font-bold',
-                        r.surplus >= 0 ? 'text-pine-600' : 'text-coral-600',
+                        r.free >= 0 ? 'text-pine-600' : 'text-coral-600',
                       )}
                     >
-                      {r.surplus >= 0 ? '+' : '−'}
-                      {formatCurrency(Math.abs(r.surplus))}
+                      {r.free >= 0 ? '+' : '−'}
+                      {formatCurrency(Math.abs(r.free))}
                     </p>
                   </div>
                   <div className="mt-2 grid grid-cols-3 gap-2">
@@ -119,7 +112,7 @@ export default function History() {
                     <div>
                       <p className="text-xs text-ink/40">Ahorro</p>
                       <p className="text-sm font-medium text-ink/70">
-                        {r.income > 0 ? `${Math.round(ratio * 100)}%` : '—'}
+                        {formatCurrency(r.savings)}
                       </p>
                     </div>
                   </div>
@@ -141,14 +134,13 @@ export default function History() {
                   <th className="px-5 py-3 font-medium">Mes</th>
                   <th className="px-5 py-3 text-right font-medium">Ingresos</th>
                   <th className="px-5 py-3 text-right font-medium">Gastos</th>
-                  <th className="px-5 py-3 text-right font-medium">Sobrante</th>
+                  <th className="px-5 py-3 text-right font-medium">Libre</th>
                   <th className="px-5 py-3 text-right font-medium">Ahorro</th>
                   <th className="px-5 py-3 text-right font-medium">Acumulado</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {rows.map((r) => {
-                  const ratio = r.income > 0 ? r.surplus / r.income : 0
                   return (
                     <tr key={r.month}>
                       <td className="px-5 py-3 font-medium text-ink">
@@ -163,14 +155,14 @@ export default function History() {
                       <td
                         className={cn(
                           'px-5 py-3 text-right font-semibold',
-                          r.surplus >= 0 ? 'text-pine-600' : 'text-coral-600',
+                          r.free >= 0 ? 'text-pine-600' : 'text-coral-600',
                         )}
                       >
-                        {r.surplus >= 0 ? '+' : '−'}
-                        {formatCurrency(Math.abs(r.surplus))}
+                        {r.free >= 0 ? '+' : '−'}
+                        {formatCurrency(Math.abs(r.free))}
                       </td>
                       <td className="px-5 py-3 text-right text-ink/60">
-                        {r.income > 0 ? `${Math.round(ratio * 100)}%` : '—'}
+                        {formatCurrency(r.savings)}
                       </td>
                       <td className="px-5 py-3 text-right font-medium text-ink/70">
                         {formatCurrency(r.accumulated)}

@@ -14,7 +14,7 @@ import {
   useSetWishlistStatus,
   useDeleteWishlistItem,
 } from '@/modules/wishlist/hooks/useWishlist'
-import { useRunningBalance } from '@/modules/expenses/hooks/useExpenses'
+import { useMemberAvailable } from '@/modules/finance/hooks/useMemberAvailable'
 import { useForecast } from '@/modules/forecast/hooks/useForecast'
 import { calculatePlan, monthsToAfford } from '@/modules/wishlist/lib/installments'
 import WishlistItemForm from '@/modules/wishlist/components/WishlistItemForm'
@@ -24,7 +24,7 @@ import PageSkeleton from '@/shared/components/ui/PageSkeleton'
 import QueryError from '@/shared/components/ui/QueryError'
 import { useToast } from '@/shared/components/ui/Toast'
 
-import { currentMonthKey, formatDate, shiftMonth, shortMonthLabel } from '@/shared/lib/dates'
+import { currentMonthKey, formatDate, shiftMonth, shortMonthLabel, todayISO } from '@/shared/lib/dates'
 import { formatCurrency } from '@/shared/lib/money'
 import { cn, errorMessage } from '@/shared/lib/utils'
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
@@ -46,7 +46,8 @@ const PRIORITY_LABEL: Record<WishlistItem['priority'], string> = {
 export default function Wishlist() {
   usePageTitle('Quiero comprar')
   const { data: items, isLoading, error, refetch } = useWishlist()
-  const { data: balance } = useRunningBalance(currentMonthKey())
+  const { data: memberAvailable } = useMemberAvailable(todayISO())
+  const balance = memberAvailable?.available ?? null
   const { data: forecast } = useForecast()
   const setStatus = useSetWishlistStatus()
   const remove = useDeleteWishlistItem()

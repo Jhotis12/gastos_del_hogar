@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Plus, Pencil, Trash2, Search, Download, ScanLine, ReceiptText } from 'lucide-react'
 import { useAddExpense, useDeleteExpense, useExpenses, useUpdateExpense } from '@/modules/expenses/hooks/useExpenses'
+import { useFinanceWindow } from '@/modules/finance/hooks/useFinanceWindow'
 import ExpenseForm from '@/modules/expenses/components/ExpenseForm'
 import ConfirmDialog from '@/shared/components/ui/ConfirmDialog'
 import EmptyState from '@/shared/components/ui/EmptyState'
@@ -19,7 +20,8 @@ import { useDialogA11y } from '@/shared/hooks/useDialogA11y'
 import { cn } from '@/shared/lib/utils'
 import type { ExpenseWithRelations, Receipt } from '@/shared/lib/types'
 import { errorMessage } from '@/shared/lib/utils'
-import { formatDate, monthKey } from '@/shared/lib/dates'
+import { formatDate, monthKey, monthLabel, todayISO } from '@/shared/lib/dates'
+import { rangeLabel } from '@/shared/lib/periods'
 import { formatCurrency } from '@/shared/lib/money'
 
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
@@ -30,6 +32,8 @@ import { OFFLINE_QUEUED } from '@/shared/lib/offline/offlineSafe'
 export default function Expenses() {
   usePageTitle('Gastos')
   const [month, setMonth] = useMonthParam()
+  const [view, setView] = useState<'hogar' | 'personal'>('hogar')
+  const [personalRange, setPersonalRange] = useState<'month' | 'cycle'>('month')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [formOpen, setFormOpen] = useState(false)
@@ -45,22 +49,44 @@ export default function Expenses() {
   // El action sheet del FAB se comporta como diálogo (Escape, foco, Tab).
   useDialogA11y(fabOpen, fabRequestClose, fabDrag.panelRef)
 
-  const { data: expenses, isLoading, error, refetch } = useExpenses(month)
+  const householdQuery = useExpenses(month)
+  const personalQuery = useFinanceWindow(todayISO())
+  const personalWindow = personalQuery.window[personalRange]
+  const allExpenses = view === 'hogar'
+    ? householdQuery.data
+    : (personalQuery.data?.expenses ?? []).filter(
+        (expense) =>
+          expense.expense_date >= personalWindow.start &&
+          expense.expense_date <= personalWindow.end,
+      )
+  const isLoading = view === 'hogar' ? householdQuery.isLoading : personalQuery.isPending
+  const error = view === 'hogar' ? householdQuery.error : personalQuery.error
+  const refetch = view === 'hogar' ? householdQuery.refetch : personalQuery.refetch
   const addExpense = useAddExpense()
   const updateExpense = useUpdateExpense()
   const deleteExpense = useDeleteExpense()
 
   const query = search.trim().toLowerCase()
+  const expenses = allExpenses ?? []
+  const activeCategory =
+    categoryFilter === 'all' ||
+    expenses.some((expense) => expense.category_id === categoryFilter)
+      ? categoryFilter
+      : 'all'
   const filtered =
-    (categoryFilter === 'all'
+    activeCategory === 'all'
       ? expenses
-      : expenses?.filter((e) => e.category_id === categoryFilter)) ??
-    []
+      : expenses.filter((e) => e.category_id === activeCategory)
   const searched = query
     ? filtered.filter((e) => (e.description ?? '').toLowerCase().includes(query))
     : filtered
 
   const total = searched.reduce((sum, e) => sum + Number(e.amount), 0)
+  const totalLabel =
+    view === 'hogar'
+      ? `Total del mes filtrado · ${monthLabel(month)}`
+      : `Total filtrado · ${rangeLabel(personalWindow)}`
+  const filtersActive = !!query || activeCategory !== 'all'
 
   const exportCSV = () => {
     const header = ['Fecha', 'Descripción', 'Categoría', 'Quién pagó', 'Monto']
@@ -78,7 +104,11 @@ export default function Expenses() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `gastos-${month.slice(0, 7)}.csv`
+    a.download = `gastos-${
+      view === 'hogar'
+        ? month.slice(0, 7)
+        : `personal-${personalWindow.start}-${personalWindow.end}`
+    }.csv`
     a.click()
     URL.revokeObjectURL(url)
     toast.success(`Exportados ${searched.length} gastos`)
@@ -125,11 +155,11 @@ export default function Expenses() {
             Gastos
           </h1>
           <p className="text-sm text-ink/50">
-            Total del mes filtrado: {formatCurrency(total)}
+            {totalLabel}: {formatCurrency(total)}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <MonthPicker month={month} onChange={setMonth} />
+          {view === 'hogar' && <MonthPicker month={month} onChange={setMonth} />}
           <button
             onClick={() => setCaptureOpen(true)}
             className="hidden min-h-12 items-center gap-2 rounded-lg bg-gold-500 px-4 py-2 text-sm font-medium text-pine-950 hover:bg-gold-600 lg:inline-flex"
@@ -150,6 +180,70 @@ export default function Expenses() {
         </div>
       </div>
 
+      <div className="animate-fade-up flex flex-wrap items-center gap-3" style={{ animationDelay: '60ms' }}>
+        <div
+          role="tablist"
+          aria-label="Vista de gastos"
+          className="inline-flex rounded-full bg-cream p-1 ring-1 ring-ink/5"
+        >
+          <button
+            role="tab"
+            aria-selected={view === 'hogar'}
+            onClick={() => setView('hogar')}
+            className={cn(
+              'min-h-10 rounded-full px-4 py-2 text-sm font-medium transition-colors',
+              view === 'hogar' ? 'bg-ink text-cream' : 'text-ink/55 hover:text-ink',
+            )}
+          >
+            Hogar
+          </button>
+          <button
+            role="tab"
+            aria-selected={view === 'personal'}
+            onClick={() => setView('personal')}
+            className={cn(
+              'min-h-10 rounded-full px-4 py-2 text-sm font-medium transition-colors',
+              view === 'personal' ? 'bg-ink text-cream' : 'text-ink/55 hover:text-ink',
+            )}
+          >
+            Mis gastos
+          </button>
+        </div>
+
+        {view === 'personal' && (
+          <div
+            role="group"
+            aria-label="Ventana de mis gastos"
+            className="inline-flex rounded-full bg-cream p-1 ring-1 ring-ink/5"
+          >
+            <button
+              aria-pressed={personalRange === 'month'}
+              onClick={() => setPersonalRange('month')}
+              className={cn(
+                'min-h-10 rounded-full px-3.5 py-2 text-xs font-medium transition-colors',
+                personalRange === 'month'
+                  ? 'bg-pine-700 text-white'
+                  : 'text-ink/55 hover:text-ink',
+              )}
+            >
+              Este mes
+            </button>
+            <button
+              aria-pressed={personalRange === 'cycle'}
+              onClick={() => setPersonalRange('cycle')}
+              className={cn(
+                'min-h-10 rounded-full px-3.5 py-2 text-xs font-medium transition-colors',
+                personalRange === 'cycle'
+                  ? 'bg-pine-700 text-white'
+                  : 'text-ink/55 hover:text-ink',
+              )}
+            >
+              Desde mi último pago
+            </button>
+          </div>
+        )}
+      </div>
+
       <div className="animate-fade-up flex flex-wrap items-center gap-2" style={{ animationDelay: '90ms' }}>
         <div className="relative w-full sm:w-auto">
           <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink/40" />
@@ -165,23 +259,23 @@ export default function Expenses() {
         <button
           onClick={() => setCategoryFilter('all')}
           className={`inline-flex min-h-11 items-center rounded-full px-3.5 py-2 text-xs font-medium ${
-            categoryFilter === 'all'
+            activeCategory === 'all'
               ? 'bg-ink text-cream'
               : 'bg-surface text-ink/55 ring-1 ring-ink/10 hover:bg-cream'
           }`}
         >
           Todas
         </button>
-        {[...new Set(expenses?.map((e) => e.category?.id).filter(Boolean))].map(
+        {[...new Set(expenses.map((e) => e.category?.id).filter(Boolean))].map(
           (id) => {
-            const cat = expenses?.find((e) => e.category?.id === id)?.category
+            const cat = expenses.find((e) => e.category?.id === id)?.category
             if (!cat) return null
             return (
               <button
                 key={cat.id}
                 onClick={() => setCategoryFilter(cat.id)}
                 className={`inline-flex min-h-11 items-center rounded-full px-3.5 py-2 text-xs font-medium ${
-                  categoryFilter === cat.id
+                  activeCategory === cat.id
                     ? 'bg-ink text-cream'
                     : 'bg-surface text-ink/55 ring-1 ring-ink/10 hover:bg-cream'
                 }`}
@@ -211,17 +305,21 @@ export default function Expenses() {
           <EmptyState
             icon={<ReceiptText size={22} />}
             title={
-              query || categoryFilter !== 'all'
+              filtersActive
                 ? 'Sin resultados con los filtros actuales'
-                : 'No hay gastos para este mes. Crea el primero.'
+                : view === 'personal'
+                  ? 'No hay gastos tuyos en esta ventana.'
+                  : 'No hay gastos para este mes. Crea el primero.'
             }
             hint={
-              query || categoryFilter !== 'all'
+              filtersActive
                 ? 'Prueba con otros términos o quita los filtros'
-                : 'Registra tu primer gasto para verlo aquí'
+                : view === 'personal'
+                  ? 'Registra un gasto tuyo para verlo aquí'
+                  : 'Registra tu primer gasto para verlo aquí'
             }
             action={
-              !query && categoryFilter === 'all' ? (
+              !filtersActive ? (
                 <button
                   onClick={() => {
                     setEditing(null)

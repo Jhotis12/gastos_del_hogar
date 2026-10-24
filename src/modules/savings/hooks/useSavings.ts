@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { supabase } from '@/shared/lib/supabase'
+import { invalidateLedger, LEDGER_INVALIDATION } from '@/shared/lib/queryInvalidation'
 import type { SavingsGoal } from '@/shared/lib/types'
 
 export function useSavingsGoals() {
@@ -40,7 +41,7 @@ export function useAddSavingsGoal() {
         .insert({ ...input, household_id: profile.household_id })
       if (error) throw error
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savings'] }),
+    onSuccess: () => invalidateLedger(queryClient, LEDGER_INVALIDATION.savings),
   })
 }
 
@@ -55,7 +56,7 @@ export function useUpdateSavingsGoal() {
         .eq('id', id)
       if (error) throw error
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savings'] }),
+    onSuccess: () => invalidateLedger(queryClient, LEDGER_INVALIDATION.savings),
   })
 }
 
@@ -70,7 +71,7 @@ export function useAdjustSavingsGoal() {
         .eq('id', id)
       if (error) throw error
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savings'] }),
+    onSuccess: () => invalidateLedger(queryClient, LEDGER_INVALIDATION.savings),
   })
 }
 
@@ -82,7 +83,7 @@ export function useDeleteSavingsGoal() {
       const { error } = await supabase.from('savings_goals').delete().eq('id', id)
       if (error) throw error
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['savings'] }),
+    onSuccess: () => invalidateLedger(queryClient, LEDGER_INVALIDATION.savings),
   })
 }
 

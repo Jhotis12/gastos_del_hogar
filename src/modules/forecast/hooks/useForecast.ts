@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/shared/hooks/useAuth'
-import { useMonthlySurpluses, useRunningBalance } from '@/modules/expenses/hooks/useExpenses'
+import { useMemberAvailable } from '@/modules/finance/hooks/useMemberAvailable'
+import { useHouseholdMonthlyHistory } from '@/modules/finance/hooks/useHouseholdMonthlyHistory'
 import { useRecurringExpenses } from '@/modules/services/hooks/useRecurring'
 import { useSalaries } from '@/modules/members/hooks/useMembers'
 import { supabase } from '@/shared/lib/supabase'
@@ -96,20 +97,27 @@ export function useForecast() {
   const nextMonth = shiftMonth(currentMonth, 1)
 
   const queryClient = useQueryClient()
-  const { data: surpluses, error: surplusesError, refetch: refetchSurpluses } = useMonthlySurpluses()
+  const { data: history, error: historyError, refetch: refetchHistory } = useHouseholdMonthlyHistory()
+  const { data: memberAvailable, error: balanceError, refetch: refetchBalance } = useMemberAvailable(todayISO())
+  const surpluses = history?.map((row) => ({
+    month: row.month,
+    income: row.income,
+    expenses: row.expenses,
+    surplus: row.free,
+  }))
+  const runningBalance = memberAvailable?.available ?? null
   const { data: recurring, error: recurringError, refetch: refetchRecurring } = useRecurringExpenses()
   const { salaries, isPending: salariesPending } = useSalaries(nextMonth)
   const { salaries: currentSalaries, isPending: currentSalariesPending } = useSalaries(currentMonth)
-  const { data: runningBalance, error: balanceError, refetch: refetchBalance } = useRunningBalance(currentMonth)
   const { data: variableHistory, error: variableError, refetch: refetchVariable } = useVariableHistory(currentMonth)
   const { data: extraIncomeHistory, error: extraError, refetch: refetchExtra } = useExtraIncomeHistory(currentMonth)
 
-  const error = [surplusesError, recurringError, balanceError, variableError, extraError].find(Boolean)
+  const error = [historyError, recurringError, balanceError, variableError, extraError].find(Boolean)
   const isLoading =
     salariesPending || currentSalariesPending ||
-    (surpluses === undefined && !surplusesError) ||
+    (surpluses === undefined && !historyError) ||
     (recurring === undefined && !recurringError) ||
-    (runningBalance === undefined && !balanceError) ||
+    (memberAvailable === undefined && !balanceError) ||
     (variableHistory === undefined && !variableError) ||
     (extraIncomeHistory === undefined && !extraError)
 
@@ -166,7 +174,7 @@ export function useForecast() {
   }, [error, surpluses, recurring, runningBalance, nextMonth, variableHistory, extraIncomeHistory, salaries, currentSalaries, currentMonth])
 
   const refetch = () => {
-    void refetchSurpluses()
+    void refetchHistory()
     void refetchRecurring()
     void refetchBalance()
     void refetchVariable()

@@ -6,6 +6,7 @@ import DateInput from '@/shared/components/ui/DateInput'
 import SelectInput from '@/shared/components/ui/SelectInput'
 import { useCategories } from '@/modules/categories/hooks/useCategories'
 import { useMembers } from '@/modules/members/hooks/useMembers'
+import { useAuth } from '@/shared/hooks/useAuth'
 import type { ExpenseWithRelations } from '@/shared/lib/types'
 import { parseMoneyInput } from '@/shared/lib/money'
 import { todayISO } from '@/shared/lib/dates'
@@ -37,8 +38,10 @@ export default function ExpenseForm({
 }: ExpenseFormProps) {
   const { data: categories } = useCategories()
   const { data: members } = useMembers()
+  const { profile } = useAuth()
 
   const baseDate = initial?.expense_date ?? initialDate ?? todayISO()
+  const defaultPaidBy = initial ? (initial.paid_by ?? '') : (profile?.id ?? '')
 
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
@@ -53,18 +56,18 @@ export default function ExpenseForm({
     setAmount(initial ? String(initial.amount) : '')
     setDescription(initial?.description ?? '')
     setCategoryId(initial?.category_id ?? '')
-    setPaidBy(initial?.paid_by ?? '')
+    setPaidBy(defaultPaidBy)
     setDate(baseDate)
     setError('')
     setConfirmClose(false)
-  }, [open, initial, baseDate])
+  }, [open, initial, baseDate, defaultPaidBy])
 
   const dirty =
     open &&
     (amount !== (initial ? String(initial.amount) : '') ||
       description !== (initial?.description ?? '') ||
       categoryId !== (initial?.category_id ?? '') ||
-      paidBy !== (initial?.paid_by ?? '') ||
+      paidBy !== defaultPaidBy ||
       date !== baseDate)
 
   const requestClose = () => {
@@ -82,11 +85,15 @@ export default function ExpenseForm({
       setError('Ingresa un monto válido (ej. 450.000)')
       return
     }
+    if (!paidBy) {
+      setError('Selecciona quién pagó el gasto')
+      return
+    }
     await onSave({
       amount: value,
       description: description.trim(),
       category_id: categoryId || null,
-      paid_by: paidBy || null,
+      paid_by: paidBy,
       expense_date: date,
     })
     onClose()
@@ -152,7 +159,9 @@ export default function ExpenseForm({
               value={paidBy}
               onChange={(e) => setPaidBy(e.target.value)}
             >
-              <option value="">Sin asignar</option>
+              <option value="" disabled>
+                Selecciona quién pagó
+              </option>
               {members?.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.full_name}
