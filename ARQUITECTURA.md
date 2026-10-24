@@ -166,6 +166,10 @@ invite_lookup_attempts  user_id (= auth.users.id), attempts, window_start
   al último día del mes (p. ej. día 31 en febrero → 28). `pay_date` es la
   **fuente de verdad** del dinero: al registrar un salario se puede editar
   la fecha real de llegada (nóminas atrasadas, cambios de día).
+- **Disponible del hogar:** último `accumulated` de
+  `get_household_monthly_history()` = ingresos − gastos − ahorro compartido.
+  Se muestra junto al personal en Inicio; el sobrante mensual es la columna
+  `free` (Libre) de ese historial.
 - **Disponible personal v2.0:** RPC `get_member_available(p_as_of)` =
   Σ `salaries` + Σ `incomes` del miembro (hasta la fecha) − Σ gastos pagados
   por el miembro − Σ ahorro neto del miembro. Si no hay ingresos registrados,

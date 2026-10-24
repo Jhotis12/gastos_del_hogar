@@ -18,6 +18,7 @@ import { useHousehold } from '@/modules/profile/hooks/useHousehold'
 import { useMembers } from '@/modules/members/hooks/useMembers'
 import { useFinanceWindow } from '@/modules/finance/hooks/useFinanceWindow'
 import { useMemberAvailable } from '@/modules/finance/hooks/useMemberAvailable'
+import { useHouseholdMonthlyHistory } from '@/modules/finance/hooks/useHouseholdMonthlyHistory'
 import { useSavingsMovements } from '@/modules/savings/hooks/useSavingsMovements'
 import {
   householdReconciliation,
@@ -77,6 +78,12 @@ export default function Dashboard() {
     refetch: refetchAvailable,
   } = useMemberAvailable(asOf)
   const {
+    data: householdHistory,
+    isPending: householdHistoryPending,
+    error: householdHistoryError,
+    refetch: refetchHouseholdHistory,
+  } = useHouseholdMonthlyHistory()
+  const {
     data: savingsMovements,
     error: savingsError,
     refetch: refetchSavings,
@@ -113,6 +120,7 @@ export default function Dashboard() {
     membersError,
     financeError,
     availableError,
+    householdHistoryError,
     savingsError,
     expensesError,
   ].find(Boolean)
@@ -121,6 +129,7 @@ export default function Dashboard() {
     void refetchMembers()
     void refetchFinance()
     void refetchAvailable()
+    void refetchHouseholdHistory()
     void refetchSavings()
     void refetchExpenses()
   }
@@ -144,6 +153,8 @@ export default function Dashboard() {
 
   const available = memberAvailable?.available ?? null
   const availableAnimated = useCountUp(available ?? 0)
+  const householdAvailable = householdHistory?.at(-1)?.accumulated ?? null
+  const householdAvailableAnimated = useCountUp(householdAvailable ?? 0)
 
   const homeExpenses = householdExpenses ?? []
   const homeTotal = householdTotal(homeExpenses)
@@ -207,25 +218,53 @@ export default function Dashboard() {
         <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-400/20 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-14 left-1/3 h-40 w-40 rounded-full bg-pine-400/20 blur-2xl" />
         <div className="relative">
-          <p className="text-sm font-medium text-pine-200">Disponible personal · hoy</p>
-          <div
-            data-testid="hero-saldo"
-            className={cn(
-              'mt-1 font-display text-3xl font-bold tracking-tight sm:text-5xl',
-              available !== null && available < 0 && 'text-coral-200',
-            )}
-          >
-            {availablePending || financePending ? (
-              <Skeleton tone="onDark" className="mt-2 h-10 w-52 sm:h-14 sm:w-72" />
-            ) : available === null ? (
-              <span className="text-2xl font-semibold">Sin base de ingresos</span>
-            ) : (
-              formatCurrency(availableAnimated)
-            )}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-[1.35fr_1fr]">
+            <div>
+              <p className="text-sm font-medium text-pine-200">Disponible personal · hoy</p>
+              <div
+                data-testid="hero-saldo"
+                className={cn(
+                  'mt-1 font-display text-3xl font-bold tracking-tight sm:text-5xl',
+                  available !== null && available < 0 && 'text-coral-200',
+                )}
+              >
+                {availablePending || financePending ? (
+                  <Skeleton tone="onDark" className="mt-2 h-10 w-52 sm:h-14 sm:w-72" />
+                ) : available === null ? (
+                  <span className="text-2xl font-semibold">Sin base de ingresos</span>
+                ) : (
+                  formatCurrency(availableAnimated)
+                )}
+              </div>
+              <p className="mt-1 text-xs text-pine-200/80">
+                Ingresos − gastos − ahorro neto
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
+              <p className="flex items-center gap-1.5 text-xs font-medium text-pine-200">
+                <Users size={14} /> Disponible del hogar
+              </p>
+              <div
+                data-testid="hero-hogar"
+                className={cn(
+                  'mt-1 font-display text-2xl font-bold tracking-tight',
+                  householdAvailable !== null && householdAvailable < 0 && 'text-coral-200',
+                )}
+              >
+                {householdHistoryPending ? (
+                  <Skeleton tone="onDark" className="mt-1 h-8 w-36" />
+                ) : householdAvailable === null ? (
+                  <span className="text-lg font-semibold">Sin movimientos</span>
+                ) : (
+                  formatCurrency(householdAvailableAnimated)
+                )}
+              </div>
+              <p className="mt-1 text-[11px] text-pine-200/70">
+                Ingresos − gastos − ahorro compartido
+              </p>
+            </div>
           </div>
-          <p className="mt-1 text-xs text-pine-200/80">
-            Ingresos − gastos − ahorro neto
-          </p>
 
           <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="rounded-xl bg-white/10 p-3 backdrop-blur-sm">
@@ -361,12 +400,20 @@ export default function Dashboard() {
               </h2>
               <p className="mt-0.5 text-xs text-ink/50">{monthLabel(month)}</p>
             </div>
-            <Link
-              to="/gastos"
-              className="inline-flex min-h-11 shrink-0 items-center text-sm font-medium text-pine-600 hover:text-ink"
-            >
-              Ver gastos
-            </Link>
+            <div className="flex shrink-0 items-center gap-3">
+              <Link
+                to="/historial"
+                className="inline-flex min-h-11 items-center text-sm font-medium text-ink/55 hover:text-ink"
+              >
+                Historial
+              </Link>
+              <Link
+                to="/gastos"
+                className="inline-flex min-h-11 items-center text-sm font-medium text-pine-600 hover:text-ink"
+              >
+                Ver gastos
+              </Link>
+            </div>
           </div>
 
           {householdLoading ? (

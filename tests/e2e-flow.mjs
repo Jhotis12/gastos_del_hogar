@@ -77,6 +77,7 @@ await step('crear hogar', async () => {
 
 await step('Inicio personal: hero Mi mes / Mi pago / Mi ahorro / Hogar', async () => {
   await page.getByTestId('hero-saldo').waitFor()
+  await page.getByTestId('hero-hogar').waitFor()
   for (const text of ['Mi mes', 'Desde mi último pago', 'Mi ahorro', 'Hogar']) {
     await page.getByText(text, { exact: false }).first().waitFor()
   }
