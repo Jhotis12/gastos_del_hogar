@@ -4,7 +4,7 @@ import Modal from '@/shared/components/ui/Modal'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { supabase } from '@/shared/lib/supabase'
 import { errorMessage } from '@/shared/lib/utils'
-import type { VoiceDraft } from '@/modules/expenses/lib/voice'
+import { stripDataUrl, type VoiceDraft } from '@/modules/expenses/lib/voice'
 
 const CONSENT_KEY = 'voice-expense-consent'
 const MAX_SECONDS = 30
@@ -22,7 +22,7 @@ function blobToBase64(blob: Blob): Promise<string> {
     const reader = new FileReader()
     reader.onload = () => {
       const result = String(reader.result ?? '')
-      resolve(result.replace(/^data:[^;]+;base64,/, ''))
+      resolve(stripDataUrl(result))
     }
     reader.onerror = () => reject(new Error('No se pudo leer el audio'))
     reader.readAsDataURL(blob)

@@ -15,6 +15,11 @@ export function normalizeAudioMimeType(value: string): string | null {
   return /^audio\/[a-z0-9.+-]+$/.test(base) ? base : null
 }
 
+// Clientes viejos envían el data URL completo; atob solo acepta el base64.
+export function normalizeAudioBase64(value: string): string {
+  return value.replace(/^data:[^,]*,/, '')
+}
+
 export const VOICE_PROMPT = `
 Eres un asistente que convierte una nota de voz de un gasto colombiano en un
 borrador estructurado. Escucha el audio y extrae:
