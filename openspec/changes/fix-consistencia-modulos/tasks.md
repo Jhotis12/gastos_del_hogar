@@ -45,9 +45,9 @@
 ## 7. Git y PR
 
 - [x] 7.1 Crear la rama desde master (`git checkout -b fix/consistencia-modulos`) y verificar con `git branch --show-current` que no se trabaja en `master`
-- [ ] 7.2 Hacer commits por bloques lógicos con la convención del repo (`fix:`, `docs:`, `chore:`) y verificar con `git log --oneline master..HEAD` que no hay un commit gigante mezclando temas
-- [ ] 7.3 Subir la rama con `git push -u origin fix/consistencia-modulos` y verificar que la rama remota existe
-- [ ] 7.4 Abrir la PR con `gh pr create --base master --fill` (si `gh` no está autenticado, pasar la URL de compare al usuario) y verificar que la PR queda abierta contra `master`
+- [x] 7.2 Hacer commits por bloques lógicos con la convención del repo (`fix:`, `docs:`, `chore:`) y verificar con `git log --oneline master..HEAD` que no hay un commit gigante mezclando temas
+- [x] 7.3 Subir la rama con `git push -u origin fix/consistencia-modulos` y verificar que la rama remota existe
+- [x] 7.4 Abrir la PR con `gh pr create --base master --fill` (si `gh` no está autenticado, pasar la URL de compare al usuario) y verificar que la PR queda abierta contra `master`
 - [ ] 7.5 Verificar `CI` y `E2E` en verde (`gh pr checks`); si algún test no se pudo correr en local, dejarlo dicho explícitamente en la PR
 
 ## Workflow follow-up
