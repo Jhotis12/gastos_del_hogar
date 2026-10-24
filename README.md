@@ -1,12 +1,32 @@
-# Gastos del Hogar
+# Gastos del Hogar · v2.0
 
-App de gestión de gastos del hogar: gastos compartidos, salarios con día de
-pago, sobrantes por mes, presupuestos por categoría, servicios recurrentes,
-metas de ahorro, proyección, lista de deseos con cuotas y escaneo de facturas
-(IA), con sincronización en tiempo real.
+App de finanzas personales y del hogar: cada persona ve **su** gasto del mes y
+desde su último pago, su ahorro y su disponible; el **hogar** conserva el total
+mensual, el desglose por persona y la bolsa histórica `Sin asignar`.
+
+**Enfoque v2.0:** pagador obligatorio, ahorro por movimientos con metas
+personales/compartidas y autoahorro, historial por mes, presupuestos del hogar,
+servicios recurrentes, proyección personal, lista de deseos y captura de gastos
+por voz o factura con IA (detrás de banderas). Sincronización en tiempo real y
+modo offline para gastos, ingresos y salarios.
 
 **Stack:** React 19 · TypeScript · Vite · Tailwind CSS v4 · TanStack Query ·
 Supabase (Auth, Postgres + RLS, Realtime, Storage, Edge Functions) · PWA.
+
+## Novedades de la 2.0
+
+- **Inicio personal:** `Disponible`, `Mi mes`, `Desde mi último pago` y `Mi
+  ahorro`; la sección `Hogar` queda debajo.
+- **Gastos con dos lentes:** `Hogar` / `Mis gastos`, con ventana de mes o desde
+  el último pago. El pagador es obligatorio.
+- **Ahorro real:** depósitos y retiros como movimientos; el saldo de la meta se
+  recalcula por trigger. Metas personales privadas y compartidas del hogar.
+- **Autoahorro idempotente:** se ejecuta al abrir/reconectar y recupera hasta 12
+  meses.
+- **Historial personal y del hogar**, proyección y lista de deseos con el
+  dinero personal (nunca con el saldo de otra persona).
+- **Captura por voz (opcional):** graba un audio, Gemini propone un borrador y
+  tú lo confirmas; requiere red y no guarda el audio.
 
 ---
 
@@ -204,6 +224,23 @@ Abrir `http://localhost:5173`:
 2. La app te lleva a **crear tu hogar** (nombre + código de invitación para
    los demás miembros).
 
+### Inicio y Gastos (v2.0)
+
+- **Inicio** abre con tu dinero personal: `Disponible`, `Mi mes`, `Desde mi
+  último pago` y `Mi ahorro`. Debajo está la sección `Hogar` con el total del
+  mes, el desglose por persona y la bolsa `Sin asignar`.
+- **Gastos** tiene dos vistas: `Hogar` y `Mis gastos`. La personal permite
+  alternar `Este mes` / `Desde mi último pago`; el CSV y el desglose por
+  categoría respetan los filtros.
+- **El pagador es obligatorio** en gastos nuevos y editados. Los gastos
+  históricos sin pagador se conservan en `Sin asignar (histórico)` y se
+  pueden limpiar en bloque desde el aviso dorado de Gastos.
+- **Ahorro por movimientos**: los depósitos y retiros son movimientos; el
+  saldo de la meta se recalcula solo. Las metas nuevas pueden ser personales
+  o compartidas (las viejas quedan compartidas).
+- Si no hay ingresos registrados, `Disponible` no se inventa: la app sigue
+  mostrando gasto y ahorro.
+
 > **Modo offline (PWA)**: la app funciona sin conexión para registrar gastos,
 > dinero extra y salarios, y para ver los últimos datos cargados. Sin red
 > aparece un aviso y los cambios se guardan localmente; al reconectar se
@@ -225,14 +262,43 @@ supabase secrets set GEMINI_API_KEY=<tu-key-de-Gemini> --project-ref <ref>
 supabase functions deploy analyze-receipt
 ```
 
-## 6. Verificación: build, lint y suite e2e
+## 5.1 Captura de gastos por voz (Edge Function `analyze-expense-audio`) — opcional
+
+Apagada por defecto. Para activarla en local/CI:
+
+```bash
+echo 'VITE_FEATURE_VOICE_EXPENSE=true' >> .env.local
+# reinicia pnpm dev
+```
+
+La Edge Function necesita `GEMINI_API_KEY` (puede ser la misma del escaneo de
+facturas):
+
+```bash
+supabase functions serve analyze-expense-audio --env-file supabase/functions/analyze-expense-audio/.env.local
+# producción
+supabase functions deploy analyze-expense-audio
+```
+
+- El audio (máx. 30 s / 5 MB) se envía a la función, no a Storage; se descarta
+  al terminar y los logs no incluyen audio ni transcripciones.
+- El primer uso pide consentimiento. La app muestra un borrador editable; el
+  gasto se crea **solo** al confirmar.
+- Rate limit: 10 análisis por usuario en 24 h (tabla
+  `audio_analysis_attempts`, RLS sin políticas).
+- Con la bandera apagada el micrófono no aparece y el formulario manual sigue
+  igual. Si la IA falla (sin red, cuota, timeout o audio ininteligible), la app
+  ofrece el formulario manual.
+
+## 6. Verificación: build, lint y suites
 
 ```bash
 pnpm build     # typecheck (tsc) + build de producción
 pnpm lint      # oxlint
+pnpm test      # unitarias (node --test: periodos, ledger, hooks, voz)
 ```
 
-Suite e2e (47 pasos, Playwright/Firefox) — requiere:
+Suites e2e (Playwright/Firefox) — requieren:
 
 1. Dev server corriendo (`pnpm dev`, puerto 5173).
 2. El `.env`/`.env.local` apuntando al entorno contra el que se probará.
@@ -254,8 +320,24 @@ Ejecutar:
 
 ```bash
 # Local (recomendado): apunta explícitamente al stack local
+# Cada suite que crea datos reinicia el sandbox antes de correr.
 SUPABASE_URL=http://127.0.0.1:54331 bash tests/reset-sandbox.sh
-node tests/e2e-flow.mjs       # corre los 47 pasos y muestra el resumen
+node tests/e2e-flow.mjs       # flujo principal v2
+SUPABASE_URL=http://127.0.0.1:54331 bash tests/reset-sandbox.sh
+node tests/e2e-money.mjs      # dos miembros, pagador, ahorro y disponible
+SUPABASE_URL=http://127.0.0.1:54331 bash tests/reset-sandbox.sh
+node tests/e2e-mobile.mjs     # móvil
+node tests/check-mobile.mjs   # overflow 375/320px
+SUPABASE_URL=http://127.0.0.1:54331 bash tests/reset-sandbox.sh
+node tests/e2e-realtime.mjs   # dos miembros sin recargar
+SUPABASE_URL=http://127.0.0.1:54331 bash tests/reset-sandbox.sh
+node tests/e2e-voice.mjs      # captura por voz con análisis mockeado
+
+# SQL/RLS contra local
+DB_CONTAINER=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
+for f in tests/db/ledger-integrity.sql tests/db/savings.sql tests/db/finance-rpcs.sql; do
+  docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < "$f"
+done
 ```
 
 > El flujo termina eliminando el **hogar** del sandbox (queda en `/setup`);
@@ -270,8 +352,8 @@ Todo cambio va en **rama nueva + Pull Request**; la aprueba/mergea Jhotis12
 (la branch protection de GitHub no está disponible en el plan Free privado:
 el flujo se cumple por convención + CI). En cada PR, GitHub Actions corre:
 
-- **`CI`** — `pnpm install --frozen-lockfile` + `pnpm build` + `pnpm lint`.
-- **`E2E`** — Supabase local (aplica las migraciones) + `e2e-flow`,
+- **`CI`** — `pnpm install --frozen-lockfile` + `pnpm build` + `pnpm lint` + `pnpm test`.
+- **`E2E`** — Supabase local (aplica las migraciones) + pruebas SQL/RLS + `e2e-flow`, `e2e-money`, `e2e-voice`,
   `e2e-mobile`, `check-mobile` y `e2e-realtime`.
 
 Al mergear a `master` con migraciones nuevas,

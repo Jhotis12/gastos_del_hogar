@@ -8,17 +8,21 @@
 
 ## 1. ¿Qué es?
 
-Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
+Aplicación web de **finanzas personales y del hogar** (Colombia, COP):
 
-- Cada persona registra su **salario mensual**; todos los ingresos se suman a
-  un **fondo común** del hogar.
-- Los **gastos** se descuentan de ese fondo, clasificados por **categoría**.
-- **Servicios/gastos fijos** (renta, luz, internet…) con frecuencia
-  configurable y estado pagado/pendiente.
-- **Calendario mensual**, **presupuestos por categoría**, **saldos entre
-  miembros** (quién debe a quién), **metas de ahorro**, **proyección de
-  sobrantes**, **lista de deseos con cuotas/interés/corte de tarjeta** y
-  **escaneo de facturas con IA** (Gemini) para crear gastos desde una foto.
+- Cada persona ve su **gasto del mes**, su **gasto desde el último pago** y su
+  **ahorro**. El **hogar** conserva la suma mensual, el desglose por persona y
+  la bolsa histórica `Sin asignar` (gastos legados sin pagador).
+- Los gastos nuevos exigen **pagador del mismo hogar**. Los gastos históricos
+  sin pagador no se inventan: se pueden limpiar individual o masivamente.
+- **Salarios y dinero extra** son opcionales: alimentan el disponible y el
+  historial cuando existen, pero la app funciona sin ingresos registrados.
+- **Ahorro por movimientos**: metas personales o compartidas, depósitos,
+  retiros, apertura migrada y autoahorro mensual idempotente.
+- **Servicios/gastos fijos**, calendario, presupuestos por categoría,
+  historial personal/del hogar, proyección personal y lista de deseos.
+- **IA opcional**: escaneo de facturas y captura de gastos por voz (Gemini),
+  siempre con revisión y confirmación humana.
 - Moneda: **COP (pesos colombianos)**. Formato de entrada "450.000" = 450 mil.
 
 ---
@@ -92,7 +96,7 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 │   ├── seed-local/          # .env + script + tutorial: datos de producción al local
 │   └── db/                  # repair-history.sh + README (historial de migraciones)
 ├── tests/
-│   ├── e2e-flow.mjs         # Suite e2e de 47 pasos (navegación SPA)
+│   ├── e2e-flow.mjs         # Suite e2e v2 (navegación SPA)
 │   ├── e2e-mobile.mjs       # Suite e2e móvil: 9 pasos táctiles (drag-to-close, sheets)
 │   ├── e2e-realtime.mjs     # Sincronización en tiempo real entre 2 miembros
 │   ├── check-mobile.mjs     # Verificación móvil 375/320px: 11 rutas + modales sin overflow
@@ -183,6 +187,10 @@ invite_lookup_attempts  user_id (= auth.users.id), attempts, window_start
   `get_running_balance(p_date)` y `get_monthly_surpluses()` siguen disponibles
   con la semántica anterior (cash basis del hogar); no son la fuente de verdad
   v2 y se retirarán al cerrar la ventana PWA.
+- **Índices v2** verificados con `EXPLAIN` (`enable_seqscan=off`):
+  `expenses_household_payer_date_idx`, `incomes_household_member_date_idx` y
+  `salaries_profile_paydate_idx` se usan para las consultas por persona/mes;
+  no hay sequential scan en las tablas grandes.
 - **Fechas de mes** siempre como `YYYY-MM-01` (primer día).
 
 ---
@@ -476,10 +484,12 @@ Nada de esto requiere cambios en la BD: es todo frontend.
   IndexedDB. Las mutaciones de gastos/incomes/salarios van envueltas en
   `runWithOfflineFallback` (`offlineSafe.ts`): si fallan por error de red,
   se encolan + **actualización optimista** de la caché (la fila aparece al
-  instante; Ingresos/Gastos del mes se recalculan solos porque son client-side)
-  + toast "Guardado sin conexión". El id de las filas nuevas se genera en el
-  cliente (`crypto.randomUUID()`), así el replay no duplica y el realtime
-  converge en sitio (mismo id).
+  instante; `finance-window`, `member-available` e historiales v2 se ajustan
+  en la misma pasada) + toast "Guardado sin conexión". El id de las filas
+  nuevas se genera en el cliente (`crypto.randomUUID()`), así el replay no
+  duplica y el realtime converge en sitio (mismo id). El payload incluye
+  `paid_by` y la fila optimista resuelve el nombre desde la caché de
+  `members`, para no mostrar `Sin asignar`.
 - **Sincronización** (`src/shared/lib/offline/sync.ts`): al reconectar se drena la
   cola en orden FIFO y se notifica ("N cambios sincronizados"); el ícono de
   esquina (o un toque sobre él) dispara sync manual + heartbeat cada 15s si
@@ -487,7 +497,12 @@ Nada de esto requiere cambios en la BD: es todo frontend.
   traer datos frescos. Replay **idempotente** (at-least-once): un insert con
   PK ya aplicada (23505) o un update/delete sin filas se descartan como ya
   sincronizados. Los salarios se rehacen con su upsert por profile+mes.
-  Errores reales (RLS/validación) descartan el ítem con aviso.
+  Un gasto con pagador nulo o de otro hogar se rechaza (RLS) y el aviso pide
+  editarlo; no se inserta.
+- **Ahorro online-only**: depósitos, retiros, planes y archivo requieren red
+  y no se encolan; el modal avisa sin dejar una promesa rechazada. Al
+  reconectar, `Layout` ejecuta `run_due_savings` sin bloquear el drenado de
+  la cola de gastos.
 - **Notificaciones**: sin toast al caer la red (el ícono es suficiente);
   "De vuelta en línea" y "N cambios sincronizados" sí se emiten desde
   `sync.ts` vía `emitToast` (emisor de módulo en `Toast.tsx`; el
@@ -512,8 +527,9 @@ Nada de esto requiere cambios en la BD: es todo frontend.
   resuscribe al volver. En dev, todas las páginas lazy se pre-cargan al boot
   (no hay SW) para que navegar sin red no falle con "error loading
   dynamically imported module".
-- **Alcance**: fotos de facturas (storage + Edge Function), metas,
-  presupuestos, categorías, servicios y la lista de deseos («Quiero comprar»)
+- **Alcance**: fotos de facturas (storage + Edge Function), captura de voz,
+  metas, presupuestos, categorías, servicios y la lista de deseos («Quiero
+  comprar»)
   siguen requiriendo red: sus acciones fallan con un aviso claro si no hay
   conexión, sin encolarse. Conflictos multi-dispositivo: último en escribir
   gana.
@@ -539,31 +555,46 @@ salta al mes de la factura → icono "Ver factura" en la fila muestra la foto +
 desglose.
 
 ### Dinero extra (ingresos fuera de nómina)
-Miembros → tarjeta "Otros ingresos del mes" → "+ Registrar dinero extra":
-monto + descripción + fecha + (opcional) quién recibió. Cada fila crea un
-`incomes` del hogar. El dinero extra entra automáticamente a: saldo disponible
-(hero), "Ingresos del mes", sobrantes por mes, historial y "Ingreso unificado"
-de Miembros (los RPCs suman `incomes` como ingreso). Si tiene dueño, suma en
-su "Aportado" de los Saldos del mes. Editar/eliminar inline con ConfirmDialog;
-el Realtime propaga el cambio a los demás miembros al instante.
+Miembros → "Otros ingresos del mes" → "+ Registrar dinero extra": monto +
+descripción + fecha + (opcional) quién recibió. `incomes.member_id` nulo es un
+ingreso del hogar; con dueño suma al disponible y al historial de esa persona.
+Editar/eliminar inline con ConfirmDialog; Realtime propaga el cambio.
 
 ### Servicios (gastos fijos)
-Página Servicios: total fijo del mes, % vs ingreso, estado
-**Pagado/Pendiente** por servicio (vía `expenses.recurring_id`). El botón
-"Aplicar al mes" (también desde el Dashboard como "Aplicar recurrentes") abre
-un **wizard modal por servicio**: muestra cada pendiente (vencido y sin gasto
-del mes) con "Sí, lo pagué" (RPC `apply_recurring_expense` individual) o
-"Saltar" (queda pendiente, no se descuenta ni avanza su fecha).
+Página Servicios: total fijo del mes, estado **Pagado/Pendiente** por servicio
+(vía `expenses.recurring_id`). "Aplicar al mes" (también desde Inicio) abre un
+**wizard modal por servicio**: "Sí, lo pagué" (RPC `apply_recurring_expense`
+individual) o "Saltar". Un servicio legado **sin responsable** bloquea la
+aplicación y pide asignarlo; no se inventa pagador.
 
 ### Quiero comprar (wishlist)
 `/quiero-comprar` registra deseos con precio, prioridad y forma de pago
 (contado o cuotas). Para cuotas calcula la **amortización francesa**
 (`modules/wishlist/lib/installments.ts`): cuota, interés total, primera cuota
-según el **día de corte** de la tarjeta y abono inicial. El resumen muestra
-saldo disponible, cuotas que vencen este mes (solo mientras el plan está
-activo) y cuántos meses faltan ahorrando el sobrante de la proyección. Los
-estados son `pendiente`, `comprado` y `descartado`; Realtime sincroniza la
-lista entre miembros.
+según el **día de corte** y abono inicial. Usa **Mi disponible** y el libre
+personal (nunca el saldo de otra persona); si no hay base de ingresos, lo dice
+en vez de inventar un cero. Los estados son `pendiente`, `comprado` y
+`descartado`; Realtime sincroniza la lista entre miembros.
+
+### Ahorros y autoahorro
+`/ahorros` separa `Mis metas` (personales, solo su dueño) y `Compartidas`
+(`owner_id = null`). El saldo de cada tarjeta sale de `savings_movements`
+(depósito, retiro, apertura, auto); `savings_goals.saved_amount` es caché del
+trigger. El modal de movimiento valida saldo y, en metas compartidas, el aporte
+neto propio. El historial permite deshacer movimientos manuales. Archivar
+conserva el dinero y el historial; solo se eliminan metas vacías. El autoahorro
+se configura por meta/miembro y `run_due_savings` lo ejecuta al abrir o
+reconectar (catch-up de 12 meses, recorte de día, omisión sin saldo y pausa al
+alcanzar la meta).
+
+### Captura de voz (fase posterior, con bandera)
+`VITE_FEATURE_VOICE_EXPENSE=true` habilita el micrófono en el formulario de
+gasto. La app pide consentimiento la primera vez, graba hasta 30 s, envía el
+audio a la Edge Function `analyze-expense-audio` (JWT + hogar + rate limit
+10/24 h) y recibe `{ amount, description, date, category_hint, payer_hint,
+confidence }`. El borrador se vuelca al formulario editable; **no se crea nada
+hasta confirmar**. El audio no se guarda y los logs no incluyen transcripciones.
+Con la bandera apagada el micrófono no aparece.
 
 ---
 
@@ -574,7 +605,11 @@ lista entre miembros.
 | `pnpm dev` | Dev server (puerto 5173) |
 | `pnpm build` | `tsc -b` + Vite build |
 | `pnpm lint` | oxlint |
-| `node tests/e2e-flow.mjs` | Suite e2e (requiere dev server arriba) |
+| `pnpm test` | Unitarias con `node --test` (periodos, ledger, hooks, voz) |
+| `node tests/e2e-flow.mjs` | Suite e2e principal (requiere dev server arriba) |
+| `node tests/e2e-money.mjs` | E2E de dinero personal, pagador, ahorro y disponible |
+| `node tests/e2e-voice.mjs` | E2E de voz con Edge Function mockeada |
+| `docker exec -i supabase_db_App-gastos psql -U postgres -d postgres -f tests/db/ledger-integrity.sql` | Pruebas SQL/RLS (también `savings.sql` y `finance-rpcs.sql`) |
 | `node tests/check-mobile.mjs` | Verificación mobile 375/320px: 11 rutas + modales sin overflow |
 | `node tests/e2e-mobile.mjs` | Suite e2e móvil (Chromium touch): sheets, arrastre, flick, acordeón |
 | `SUPABASE_SERVICE_ROLE=… bash tests/reset-sandbox.sh` | Reinicia usuario sandbox (proyecto del `.env`) |
@@ -583,7 +618,9 @@ lista entre miembros.
 | `supabase db push --dry-run` | Lista las migraciones que se aplicarían a producción (no aplica) |
 | `SUPABASE_ACCESS_TOKEN=… supabase db push` | Aplica las migraciones a producción (⚠️ la de hardening regenera los códigos de invitación) |
 | `bash tools/db/repair-history.sh` | Pone al día el historial de migraciones aplicadas a mano (solo historial, no re-ejecuta SQL) |
-| `SUPABASE_ACCESS_TOKEN=… supabase functions deploy analyze-receipt` | Deploy Edge Function |
+| `SUPABASE_ACCESS_TOKEN=… supabase functions deploy analyze-receipt` | Deploy Edge Function de facturas |
+| `SUPABASE_ACCESS_TOKEN=… supabase functions deploy analyze-expense-audio` | Deploy Edge Function de voz |
+| `python3 scripts/self_check.py` | Valida el diagrama `DIAGRAMA-REFACTOR-DINERO.html` |
 | `SUPABASE_ACCESS_TOKEN=… supabase secrets set GEMINI_API_KEY=…` | Secret de Gemini |
 
 > **Flujo de migraciones (canónico):** se crea
@@ -633,7 +670,7 @@ lista entre miembros.
 > y las imágenes de Storage no vienen incluidas.
 >
 > **E2e contra local (local == desplegado):** con `.env.local` presente y el
-> dev server reiniciado, `node tests/e2e-flow.mjs` corre los 47 pasos contra
+> dev server reiniciado, `node tests/e2e-flow.mjs` corre la suite v2 contra
 > el stack local (`supabase migration up --local` aplica las migraciones
 > pendientes; `reset-sandbox.sh` acepta `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE`
 > como overrides). La Edge Function `analyze-receipt` no se sirve local sin
@@ -652,27 +689,37 @@ lista entre miembros.
 - **Unitarias**: `tests/unit/*.test.ts` con `node --test` (Node 24 ejecuta
   TypeScript). `pnpm test` corre períodos y selectores del ledger; CI las
   ejecuta en cada PR.
-- Suite e2e de 47 pasos (`tests/e2e-flow.mjs`): login, hogar, salarios
-  (día de pago + herencia al mes siguiente), gastos, calendario, saldos,
-  saldo acumulado, sobrantes por mes (tarjeta Dashboard + `/historial`),
-  recarga de página con salarios visibles, presupuestos, servicios, metas,
-  escaneo de facturas (con fixture + Gemini real), modo offline, modo oscuro,
-  lista de deseos (contado/cuotas/estados) y perfil.
+- **E2E v2**:
+  - `tests/e2e-flow.mjs`: login, hogar, salario, Inicio personal, gasto con
+    pagador, edición, tabs de Gastos, Historial, ahorro con depósito/retiro,
+    autoahorro, archivo, offline + sync y modo oscuro.
+  - `tests/e2e-money.mjs`: dos miembros con días de pago distintos, gasto
+    pagado por otro, legado sin pagador, disponible, ahorro manual y
+    autoahorro al reconectar.
+  - `tests/e2e-mobile.mjs`, `tests/check-mobile.mjs`, `tests/e2e-realtime.mjs`
+    y `tests/e2e-voice.mjs` (Edge Function mockeada + fixture de audio).
+- **SQL/RLS**: `tests/db/ledger-integrity.sql`, `savings.sql` y
+  `finance-rpcs.sql` se ejecutan en CI con `psql` contra Supabase local.
 - Usa **navegación SPA** (clics en el sidebar, no `page.goto` a rutas
   protegidas), esperas por selector y `data-testid="confirm-dialog-confirm"`
   para los diálogos.
 - El usuario sandbox se crea/elimina con `reset-sandbox.sh` (la eliminación
   limpia su hogar y datos en cascada).
 - **CI en cada PR a `master`**: `.github/workflows/ci.yml` (build + lint +
-  unitarias) y `.github/workflows/e2e.yml` (Supabase local + `e2e-flow`,
-  `e2e-mobile`, `check-mobile` y `e2e-realtime`). No se mergea con checks en
+  unitarias) y `.github/workflows/e2e.yml` (Supabase local + SQL + `e2e-flow`,
+  `e2e-money`, `e2e-voice`, `e2e-mobile`, `check-mobile` y `e2e-realtime`). No se mergea con checks en
   rojo; la PR la aprueba y mergea Jhotis12. Flujo completo:
   `.agents/skills/pull-request-workflow/SKILL.md`.
 - **Al mergear a `master`** con migraciones nuevas,
   `.github/workflows/supabase-migrations.yml` aplica `supabase db push` a
   producción (ver §8, Flujo de migraciones).
-- Antes de cerrar una fase: `pnpm build` + `pnpm lint` + suite e2e completa en
-  local, y PR con CI en verde.
+- **Pasada manual de accesibilidad (v2.0)**: teclado en Inicio, Gastos,
+  Ahorros, Historial y modales; foco visible, `Escape` cierra diálogos, inputs
+  con `aria-label`/label, contraste pine/cream y modo oscuro. Se corrigieron
+  el desbordes de montos a 320px y el fallback de avatares sin imagen; no
+  quedaron hallazgos bloqueantes.
+- Antes de cerrar una fase: `pnpm build` + `pnpm lint` + `pnpm test` + SQL +
+  suites e2e en local, y PR con CI en verde.
 
 ---
 
