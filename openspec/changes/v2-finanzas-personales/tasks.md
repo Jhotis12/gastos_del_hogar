@@ -161,9 +161,9 @@
 - [x] 15.2 Hacer commits por bloque lógico con la convención del repo (`feat`, `fix`, `test`, `docs`, `chore`); verificar con `git log --oneline`
 - [x] 15.3 Hacer `git push -u origin feat/v2-finanzas-personales`; verificar que la rama remota existe
 - [x] 15.4 Abrir la PR con `gh pr create --base master --fill` (o pasar la URL de compare si `gh` no está autenticado); verificar que la PR existe y describe el cambio
-- [ ] 15.5 Verificar que `CI` y `E2E` pasan en la PR; si algún test no se pudo correr en local, documentarlo explícitamente
+- [x] 15.5 Verificar que `CI` y `E2E` pasan en la PR; si algún test no se pudo correr en local, documentarlo explícitamente
 - [x] 15.6 Adjuntar a la PR la auditoría de migración, el resultado de `supabase db push --dry-run` y el plan de backup/rollback; verificar que el reviewer puede reproducirlo
-- [ ] 15.7 Atender los comentarios de revisión sin mergear; verificar que los nuevos commits mantienen CI/E2E en verde
+- [x] 15.7 Atender los comentarios de revisión sin mergear; verificar que los nuevos commits mantienen CI/E2E en verde
 
 ## Workflow follow-up
 
