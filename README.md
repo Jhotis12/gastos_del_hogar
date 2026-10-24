@@ -15,8 +15,9 @@ Supabase (Auth, Postgres + RLS, Realtime, Storage, Edge Functions) · PWA.
 
 ## Novedades de la 2.0
 
-- **Inicio personal:** `Disponible`, `Mi mes`, `Desde mi último pago` y `Mi
-  ahorro`; la sección `Hogar` queda debajo.
+- **Inicio personal:** `Disponible` personal y `Disponible del hogar`, más
+  `Mi mes`, `Desde mi último pago` y `Mi ahorro`; la sección `Hogar` queda
+  debajo y enlaza a Historial.
 - **Gastos con dos lentes:** `Hogar` / `Mis gastos`, con ventana de mes o desde
   el último pago. El pagador es obligatorio.
 - **Ahorro real:** depósitos y retiros como movimientos; el saldo de la meta se
@@ -24,7 +25,8 @@ Supabase (Auth, Postgres + RLS, Realtime, Storage, Edge Functions) · PWA.
 - **Autoahorro idempotente:** se ejecuta al abrir/reconectar y recupera hasta 12
   meses.
 - **Historial personal y del hogar**, proyección y lista de deseos con el
-  dinero personal (nunca con el saldo de otra persona).
+  dinero personal (nunca con el saldo de otra persona). El sobrante de cada
+  mes está en Historial → `Hogar`/`Mis meses`, columna `Libre` (y `Acumulado`).
 - **Captura por voz (opcional):** graba un audio, Gemini propone un borrador y
   tú lo confirmas; requiere red y no guarda el audio.
 
