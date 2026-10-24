@@ -6,6 +6,7 @@ import DateInput from '@/shared/components/ui/DateInput'
 import SelectInput from '@/shared/components/ui/SelectInput'
 import { useCategories } from '@/modules/categories/hooks/useCategories'
 import { useMembers } from '@/modules/members/hooks/useMembers'
+import { useAuth } from '@/shared/hooks/useAuth'
 import { useToast } from '@/shared/components/ui/Toast'
 import type { Receipt } from '@/shared/lib/types'
 import { errorMessage } from '@/shared/lib/utils'
@@ -31,6 +32,7 @@ interface ReceiptResultProps {
 export default function ReceiptResult({ receipt, busy, onClose, onCreate }: ReceiptResultProps) {
   const { data: categories } = useCategories()
   const { data: members } = useMembers()
+  const { profile } = useAuth()
   const toast = useToast()
 
   const [comercio, setComercio] = useState('')
@@ -46,10 +48,10 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
     setComercio(p.comercio ?? '')
     setTotal(p.total !== undefined ? String(p.total) : '')
     setCategoryId('')
-    setPaidBy('')
+    setPaidBy(profile?.id ?? '')
     setDate(p.fecha && p.fecha.length === 10 ? p.fecha : todayISO())
     setError('')
-  }, [receipt])
+  }, [receipt, profile?.id])
 
   const items = useMemo(() => receipt?.parsed_data.items ?? [], [receipt])
   const itemsTotal = items.reduce((s, i) => s + Number(i.subtotal ?? 0), 0)
@@ -70,12 +72,16 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
       setError('Escribe el nombre de la tienda')
       return
     }
+    if (!paidBy) {
+      setError('Selecciona quién pagó el gasto')
+      return
+    }
     try {
       const res = await onCreate({
         amount,
         description: comercio.trim(),
         category_id: categoryId || null,
-        paid_by: paidBy || null,
+        paid_by: paidBy,
         expense_date: date,
       })
       if (res !== OFFLINE_QUEUED) toast.success('Gasto creado desde la factura')
@@ -186,7 +192,9 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
                 value={paidBy}
                 onChange={(e) => setPaidBy(e.target.value)}
               >
-                <option value="">Sin asignar</option>
+                <option value="" disabled>
+                  Selecciona quién pagó
+                </option>
                 {members?.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.full_name}

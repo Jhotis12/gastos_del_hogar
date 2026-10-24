@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { supabase } from '@/shared/lib/supabase'
 import { runWithOfflineFallback, invalidateIfOnline } from '@/shared/lib/offline/offlineSafe'
+import { LEDGER_INVALIDATION } from '@/shared/lib/queryInvalidation'
 import {
   enqueueIncomeAdd,
   enqueueIncomeUpdate,
@@ -47,11 +48,7 @@ export function useIncomes(month: string) {
 
 // El dinero extra entra al saldo disponible y a los sobrantes por mes
 function invalidateIncomeQueries(queryClient: ReturnType<typeof useQueryClient>) {
-  invalidateIfOnline(queryClient, [
-    ['incomes'],
-    ['running-balance'],
-    ['monthly-surpluses'],
-  ])
+  invalidateIfOnline(queryClient, LEDGER_INVALIDATION.incomes)
 }
 
 export function useAddIncome() {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { useRealtimeSync } from '@/shared/hooks/useRealtimeSync'
+import { useRunDueSavings } from '@/modules/savings/hooks/useSavingsMovements'
 import { useDragToClose } from '@/shared/hooks/useDragToClose'
 import { useDialogA11y } from '@/shared/hooks/useDialogA11y'
 import { cn } from '@/shared/lib/utils'
@@ -28,15 +29,15 @@ import InstallAppButton from '@/shared/components/ui/InstallAppButton'
 import UserAvatar from '@/shared/components/ui/UserAvatar'
 
 const NAV_ITEMS = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/', label: 'Inicio', icon: LayoutDashboard },
   { to: '/calendario', label: 'Calendario', icon: CalendarDays },
   { to: '/historial', label: 'Historial', icon: History },
-  { to: '/proyeccion', label: 'Proyección', icon: TrendingUp },
+  { to: '/proyeccion', label: 'Mi proyección', icon: TrendingUp },
   { to: '/quiero-comprar', label: 'Quiero comprar', icon: ShoppingBag },
-  { to: '/miembros', label: 'Miembros y Salarios', icon: Users },
+  { to: '/miembros', label: 'Miembros e ingresos', icon: Users },
   { to: '/gastos', label: 'Gastos', icon: Receipt },
   { to: '/recurrentes', label: 'Servicios', icon: Repeat },
-  { to: '/ahorros', label: 'Metas de ahorro', icon: PiggyBank },
+  { to: '/ahorros', label: 'Ahorros', icon: PiggyBank },
   { to: '/categorias', label: 'Categorías', icon: Tags },
   { to: '/perfil', label: 'Perfil y Hogar', icon: Settings },
 ]
@@ -55,7 +56,7 @@ function Brand() {
       <AppLogo size={44} />
       <div>
         <p className="font-display text-sm font-semibold text-ink">Gastos del Hogar</p>
-        <p className="text-xs text-ink/50">Presupuesto en común</p>
+        <p className="text-xs text-ink/50">Finanzas del hogar</p>
       </div>
     </div>
   )
@@ -95,7 +96,20 @@ export default function Layout() {
   const goToProfilePhoto = () => navigate('/perfil?seccion=cuenta')
   const [moreOpen, setMoreOpen] = useState(false)
   const [confirmSignOut, setConfirmSignOut] = useState(false)
+  const runDueSavings = useRunDueSavings()
+  const runDueSavingsMutate = runDueSavings.mutate
   useRealtimeSync(profile?.household_id ?? null)
+
+  // Autoahorro al abrir la app o reconectar. Es idempotente por mes.
+  useEffect(() => {
+    if (!profile?.household_id) return
+    const run = () => {
+      if (navigator.onLine) runDueSavingsMutate()
+    }
+    run()
+    window.addEventListener('online', run)
+    return () => window.removeEventListener('online', run)
+  }, [profile?.household_id, runDueSavingsMutate])
 
   const handleSignOut = async () => {
     setConfirmSignOut(false)

@@ -41,7 +41,7 @@ export default function Terms() {
               <h2 className="mb-1.5 font-display text-base font-semibold text-ink">1. El servicio</h2>
               <p>
                 Gastos del Hogar es una herramienta para que los miembros de un hogar lleven
-                el registro de sus ingresos, gastos, servicios y metas de ahorro en común.
+                el registro de sus ingresos, gastos, servicios y metas de ahorro del hogar.
                 Al crear una cuenta aceptas estos términos y te comprometes a usarla solo
                 para fines personales y familiares.
               </p>

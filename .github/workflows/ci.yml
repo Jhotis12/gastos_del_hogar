@@ -46,3 +46,6 @@ jobs:
 
       - name: Lint
         run: pnpm lint
+
+      - name: Pruebas unitarias
+        run: pnpm test

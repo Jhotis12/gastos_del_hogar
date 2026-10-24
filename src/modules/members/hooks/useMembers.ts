@@ -5,6 +5,7 @@ import { supabase } from '@/shared/lib/supabase'
 import { effectiveSalariesForMonth } from '@/modules/members/lib/salaries'
 import { resizeAvatar } from '@/shared/lib/images'
 import { runWithOfflineFallback, invalidateIfOnline } from '@/shared/lib/offline/offlineSafe'
+import { invalidateLedger, LEDGER_INVALIDATION } from '@/shared/lib/queryInvalidation'
 import { enqueueSalaryUpsert, enqueueSalaryDelete } from '@/shared/lib/offline/optimistic'
 import type { EffectiveSalary, Profile, Salary } from '@/shared/lib/types'
 
@@ -149,11 +150,7 @@ export function useUpsertSalary() {
         },
       ),
     onSuccess: () => {
-      invalidateIfOnline(queryClient, [
-        ['salaries'],
-        ['running-balance'],
-        ['monthly-surpluses'],
-      ])
+      invalidateIfOnline(queryClient, LEDGER_INVALIDATION.salaries)
     },
   })
 }
@@ -170,11 +167,7 @@ export function useDeleteSalary() {
         () => enqueueSalaryDelete(queryClient, id),
       ),
     onSuccess: () => {
-      invalidateIfOnline(queryClient, [
-        ['salaries'],
-        ['running-balance'],
-        ['monthly-surpluses'],
-      ])
+      invalidateIfOnline(queryClient, LEDGER_INVALIDATION.salaries)
     },
   })
 }
@@ -183,6 +176,7 @@ export function useDeleteSalary() {
 // efectivos porque la fecha de pago heredada depende del día.
 export function useUpdatePayday() {
   const queryClient = useQueryClient()
+  const { user, refreshProfile } = useAuth()
 
   return useMutation({
     mutationFn: async ({ profileId, payday }: { profileId: string; payday: number }) => {
@@ -192,11 +186,9 @@ export function useUpdatePayday() {
         .eq('id', profileId)
       if (error) throw error
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['members'] })
-      queryClient.invalidateQueries({ queryKey: ['salaries'] })
-      queryClient.invalidateQueries({ queryKey: ['running-balance'] })
-      queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
+    onSuccess: (_data, variables) => {
+      if (variables.profileId === user?.id) void refreshProfile()
+      invalidateLedger(queryClient, LEDGER_INVALIDATION.payday)
     },
   })
 }

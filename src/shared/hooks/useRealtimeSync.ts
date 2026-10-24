@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { supabase } from '@/shared/lib/supabase'
+import { LEDGER_INVALIDATION } from '@/shared/lib/queryInvalidation'
 
 type RealtimeTable = {
   table: string
@@ -12,14 +13,16 @@ type RealtimeTable = {
 
 // Cambios que invalidan cada caché (además de la propia tabla)
 const TABLES: RealtimeTable[] = [
-  { table: 'expenses', filter: (id) => `household_id=eq.${id}`, invalidate: [['expenses'], ['receipts'], ['running-balance'], ['monthly-surpluses']] },
-  { table: 'salaries', filter: (id) => `household_id=eq.${id}`, invalidate: [['salaries'], ['running-balance'], ['monthly-surpluses']] },
+  { table: 'expenses', filter: (id) => `household_id=eq.${id}`, invalidate: [...LEDGER_INVALIDATION.expenses, ['receipts']] },
+  { table: 'salaries', filter: (id) => `household_id=eq.${id}`, invalidate: LEDGER_INVALIDATION.salaries },
   { table: 'categories', filter: (id) => `household_id=eq.${id}`, invalidate: [['categories'], ['expenses']] },
   { table: 'category_budgets', filter: (id) => `household_id=eq.${id}`, invalidate: [['budgets']] },
   { table: 'recurring_expenses', filter: (id) => `household_id=eq.${id}`, invalidate: [['recurring'], ['expenses']] },
-  { table: 'savings_goals', filter: (id) => `household_id=eq.${id}`, invalidate: [['savings']] },
+  { table: 'savings_goals', filter: (id) => `household_id=eq.${id}`, invalidate: LEDGER_INVALIDATION.savings },
+  { table: 'savings_movements', filter: (id) => `household_id=eq.${id}`, invalidate: LEDGER_INVALIDATION.savings },
+  { table: 'savings_plans', filter: (id) => `household_id=eq.${id}`, invalidate: [['savings-plans'], ['savings']] },
   { table: 'receipts', filter: (id) => `household_id=eq.${id}`, invalidate: [['receipts'], ['expenses']] },
-  { table: 'incomes', filter: (id) => `household_id=eq.${id}`, invalidate: [['incomes'], ['running-balance'], ['monthly-surpluses']] },
+  { table: 'incomes', filter: (id) => `household_id=eq.${id}`, invalidate: LEDGER_INVALIDATION.incomes },
   { table: 'wishlist_items', filter: (id) => `household_id=eq.${id}`, invalidate: [['wishlist']] },
   { table: 'profiles', filter: (id) => `household_id=eq.${id}`, invalidate: [['members']], refreshProfile: true },
   { table: 'households', filter: (id) => `id=eq.${id}`, invalidate: [['household']], refreshProfile: true },

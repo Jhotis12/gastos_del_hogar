@@ -2,7 +2,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import { enqueueOp } from './queue'
 import { refreshPendingCount, syncNow } from './sync'
 import { emitToast } from '@/shared/components/ui/Toast'
-import type { ExpenseWithRelations, IncomeWithRelations, Salary } from '@/shared/lib/types'
+import type { ExpenseWithRelations, IncomeWithRelations, Profile, Salary } from '@/shared/lib/types'
 
 // Encola la operación + actualización optimista de la caché: la fila
 // aparece al instante aunque no haya red. El id se genera en el cliente
@@ -17,6 +17,101 @@ function afterEnqueue(): void {
 
 function monthKeyOf(dateIso: string): string {
   return `${dateIso.slice(0, 7)}-01`
+}
+
+type FinanceWindowCache = {
+  expenses: ExpenseWithRelations[]
+  incomes: IncomeWithRelations[]
+}
+
+type MemberAvailableCache = {
+  available: number | null
+  income_basis: number
+  last_pay_date: string | null
+}
+
+type HistoryCache = {
+  month: string
+  income: number
+  expenses: number
+  savings: number
+  free: number
+  accumulated: number
+}
+
+const roundMoney = (value: number) => Math.round(value * 100) / 100
+
+// Refleja un gasto nuevo en las cachés v2 (ventana personal, disponible e
+// historiales) antes de que el sync hable con el servidor.
+function applyExpenseToFinanceCaches(
+  queryClient: QueryClient,
+  householdId: string,
+  row: ExpenseWithRelations,
+  amount: number,
+): void {
+  const month = monthKeyOf(row.expense_date)
+
+  for (const [key, data] of queryClient.getQueriesData<FinanceWindowCache>({
+    queryKey: ['finance-window', householdId],
+  })) {
+    const start = key[3]
+    const end = key[4]
+    if (
+      data &&
+      typeof start === 'string' &&
+      typeof end === 'string' &&
+      row.expense_date >= start &&
+      row.expense_date <= end
+    ) {
+      queryClient.setQueryData(key, {
+        ...data,
+        expenses: [row, ...data.expenses],
+      })
+    }
+  }
+
+  for (const [key, data] of queryClient.getQueriesData<MemberAvailableCache>({
+    queryKey: ['member-available', householdId],
+  })) {
+    if (data && key[2] === row.paid_by && data.available !== null) {
+      queryClient.setQueryData(key, {
+        ...data,
+        available: roundMoney(data.available - amount),
+      })
+    }
+  }
+
+  const historyKeys: string[][] = [
+    ['household-history', householdId],
+    ['personal-history', householdId, row.paid_by ?? ''],
+  ]
+  for (const historyKey of historyKeys) {
+    for (const [key, data] of queryClient.getQueriesData<HistoryCache[]>({
+      queryKey: historyKey,
+    })) {
+      if (!data) continue
+      if (historyKey[0] === 'personal-history' && key[2] !== row.paid_by) continue
+      queryClient.setQueryData(
+        key,
+        data.map((monthRow) =>
+          monthRow.month >= month
+            ? {
+                ...monthRow,
+                expenses:
+                  monthRow.month === month
+                    ? roundMoney(monthRow.expenses + amount)
+                    : monthRow.expenses,
+                free:
+                  monthRow.month === month
+                    ? roundMoney(monthRow.free - amount)
+                    : monthRow.free,
+                accumulated: roundMoney(monthRow.accumulated - amount),
+              }
+            : monthRow,
+        ),
+      )
+    }
+  }
 }
 
 // ---------- Gastos ----------
@@ -42,27 +137,41 @@ export function enqueueExpenseAdd(
     rowId: id,
     payload: { ...input, id, household_id: householdId },
   })
+  const members =
+    queryClient.getQueryData<Profile[]>(['members', householdId]) ?? []
+  const payer = members.find((member) => member.id === input.paid_by) ?? null
+  const optimisticRow: ExpenseWithRelations = {
+    id,
+    household_id: householdId,
+    amount: input.amount,
+    description: input.description,
+    category_id: input.category_id ?? null,
+    paid_by: input.paid_by ?? null,
+    expense_date: input.expense_date,
+    receipt_id: input.receipt_id ?? null,
+    recurring_id: null,
+    created_at: new Date().toISOString(),
+    category: null,
+    payer: payer
+      ? {
+          id: payer.id,
+          full_name: payer.full_name,
+          avatar_path: payer.avatar_path ?? null,
+        }
+      : null,
+    recurring: null,
+    receipt: null,
+  }
+
   queryClient.setQueryData<ExpenseWithRelations[]>(
     ['expenses', householdId, monthKeyOf(input.expense_date)],
-    (old = []) => [
-      {
-        id,
-        household_id: householdId,
-        amount: input.amount,
-        description: input.description,
-        category_id: input.category_id ?? null,
-        paid_by: input.paid_by ?? null,
-        expense_date: input.expense_date,
-        receipt_id: input.receipt_id ?? null,
-        recurring_id: null,
-        created_at: new Date().toISOString(),
-        category: null,
-        payer: null,
-        recurring: null,
-        receipt: null,
-      },
-      ...old,
-    ],
+    (old = []) => [optimisticRow, ...old],
+  )
+  applyExpenseToFinanceCaches(
+    queryClient,
+    householdId,
+    optimisticRow,
+    Number(input.amount),
   )
   afterEnqueue()
 }

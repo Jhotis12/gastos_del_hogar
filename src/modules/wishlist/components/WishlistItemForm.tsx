@@ -5,11 +5,11 @@ import SelectInput from '@/shared/components/ui/SelectInput'
 import DateInput from '@/shared/components/ui/DateInput'
 import { useToast } from '@/shared/components/ui/Toast'
 import { useAddWishlistItem, useUpdateWishlistItem } from '@/modules/wishlist/hooks/useWishlist'
-import { useRunningBalance } from '@/modules/expenses/hooks/useExpenses'
-import { useForecast } from '@/modules/forecast/hooks/useForecast'
+import { useMemberAvailable } from '@/modules/finance/hooks/useMemberAvailable'
+import { usePersonalMonthlyHistory } from '@/modules/finance/hooks/usePersonalMonthlyHistory'
 import { calculatePlan, monthsToAfford } from '@/modules/wishlist/lib/installments'
 import { shiftMonth, shortMonthLabel } from '@/shared/lib/dates'
-import { currentMonthKey, formatDate } from '@/shared/lib/dates'
+import { currentMonthKey, formatDate, todayISO } from '@/shared/lib/dates'
 import { formatCurrency, parseMoneyInput } from '@/shared/lib/money'
 import { cn, errorMessage } from '@/shared/lib/utils'
 import type { WishlistItem } from '@/shared/lib/types'
@@ -41,8 +41,9 @@ export default function WishlistItemForm({ open, initial, onClose }: Props) {
   const add = useAddWishlistItem()
   const update = useUpdateWishlistItem()
   const toast = useToast()
-  const { data: balance } = useRunningBalance(currentMonthKey())
-  const { data: forecast } = useForecast()
+  const { data: memberAvailable } = useMemberAvailable(todayISO())
+  const balance = memberAvailable?.available ?? null
+  const { data: history } = usePersonalMonthlyHistory()
 
   const [name, setName] = useState('')
   const [price, setPrice] = useState('')
@@ -90,14 +91,18 @@ export default function WishlistItemForm({ open, initial, onClose }: Props) {
     [priceValue, method, installments, rate, cutoff, purchaseDate, initialValue],
   )
 
-  const surplus = forecast?.surplus?.median ?? null
+  const surplus = history?.at(-1)?.free ?? null
+  const recentHistory = (history ?? []).slice(-3)
+  const colchon =
+    recentHistory.length > 0
+      ? recentHistory.reduce((sum, row) => sum + row.expenses, 0) / recentHistory.length
+      : null
   const remaining =
     (balance ?? 0) - (isCuotas ? initialValue + plan.installment : plan.totalPaid)
   const monthsCash = monthsToAfford(priceValue, surplus ?? 0, isCuotas ? initialValue : 0)
   const monthsDate = monthsCash === Infinity ? null : shortMonthLabel(shiftMonth(currentMonthKey(), monthsCash))
   const surplusPct =
     surplus && surplus > 0 ? Math.round((plan.installment / surplus) * 100) : null
-  const colchon = forecast?.avg?.expenses ?? null
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()

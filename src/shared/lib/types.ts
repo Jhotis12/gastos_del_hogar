@@ -87,7 +87,7 @@ export interface ExpenseWithRelations extends Expense {
 }
 
 // Dinero extra: ingreso que no es nómina (venta, regalo, reembolso…).
-// Se suma al fondo común como ingreso; member_id (quién recibió) es opcional.
+// Ingreso del hogar; member_id (quién recibió) es opcional.
 export interface Income {
   id: string
   household_id: string
@@ -129,6 +129,38 @@ export interface SavingsGoal {
   target_amount: number
   saved_amount: number
   target_date: string | null
+  owner_id: string | null
+  archived_at: string | null
+  created_at: string
+}
+
+export type SavingsMovementKind = 'deposit' | 'withdrawal' | 'opening' | 'auto'
+
+export interface SavingsMovement {
+  id: string
+  household_id: string
+  goal_id: string
+  member_id: string | null
+  plan_id: string | null
+  amount: number
+  kind: SavingsMovementKind
+  movement_date: string
+  period_month: string | null
+  note: string
+  created_at: string
+  member?: Pick<Profile, 'id' | 'full_name' | 'avatar_path'> | null
+}
+
+export interface SavingsPlan {
+  id: string
+  household_id: string
+  goal_id: string
+  member_id: string
+  amount: number
+  day_of_month: number
+  is_active: boolean
+  start_month: string
+  last_run_month: string | null
   created_at: string
 }
 

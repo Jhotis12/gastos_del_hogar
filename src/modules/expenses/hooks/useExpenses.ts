@@ -1,17 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { supabase } from '@/shared/lib/supabase'
-import { useSalaries } from '@/modules/members/hooks/useMembers'
-import { receivedSalariesForMonth } from '@/modules/members/lib/salaries'
-import { useIncomes } from '@/modules/members/hooks/useIncomes'
 import { runWithOfflineFallback, invalidateIfOnline } from '@/shared/lib/offline/offlineSafe'
+import { LEDGER_INVALIDATION } from '@/shared/lib/queryInvalidation'
 import {
   enqueueExpenseAdd,
   enqueueExpenseUpdate,
   enqueueExpenseDelete,
 } from '@/shared/lib/offline/optimistic'
 import type { Expense, ExpenseWithRelations } from '@/shared/lib/types'
-import { daysInMonth, shiftMonth, todayISO } from '@/shared/lib/dates'
+import { shiftMonth } from '@/shared/lib/dates'
 
 const EXPENSE_SELECT = `
   *,
@@ -81,11 +79,7 @@ export function useAddExpense() {
       )
     },
     onSuccess: () => {
-      invalidateIfOnline(queryClient, [
-        ['expenses'],
-        ['running-balance'],
-        ['monthly-surpluses'],
-      ])
+      invalidateIfOnline(queryClient, LEDGER_INVALIDATION.expenses)
     },
   })
 }
@@ -103,11 +97,7 @@ export function useUpdateExpense() {
         () => enqueueExpenseUpdate(queryClient, id, input),
       ),
     onSuccess: () => {
-      invalidateIfOnline(queryClient, [
-        ['expenses'],
-        ['running-balance'],
-        ['monthly-surpluses'],
-      ])
+      invalidateIfOnline(queryClient, LEDGER_INVALIDATION.expenses)
     },
   })
 }
@@ -125,83 +115,8 @@ export function useDeleteExpense() {
         () => enqueueExpenseDelete(queryClient, id),
       ),
     onSuccess: () => {
-      invalidateIfOnline(queryClient, [
-        ['expenses'],
-        ['running-balance'],
-        ['monthly-surpluses'],
-      ])
+      invalidateIfOnline(queryClient, LEDGER_INVALIDATION.expenses)
     },
   })
 }
 
-export function useSummary(month: string) {
-  const { salaries } = useSalaries(month)
-  const { data: expenses } = useExpenses(month)
-  const { data: incomes } = useIncomes(month)
-
-  // Cash basis: el salario (registrado o heredado) solo suma al ingreso
-  // cuando su pay_date llegó — consistente con get_monthly_surpluses.
-  const receivedSalaries = receivedSalariesForMonth(salaries ?? [], month)
-
-  const totalIncome =
-    receivedSalaries.reduce((sum, s) => sum + Number(s.amount), 0) +
-    (incomes?.reduce((sum, i) => sum + Number(i.amount), 0) ?? 0)
-  const totalExpenses =
-    expenses?.reduce((sum, e) => sum + Number(e.amount), 0) ?? 0
-  const balance = totalIncome - totalExpenses
-  const expenseRatio = totalIncome > 0 ? totalExpenses / totalIncome : 0
-
-  return { totalIncome, totalExpenses, balance, expenseRatio }
-}
-
-// Sobrante acumulado del hogar hasta HOY: Σ salarios (pay_date <= hoy) −
-// Σ gastos (expense_date <= hoy). Cash basis: solo cuenta el dinero
-// realmente recibido; un salario con pay_date futuro (nómina aún no
-// pagada) NO infla el saldo disponible. La fecha límite es min(hoy, fin
-// de mes) para no mostrar gastos del futuro en meses navegados.
-export function useRunningBalance(month: string) {
-  const { profile } = useAuth()
-  const householdId = profile?.household_id
-  const [y, m] = month.slice(0, 7).split('-').map(Number)
-  const lastDay = daysInMonth(y, m - 1)
-  const endOfMonth = `${month.slice(0, 7)}-${String(lastDay).padStart(2, '0')}`
-  const pDate = todayISO() < endOfMonth ? todayISO() : endOfMonth
-
-  return useQuery({
-    queryKey: ['running-balance', householdId, month],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_running_balance', {
-        p_date: pDate,
-      })
-      if (error) throw error
-      return Number(data ?? 0)
-    },
-    enabled: !!householdId,
-  })
-}
-
-export interface MonthlySurplus {
-  month: string
-  income: number
-  expenses: number
-  surplus: number
-}
-
-// Sobrantes por mes (historial): una fila por mes desde el primer
-// mes con actividad hasta el mes actual. Sobrante de M = Σ salarios
-// con pay_date en M − Σ gastos con expense_date en M; la suma
-// acumulada coincide con get_running_balance.
-export function useMonthlySurpluses() {
-  const { profile } = useAuth()
-  const householdId = profile?.household_id
-
-  return useQuery({
-    queryKey: ['monthly-surpluses', householdId],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_monthly_surpluses')
-      if (error) throw error
-      return (data ?? []) as MonthlySurplus[]
-    },
-    enabled: !!householdId,
-  })
-}

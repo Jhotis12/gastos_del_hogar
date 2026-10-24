@@ -1,16 +1,7 @@
 import { useState } from 'react'
 import { Copy, Check, Users, Pencil, Trash2 } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
-import {
-  useDeleteSalary,
-  useMembers,
-  useSalaries,
-  useSalaryRows,
-  useUpdatePayday,
-  useUpsertSalary,
-} from '@/modules/members/hooks/useMembers'
-import { useExpenses } from '@/modules/expenses/hooks/useExpenses'
-import { useIncomes } from '@/modules/members/hooks/useIncomes'
+import { useDeleteSalary, useMembers, useSalaries, useSalaryRows, useUpdatePayday, useUpsertSalary } from '@/modules/members/hooks/useMembers'
 import { useHousehold } from '@/modules/profile/hooks/useHousehold'
 import IncomeSection from '@/modules/members/components/IncomeSection'
 import UserAvatar from '@/shared/components/ui/UserAvatar'
@@ -23,7 +14,7 @@ import QueryError from '@/shared/components/ui/QueryError'
 import MoneyInput from '@/shared/components/ui/MoneyInput'
 import { useToast } from '@/shared/components/ui/Toast'
 import { errorMessage } from '@/shared/lib/utils'
-import { payDateForMonth, receivedSalariesForMonth } from '@/modules/members/lib/salaries'
+import { payDateForMonth } from '@/modules/members/lib/salaries'
 import { formatDate, monthLabel, todayISO } from '@/shared/lib/dates'
 import { formatCurrency, parseMoneyInput } from '@/shared/lib/money'
 import type { EffectiveSalary, Profile } from '@/shared/lib/types'
@@ -166,7 +157,7 @@ function SalaryInput({
                 {formatCurrency(Number(effective.amount))}
               </span>
               <span className="rounded-full bg-gold-100 px-2 py-0.5 text-xs font-medium text-gold-600">
-                Heredado de {monthLabel(effective.source_month ?? month)}
+                Estimado · {monthLabel(effective.source_month ?? month)}
               </span>
             </div>
             {effective.pay_date > todayISO() && (
@@ -252,7 +243,7 @@ import { useMonthParam } from '@/shared/hooks/useMonthParam'
 import { OFFLINE_QUEUED } from '@/shared/lib/offline/offlineSafe'
 
 export default function Members() {
-  usePageTitle('Miembros y Salarios')
+  usePageTitle('Miembros e ingresos')
   const { user } = useAuth()
   const [month, setMonth] = useMonthParam()
   const { data: household, error: householdError, refetch: refetchHousehold } = useHousehold()
@@ -263,13 +254,6 @@ export default function Members() {
     refetch: refetchMembers,
   } = useMembers()
   const { salaries } = useSalaries(month)
-  const {
-    data: expenses,
-    isLoading: expensesLoading,
-    error: expensesError,
-    refetch: refetchExpenses,
-  } = useExpenses(month)
-  const { data: incomes } = useIncomes(month)
   const updatePayday = useUpdatePayday()
   const toast = useToast()
   const [copied, setCopied] = useState(false)
@@ -277,42 +261,11 @@ export default function Members() {
   if (householdError) {
     return <QueryError error={householdError} onRetry={refetchHousehold} />
   }
-  if (!household || membersLoading || expensesLoading) return <PageSkeleton />
+  if (!household || membersLoading) return <PageSkeleton />
 
-  if (membersError || expensesError)
-    return (
-      <QueryError
-        error={membersError ?? expensesError}
-        onRetry={() => {
-          void refetchMembers()
-          void refetchExpenses()
-        }}
-      />
-    )
-
-  // Cash basis: solo salarios cuyo pay_date ya llegó (el heredado se
-  // agrega en su fecha de pago) — consistente con el Dashboard y los RPCs.
-  const receivedSalaries = receivedSalariesForMonth(salaries ?? [], month)
-
-  const totalIncome =
-    receivedSalaries.reduce((sum, s) => sum + Number(s.amount), 0) +
-    (incomes?.reduce((sum, i) => sum + Number(i.amount), 0) ?? 0)
-
-  const balances = (members ?? []).map((m) => {
-    const aportado =
-      (receivedSalaries
-        ?.filter((s) => s.profile_id === m.id)
-        .reduce((sum, s) => sum + Number(s.amount), 0) ??
-        0) +
-      (incomes
-        ?.filter((i) => i.member_id === m.id)
-        .reduce((sum, i) => sum + Number(i.amount), 0) ??
-        0)
-    const pagado =
-      expenses?.filter((e) => e.paid_by === m.id).reduce((sum, e) => sum + Number(e.amount), 0) ??
-      0
-    return { member: m, aportado, pagado, balance: aportado - pagado }
-  })
+  if (membersError) {
+    return <QueryError error={membersError} onRetry={refetchMembers} />
+  }
 
   const handlePaydayChange = (m: Profile) => async (e: { target: { value: string } }) => {
     const payday = Number(e.target.value)
@@ -336,10 +289,10 @@ export default function Members() {
         <div>
           <h1 className="flex items-center gap-2 font-display text-2xl font-bold tracking-tight text-ink">
             <Users size={24} className="text-pine-600" />
-            Miembros y Salarios
+            Miembros e ingresos
           </h1>
           <p className="text-sm text-ink/50">
-            Cada persona registra su salario; se suma al fondo común
+            Personas, día de pago e ingresos del hogar
           </p>
         </div>
         <MonthPicker month={month} onChange={setMonth} />
@@ -347,12 +300,9 @@ export default function Members() {
 
       <div className="animate-fade-up flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-pine-200 bg-pine-50 p-4" style={{ animationDelay: '90ms' }}>
         <div>
-          <p className="text-sm font-medium text-pine-600">
-            Ingreso unificado del mes
-          </p>
-          <p className="text-xs text-pine-600/70">Salarios + dinero extra</p>
-          <p className="mt-1 font-display text-2xl font-bold text-pine-600">
-            {formatCurrency(totalIncome)}
+          <p className="text-sm font-medium text-pine-600">Invita a tu hogar</p>
+          <p className="text-xs text-pine-600/70">
+            Comparte el código con las personas que van a registrar gastos.
           </p>
         </div>
         <div className="text-right">
@@ -366,9 +316,6 @@ export default function Members() {
             {copied ? <Check size={16} className="text-pine-600" /> : <Copy size={16} />}
             {household.invite_code}
           </button>
-          <p className="mt-1 text-xs text-ink/40">
-            Compártelo para que otros se unan
-          </p>
         </div>
       </div>
 
@@ -381,58 +328,15 @@ export default function Members() {
         label="Registrar salario"
       />
 
-      <div className="card animate-fade-up" style={{ animationDelay: '180ms' }}>
-        <div className="border-b border-slate-100 px-5 py-4">
-          <h2 className="text-sm font-semibold text-ink">Saldos del mes</h2>
-          <p className="mt-0.5 text-xs text-ink/40">
-            Aportado (salario + dinero extra) − pagado (gastos que abonó) = saldo por persona
-          </p>
-        </div>
-        <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3">
-          {balances.map(({ member, aportado, pagado, balance }) => (
-            <div
-              key={member.id}
-              className={`rounded-xl border p-4 ${
-                balance >= 0
-                  ? 'border-pine-200 bg-pine-50/50'
-                  : 'border-coral-200 hover:bg-coral-100/70'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <UserAvatar name={member.full_name} avatarPath={member.avatar_path} size="sm" />
-                <p className="truncate text-sm font-medium text-ink">{member.full_name}</p>
-              </div>
-              <div className="mt-2 space-y-1 text-xs text-ink/50">
-                <p className="flex justify-between">
-                  <span>Aportado</span>
-                  <span className="font-medium text-ink/70">
-                    {formatCurrency(aportado)}
-                  </span>
-                </p>
-                <p className="flex justify-between">
-                  <span>Pagado</span>
-                  <span className="font-medium text-ink/70">
-                    -{formatCurrency(pagado)}
-                  </span>
-                </p>
-              </div>
-              <p
-                className={`mt-3 font-display text-lg font-bold ${
-                  balance >= 0 ? 'text-pine-600' : 'text-coral-600'
-                }`}
-              >
-                {balance >= 0 ? 'A favor' : 'Debe'} · {formatCurrency(Math.abs(balance))}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
       <div id="registrar-salario" className="card animate-fade-up scroll-mt-24" style={{ animationDelay: '260ms' }}>
         <div className="border-b border-slate-100 px-5 py-4">
           <h2 className="text-sm font-semibold text-ink">
             Personas del hogar
           </h2>
+          <p className="mt-0.5 text-xs text-ink/40">
+            El día de pago define la ventana «Desde mi último pago». El monto
+            del salario es opcional para calcularla.
+          </p>
         </div>
         <ul className="divide-y divide-slate-100">
           {members?.map((m) => {

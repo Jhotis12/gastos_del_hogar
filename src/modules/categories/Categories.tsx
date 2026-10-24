@@ -1,6 +1,9 @@
 import { useState } from 'react'
-import { Plus, Trash2, Tags, Wallet } from 'lucide-react'
+import { Plus, Trash2, Tags, Wallet, ReceiptText } from 'lucide-react'
 import { useAddCategory, useBudgets, useCategories, useDeleteCategory } from '@/modules/categories/hooks/useCategories'
+import { useExpenses } from '@/modules/expenses/hooks/useExpenses'
+import { useMembers } from '@/modules/members/hooks/useMembers'
+import { payerBreakdown } from '@/modules/finance/lib/ledger'
 import Modal from '@/shared/components/ui/Modal'
 import BudgetModal from '@/modules/categories/components/BudgetModal'
 import ConfirmDialog from '@/shared/components/ui/ConfirmDialog'
@@ -26,6 +29,9 @@ export default function Categories() {
   const toast = useToast()
   const month = currentMonthKey()
   const { data: budgets } = useBudgets(month)
+  const { data: expenses } = useExpenses(month)
+  const { data: members } = useMembers()
+  const [detail, setDetail] = useState<Category | null>(null)
 
   const [formOpen, setFormOpen] = useState(false)
   const [name, setName] = useState('')
@@ -63,6 +69,18 @@ export default function Categories() {
   const openBudget = (c: Category) => {
     setBudgetCategory(c)
   }
+
+  const detailExpenses = detail
+    ? (expenses ?? []).filter((expense) => expense.category_id === detail.id)
+    : []
+  const detailTotal = detailExpenses.reduce(
+    (sum, expense) => sum + Number(expense.amount),
+    0,
+  )
+  const detailRows = payerBreakdown(detailExpenses)
+  const detailBudget = detail
+    ? budgets?.find((budget) => budget.category_id === detail.id)
+    : undefined
 
 
 
@@ -139,13 +157,22 @@ export default function Categories() {
                     </button>
                   </div>
                 </div>
-                <button
-                  onClick={() => setDeleting(c.id)}
-                  className="rounded-lg p-3 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
-                  aria-label="Eliminar categoría"
-                >
-                  <Trash2 size={16} />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setDetail(c)}
+                    className="rounded-lg p-3 text-ink/40 hover:bg-pine-50 hover:text-pine-600"
+                    aria-label="Ver desglose por persona"
+                  >
+                    <ReceiptText size={16} />
+                  </button>
+                  <button
+                    onClick={() => setDeleting(c.id)}
+                    className="rounded-lg p-3 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
+                    aria-label="Eliminar categoría"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
             )
           })}
@@ -233,6 +260,58 @@ export default function Categories() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      <Modal open={!!detail} title={`Detalle · ${detail?.name ?? ''}`} onClose={() => setDetail(null)}>
+        {detail && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl bg-cream/70 p-3">
+                <p className="text-xs font-medium text-ink/50">Gastos del mes</p>
+                <p className="mt-1 font-display text-xl font-bold text-ink">
+                  {formatCurrency(detailTotal)}
+                </p>
+              </div>
+              <div className="rounded-xl bg-cream/70 p-3">
+                <p className="text-xs font-medium text-ink/50">Presupuesto del hogar</p>
+                <p className="mt-1 font-display text-xl font-bold text-ink">
+                  {detailBudget ? formatCurrency(Number(detailBudget.amount)) : 'Sin presupuesto'}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-sm font-semibold text-ink">Por persona</p>
+              {detailRows.length === 0 ? (
+                <p className="text-sm text-ink/50">
+                  No hay gastos de esta categoría este mes.
+                </p>
+              ) : (
+                <ul className="divide-y divide-slate-100">
+                  {detailRows.map((row) => (
+                    <li
+                      key={row.memberId ?? 'unassigned'}
+                      className="flex items-center justify-between gap-3 py-2.5 text-sm"
+                    >
+                      <span className="text-ink/65">
+                        {row.memberId === null
+                          ? 'Sin asignar'
+                          : members?.find((member) => member.id === row.memberId)
+                              ?.full_name || 'Miembro'}
+                      </span>
+                      <span className="font-medium text-ink">
+                        {formatCurrency(row.total)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="mt-3 text-xs text-ink/45">
+                La suma por persona coincide con el gasto de la categoría.
+              </p>
+            </div>
+          </div>
+        )}
       </Modal>
 
       <BudgetModal

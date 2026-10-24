@@ -9,7 +9,7 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
 2. Revisa las skills del proyecto en `.agents/skills/` (supabase,
    supabase-postgres-best-practices, frontend-design, web-design-guidelines,
    mobile-app-ui-design, pwa-development, request-refactor-plan,
-   pull-request-workflow).
+   pull-request-workflow, diagram-design).
 3. En un clon nuevo: `README.md` §0 (ruta rápida) y
    `tools/seed-local/README.md` (datos reales de producción para pruebas).
 4. Los cambios funcionales se planifican con **OpenSpec** (`openspec/`):
@@ -51,7 +51,7 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
 - **Nunca** commit ni push directo a `master`: todo cambio va en una rama
   nueva y se integra por Pull Request.
 - Antes de abrir la PR: `pnpm build` + `pnpm lint` + `node tests/e2e-flow.mjs`
-  (con Supabase local, dev server y sandbox reseteados a 47 pasos). Si el
+  (con Supabase local, dev server, SQL y sandbox reseteados). Si el
   cambio toca UI móvil o realtime, sumar `e2e-mobile`/`check-mobile`/
   `e2e-realtime`.
 - GitHub corre los workflows `CI` (build + lint) y `E2E` (Supabase local +
@@ -83,6 +83,6 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
 
 ## Verificación antes de terminar
 
-`pnpm build` + `pnpm lint` + suite e2e completa (47 pasos) en local, y luego
+`pnpm build` + `pnpm lint` + `pnpm test` + SQL + suites e2e en local, y luego
 **PR con CI en verde** (`CI` + `E2E`). Si algún test no se pudo correr en
 local, decirlo explícitamente en la PR.
