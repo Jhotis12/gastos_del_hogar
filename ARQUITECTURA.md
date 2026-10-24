@@ -61,13 +61,15 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 │   ├── shared/              # Capa transversal (sin lógica de dominio):
 │   │   ├── components/      #   ui/* (base: Modal, MoneyInput, SelectInput, Toast…)
 │   │   │                   #   layout/ (Layout: sidebar + header móvil)
-│   │   ├── hooks/           #   useAuth, useTheme, useToast, useMonthParam, useCountUp,
-│   │   │                   #   usePageTitle, useDragToClose, useInstallPrompt,
-│   │   │                   #   useOffline, useRealtimeSync
+│   │   ├── hooks/           #   useAuth, useTheme, useMonthParam, useCountUp,
+│   │   │                   #   usePageTitle, useDragToClose, useDialogA11y,
+│   │   │                   #   useInstallPrompt, useOffline, useRealtimeSync
+│   │   │                   #   (useToast vive en components/ui/Toast.tsx)
 │   │   └── lib/             #   supabase, types, money, dates, images, constants,
 │   │                        #   utils, palettes, scrollLock, offline/*
 │   └── modules/             # 1 módulo por dominio del producto (ver §6):
-│       ├── auth/            #   Login+Registro, Recover, AuthConfirm, Setup
+│       ├── auth/            #   Login+Registro, Recover, AuthConfirm, Setup,
+│       │                   #   Terms y Privacy (rutas /terminos y /privacidad)
 │       ├── dashboard/       #   Dashboard + components/ForecastWidget
 │       ├── calendar/        #   Calendar
 │       ├── history/         #   History
@@ -97,6 +99,177 @@ Aplicación web para gestionar el **presupuesto común de un hogar** (Colombia):
 │   └── fixtures/factura.jpg # Factura de prueba para el escaneo
 └── .agents/skills/          # Skills de opencode del proyecto (incl. pull-request-workflow)
 ```
+
+## 4. Modelo de datos (Supabase/Postgres)
+
+```
+households          id, name, invite_code (único), created_at
+profiles            id (= auth.users.id), household_id → households, full_name,
+                    avatar_path (foto en el bucket avatars),
+                    payday (1-31, default 1)  → día de pago de la persona
+salaries            household_id, profile_id, amount (>0), month (YYYY-MM-01),
+                    pay_date (fecha real de la nómina de esa fila; default = día 1)
+                    UNIQUE(profile_id, month)   → 1 salario por persona y mes
+categories          household_id, name, color, icon
+category_budgets    household_id, category_id, month, amount (>0)
+                    UNIQUE(category_id, month)  → límite mensual por categoría
+expenses            household_id, category_id, paid_by, recurring_id (servicio),
+                    receipt_id (factura), amount, description, expense_date,
+                    splits (uuid[], sin uso desde el frontend)
+incomes             household_id, member_id (opcional), amount (>0), description,
+                    income_date → dinero extra fuera de nómina (venta, regalo,
+                    reembolso…); se suma al fondo común como ingreso
+recurring_expenses  household_id, category_id, paid_by, amount, description,
+                    frequency (monthly|bimonthly|quarterly|yearly),
+                    next_due_date, is_active
+savings_goals       household_id, name, target_amount (>0), saved_amount (>=0),
+                    target_date (opcional)
+wishlist_items      household_id, created_by, name, price (>0), priority
+                    (necesidad|deseo|regalo), status (pendiente|comprado|descartado),
+                    payment_method (contado|cuotas), installments_count (1-60),
+                    interest_rate, cutoff_day, purchase_date, initial_payment
+                    (>=0 y <= price), bought_at
+receipts            household_id, storage_path, uploaded_by,
+                    parsed_data (jsonb, not null default '{}'), created_at
+invite_lookup_attempts  user_id (= auth.users.id), attempts, window_start
+                    → rate limit (10 intentos/10 min) de get_household_by_code
+```
+
+- **Fondo común:** ingreso del mes = `SUM(salaries.amount)` + `SUM(incomes.amount)`
+  del hogar (salarios efectivos: fila del mes o heredado); saldo = ingresos −
+  gastos del mes. El dinero extra (`incomes`) es la única vía de ingreso que no
+  es nómina: se registra desde la sección "Otros ingresos del mes" en Miembros
+  (monto, descripción, fecha y, opcionalmente, quién recibió — si tiene dueño
+  suma en su "Aportado" de los saldos del mes).
+- **Salario efectivo del mes** (`src/modules/members/lib/salaries.ts`): toda
+  fila cuyo `pay_date` (fecha REAL de llegada del dinero) cae dentro del mes —
+  puede haber varias por persona si un pago atrasado de otro mes llegó aquí.
+  Para personas sin fila en el mes se **hereda** el último salario registrado
+  en un mes anterior (badge "Heredado de {mes}"), con `pay_date` calculada con
+  `payDateForMonth(payday, month)`: el día de pago de la persona recortado
+  al último día del mes (p. ej. día 31 en febrero → 28). `pay_date` es la
+  **fuente de verdad** del dinero: al registrar un salario se puede editar
+  la fecha real de llegada (nóminas atrasadas, cambios de día).
+- **Saldo disponible (Dashboard):** RPC `get_running_balance(p_date)` = `SUM`
+  salarios con `pay_date <= p_date` − `SUM` gastos con `expense_date <=
+  p_date`. El frontend la llama con `min(hoy, fin de mes)` — **cash basis**:
+  solo cuenta el dinero realmente recibido; una nómina con `pay_date` futuro
+  (aún no pagada) NO infla el saldo. El hero muestra debajo "Por llegar:
+  $X (nombre, fecha)" por cada salario con `pay_date > hoy` para explicar la
+  diferencia con los ingresos del mes. (Nota: el sobrante acumulado de los
+  meses cerrados coincide con el saldo; durante el mes actual difieren
+  cuando hay nóminas aún no pagadas.)
+- **Sobrantes por mes (Dashboard + `/historial`):** RPC
+  `get_monthly_surpluses()` devuelve una fila por mes desde el primer mes con
+  actividad hasta el actual: `(month, income, expenses, surplus)`, donde
+  sobrante de M = Σ salarios con `pay_date` en M − Σ gastos con
+  `expense_date` en M. La suma acumulada de los sobrantes = `get_running_balance`
+  (el saldo disponible es el sobrante acumulado). Tarjeta en Dashboard
+  (últimos 6 meses, % de ahorro sobre ingresos, delta vs mes anterior) y
+  tabla completa en `/historial` con columna Acumulado (suma corrida).
+- **Fechas de mes** siempre como `YYYY-MM-01` (primer día).
+
+---
+
+## 5. Seguridad
+
+### Row Level Security (RLS)
+Habilitada en todas las tablas. Patrón único: **pertenencia al hogar** mediante
+la función `is_household_member(household_id)` (security definer — evita
+recursión infinita en políticas).
+
+- `profiles`: ver/editar el propio; ver compañeros de hogar.
+- `salaries`: ver del hogar; **insertar/editar/eliminar solo el propio**
+  (`profile_id = auth.uid()`).
+- Resto (`categories`, `category_budgets`, `expenses`, `incomes`,
+  `recurring_expenses`, `savings_goals`, `wishlist_items`, `receipts`):
+  CRUD solo para miembros del hogar.
+- Todas las políticas UPDATE replican su `USING` en el `WITH CHECK` (una fila
+  no puede moverse a otro hogar al editarla).
+- `invite_lookup_attempts` tiene RLS **sin políticas**: solo la usa
+  `get_household_by_code` (security definer).
+- Autorización basada en `auth.uid()` — nunca en `user_metadata`.
+
+### Códigos de invitación
+- Generados con `generate_invite_code()`: **10 hex mayúsculas (40 bits)**,
+  derivadas de `gen_random_uuid()` (sin dependencia de pgcrypto). El código
+  anterior (6 hex = 16.7M) era enumerable por fuerza bruta.
+- `get_household_by_code` tiene **rate limit por usuario: 10 búsquedas cada
+  10 minutos** (tabla `invite_lookup_attempts`, RLS sin políticas); al
+  superarlo lanza excepción que la UI muestra tal cual.
+- Al aplicar la migración de hardening se **regeneraron todos los códigos**
+  existentes (los impresos/compartidos quedaron inválidos).
+
+### RPCs (funciones security definer)
+| RPC | Propósito |
+|-----|-----------|
+| `create_household(p_name)` | Crea hogar + código + perfil + 7 categorías por defecto, atómico. Evita `INSERT…RETURNING` (la RLS filtra antes de ser miembro → 403 PGRST106). |
+| `get_household_by_code(p_code)` | Busca hogar por código (solo con sesión, con rate limit de 10 intentos/10 min por usuario). |
+| `apply_recurring_expense(p_recurring_id, p_month)` | Aplica **un** servicio vencido a `expenses` (con guarda anti-duplicados por mes) y avanza su `next_due_date` según `frequency` (1/2/3/12 meses). Se llama por servicio desde el wizard de "Aplicar al mes". |
+| `get_running_balance(p_date)` | Saldo acumulado del hogar a una fecha: Σ salarios (`pay_date <= p_date`) + Σ incomes (`income_date <= p_date`) − Σ gastos (`expense_date <= p_date`). Security definer con `auth.uid()`. |
+| `get_monthly_surpluses()` | Sobrantes por mes desde el primer mes con actividad hasta el actual: `(month, income, expenses, surplus)` — ingreso del mes = salarios + dinero extra (agrupados por pay_date/income_date/expense_date). Suma acumulada = saldo disponible. |
+
+Todas las funciones `security definer` fijan `search_path = public` y validan
+`auth.uid()` / pertenencia al hogar server-side.
+
+### Edge Function `analyze-receipt`
+- Deno + `@supabase/supabase-js`. Valida JWT, pertenencia al hogar del path
+  **y que el `path` viva dentro de la carpeta `{household_id}/`** del usuario
+  (la descarga usa service_role, que ignora RLS).
+- Descarga la imagen del bucket `receipts` → **Gemini Flash**
+  (`gemini-flash-latest`; modelo `gemini-2.0-flash` tiene cuota 0 con la key
+  actual) → JSON `{comercio, fecha, items[], total}`.
+- CORS habilitado explícitamente (`Access-Control-Allow-Origin: *`).
+- Los errores internos se registran en los logs de la función; al cliente
+  solo llega un mensaje genérico.
+- La `GEMINI_API_KEY` vive **solo en los secrets** del Edge Function.
+- Deploy: `SUPABASE_ACCESS_TOKEN=<pat> supabase functions deploy analyze-receipt`.
+
+### Storage
+Bucket privado `receipts` (límite 8MB, solo jpeg/png/webp), rutas
+`{household_id}/{uuid}.jpg` con políticas de subida/lectura por hogar.
+
+### Headers de seguridad (vercel.json)
+- **CSP** por hash del script inline del tema (`sha256-CXcr/…` verificado
+  contra `dist/index.html`): `default-src 'self'`, `connect-src` solo a
+  `*.supabase.co` (REST/storage/Edge Function + `wss://` de Realtime),
+  `script-src 'self' + hash` (sin `unsafe-inline`), `style-src` con
+  `unsafe-inline` (Tailwind runtime + acentos por atributo), `img-src` con
+  `blob:`/`data:`/supabase, `frame-ancestors 'none'`, `object-src 'none'`.
+- `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+  `Referrer-Policy: strict-origin-when-cross-origin`, HSTS
+  (`max-age=31536000; includeSubDomains; preload`),
+  `Permissions-Policy: camera=(self)…` (la cámara solo para el escaneo de
+  facturas) y `Cross-Origin-Opener/Resource-Policy: same-origin`.
+- ⚠️ Si cambia el script inline de `index.html`, hay que recalcular el hash
+  (`node -e` con `crypto.createHash('sha256')`) y actualizarlo en `vercel.json`.
+
+### Autenticación
+- `minimum_password_length = 8` (config.toml local; en producción se cambia
+  desde el dashboard de Supabase → Auth) y validación ≥8 en el registro
+  (Login.tsx).
+
+### Pendientes conocidos (no reintroducir ni olvidar)
+Hallazgos de la auditoría que producción tiene hoy y que **no** están
+reproducidos en migraciones (un entorno recreado desde cero se comporta
+distinto):
+
+- El bucket `receipts` y sus políticas existen en producción creados a mano (y
+  en el snapshot `supabase/schema.sql`), pero **ninguna migración los crea**:
+  un `supabase db reset` local deja el bucket sin políticas.
+- Los índices `expenses (receipt_id)`, `receipts (household_id)` y
+  `wishlist_items (household_id)` no están en migraciones, y
+  `receipts.parsed_data` es `not null default '{}'` solo en producción.
+- La política INSERT de `households` es `with check (true)` sin restringir rol
+  y en producción `anon` conserva los `GRANT ALL` que aplicó el dashboard
+  (las migraciones solo otorgan `select` a `anon`).
+- Unirse a un hogar escribe `profiles.household_id` con un UPDATE directo
+  (la política solo exige `auth.uid() = id`), así que el código de invitación y
+  su rate limit se pueden eludir conociendo el UUID del hogar.
+- `analyze-receipt` no tiene rate limit por usuario.
+
+---
+
 
 ## 6. Patrones de diseño (frontend)
 
@@ -171,9 +344,12 @@ rangos vacíos en UTC−5 (bug histórico: "los gastos no se registraban").
 Skill de referencia: `mobile-app-ui-design` (`.agents/skills/`).
 - **Navegación inferior** (`Layout.tsx`): barra fija con 4 accesos principales
   (Inicio, Gastos, Ahorros, Servicios) + botón "Más" que abre un **sheet**
-  inferior (Calendario, Miembros, Categorías, Cerrar sesión). El sidebar de
-  desktop permanece intacto (la barra inferior usa `role="navigation"`, no
-  `<nav>`, para no colisionar con los selectores del test e2e).
+  inferior con el resto del menú (`NAV_ITEMS` sin los 4 de la barra: Calendario,
+  Historial, Proyección, Quiero comprar, Miembros y Salarios, Servicios,
+  Categorías, Perfil y Hogar) más el instalador PWA, el toggle de tema y
+  "Cerrar sesión". El sidebar de desktop permanece intacto (la barra inferior
+  usa `role="navigation"`, no `<nav>`, para no colisionar con los selectores del
+  test e2e).
 - **Login/Registro**: split en desktop (panel de marca en gradiente pine con
   features) y móvil centrado; el **login es el apartado principal** y el
   registro se alcanza con un enlace ("Crea una aquí") que alterna la vista con
@@ -291,8 +467,10 @@ Nada de esto requiere cambios en la BD: es todo frontend.
   (no hay SW) para que navegar sin red no falle con "error loading
   dynamically imported module".
 - **Alcance**: fotos de facturas (storage + Edge Function), metas,
-  presupuestos, categorías y servicios siguen requiriendo red. Conflictos
-  multi-dispositivo: último en escribir gana.
+  presupuestos, categorías, servicios y la lista de deseos («Quiero comprar»)
+  siguen requiriendo red: sus acciones fallan con un aviso claro si no hay
+  conexión, sin encolarse. Conflictos multi-dispositivo: último en escribir
+  gana.
 - **El shell ya estaba cubierto**: el SW precachea todos los estáticos y
   `navigateFallback` sirve la app sin internet; faltaba la capa de datos.
 

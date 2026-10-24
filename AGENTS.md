@@ -7,7 +7,8 @@ App de gestión de gastos del hogar (React 19 + TS + Vite + Tailwind v4 + Supaba
 1. **Lee `ARQUITECTURA.md`** — es la guía canónica: tecnologías, modelo de
    datos, RLS/RPCs, patrones de diseño y bugs ya corregidos.
 2. Revisa las skills del proyecto en `.agents/skills/` (supabase,
-   frontend-design, web-design-guidelines, request-refactor-plan,
+   supabase-postgres-best-practices, frontend-design, web-design-guidelines,
+   mobile-app-ui-design, pwa-development, request-refactor-plan,
    pull-request-workflow).
 3. En un clon nuevo: `README.md` §0 (ruta rápida) y
    `tools/seed-local/README.md` (datos reales de producción para pruebas).
