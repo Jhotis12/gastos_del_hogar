@@ -9,11 +9,13 @@ import UserAvatar from '@/shared/components/ui/UserAvatar'
 import MonthPicker from '@/shared/components/ui/MonthPicker'
 import PageSkeleton from '@/shared/components/ui/PageSkeleton'
 import QueryError from '@/shared/components/ui/QueryError'
+import { fieldBase } from '@/shared/components/ui/fieldClass'
 import ReceiptCapture from '@/modules/expenses/components/ReceiptCapture'
 import ReceiptResult from '@/modules/expenses/components/ReceiptResult'
 import ReceiptViewer from '@/modules/expenses/components/ReceiptViewer'
 import { useToast } from '@/shared/components/ui/Toast'
 import { useDragToClose } from '@/shared/hooks/useDragToClose'
+import { useDialogA11y } from '@/shared/hooks/useDialogA11y'
 import { cn } from '@/shared/lib/utils'
 import type { ExpenseWithRelations, Receipt } from '@/shared/lib/types'
 import { errorMessage } from '@/shared/lib/utils'
@@ -23,6 +25,7 @@ import { formatCurrency } from '@/shared/lib/money'
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
 import Fab from '@/shared/components/ui/Fab'
 import { useMonthParam } from '@/shared/hooks/useMonthParam'
+import { OFFLINE_QUEUED } from '@/shared/lib/offline/offlineSafe'
 
 export default function Expenses() {
   usePageTitle('Gastos')
@@ -39,6 +42,8 @@ export default function Expenses() {
   const toast = useToast()
   const fabDrag = useDragToClose(() => setFabOpen(false))
   const fabRequestClose = fabDrag.requestClose
+  // El action sheet del FAB se comporta como diálogo (Escape, foco, Tab).
+  useDialogA11y(fabOpen, fabRequestClose, fabDrag.panelRef)
 
   const { data: expenses, isLoading, error, refetch } = useExpenses(month)
   const addExpense = useAddExpense()
@@ -88,11 +93,11 @@ export default function Expenses() {
   }) => {
     try {
       if (editing) {
-        await updateExpense.mutateAsync({ id: editing.id, ...input })
-        toast.success('Gasto actualizado')
+        const res = await updateExpense.mutateAsync({ id: editing.id, ...input })
+        if (res !== OFFLINE_QUEUED) toast.success('Gasto actualizado')
       } else {
-        await addExpense.mutateAsync(input)
-        toast.success('Gasto registrado')
+        const res = await addExpense.mutateAsync(input)
+        if (res !== OFFLINE_QUEUED) toast.success('Gasto registrado')
       }
     } catch (err) {
       toast.error(errorMessage(err))
@@ -103,8 +108,8 @@ export default function Expenses() {
   const handleDelete = async () => {
     if (!deleting) return
     try {
-      await deleteExpense.mutateAsync(deleting.id)
-      toast.success('Gasto eliminado')
+      const res = await deleteExpense.mutateAsync(deleting.id)
+      if (res !== OFFLINE_QUEUED) toast.success('Gasto eliminado')
       setDeleting(null)
     } catch (err) {
       toast.error(errorMessage(err))
@@ -153,12 +158,13 @@ export default function Expenses() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por descripción…"
-            className="w-full rounded-xl border border-slate-200 bg-surface py-2.5 pl-9 pr-3 text-base text-ink/70 focus:border-pine-500 focus:outline-none sm:w-56"
+            aria-label="Buscar por descripción"
+            className={cn(fieldBase, 'py-2.5 pl-9 pr-3 sm:w-56')}
           />
         </div>
         <button
           onClick={() => setCategoryFilter('all')}
-          className={`rounded-full px-3.5 py-2 text-xs font-medium ${
+          className={`inline-flex min-h-11 items-center rounded-full px-3.5 py-2 text-xs font-medium ${
             categoryFilter === 'all'
               ? 'bg-ink text-cream'
               : 'bg-surface text-ink/55 ring-1 ring-ink/10 hover:bg-cream'
@@ -174,7 +180,7 @@ export default function Expenses() {
               <button
                 key={cat.id}
                 onClick={() => setCategoryFilter(cat.id)}
-                className={`rounded-full px-3.5 py-2 text-xs font-medium ${
+                className={`inline-flex min-h-11 items-center rounded-full px-3.5 py-2 text-xs font-medium ${
                   categoryFilter === cat.id
                     ? 'bg-ink text-cream'
                     : 'bg-surface text-ink/55 ring-1 ring-ink/10 hover:bg-cream'
@@ -188,7 +194,7 @@ export default function Expenses() {
         {searched.length > 0 && (
           <button
             onClick={exportCSV}
-            className="ml-auto inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-surface px-3 py-2 text-xs font-medium text-ink/55 hover:bg-cream"
+            className="ml-auto inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-slate-200 bg-surface px-3 py-2 text-xs font-medium text-ink/55 hover:bg-cream"
           >
             <Download size={16} />
             Exportar CSV
@@ -313,9 +319,11 @@ export default function Expenses() {
         onClose={() => setResultReceipt(null)}
         onCreate={async (input) => {
           if (!resultReceipt) return
-          await addExpense.mutateAsync({ ...input, receipt_id: resultReceipt.id })
+          const res = await addExpense.mutateAsync({ ...input, receipt_id: resultReceipt.id })
           setMonth(monthKey(new Date(`${input.expense_date}T00:00:00`)))
           setResultReceipt(null)
+          // ReceiptResult decide si muestra su aviso (el offline ya avisó).
+          return res
         }}
       />
 
@@ -350,6 +358,9 @@ export default function Expenses() {
           <div
             ref={fabDrag.panelRef}
             style={fabDrag.style}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Acciones de gasto"
             className={cn(
               'animate-sheet-up absolute inset-x-0 bottom-0 rounded-t-3xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl',
               !fabDrag.dragging && !fabDrag.closing && 'transition-transform duration-300 ease-out',

@@ -1,6 +1,7 @@
 import { CalendarDays } from 'lucide-react'
 import type { InputHTMLAttributes } from 'react'
 import { cn } from '@/shared/lib/utils'
+import { fieldBase } from '@/shared/components/ui/fieldClass'
 
 interface DateInputProps extends InputHTMLAttributes<HTMLInputElement> {
   className?: string
@@ -13,7 +14,7 @@ export default function DateInput({ className, ...props }: DateInputProps) {
       <input
         type="date"
         {...props}
-        className="w-full rounded-xl border border-slate-200 bg-surface py-3 pl-9 pr-4 text-base text-ink focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20"
+        className={cn(fieldBase, 'py-3 pl-9 pr-4')}
       />
       <CalendarDays
         size={16}

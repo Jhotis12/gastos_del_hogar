@@ -39,7 +39,7 @@ export default function UpdatePrompt() {
         <div className="flex shrink-0 items-center gap-1.5">
           <button
             onClick={() => updateServiceWorker(true)}
-            className="inline-flex min-h-10 items-center rounded-lg bg-pine-700 px-3 py-2 text-sm font-medium text-white hover:bg-pine-800"
+            className="inline-flex min-h-11 items-center rounded-lg bg-pine-700 px-3 py-2 text-sm font-medium text-white hover:bg-pine-800"
           >
             Actualizar
           </button>

@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
-import { lockBodyScroll, unlockBodyScroll } from '@/shared/lib/scrollLock'
 import { useDragToClose } from '@/shared/hooks/useDragToClose'
+import { useDialogA11y } from '@/shared/hooks/useDialogA11y'
 import { cn } from '@/shared/lib/utils'
 
 interface ModalProps {
@@ -20,52 +20,8 @@ export default function Modal({ open, title, onClose, children }: ModalProps) {
     panelRef.current = el
     drag.panelRef.current = el
   }
-  const previousFocus = useRef<HTMLElement | null>(null)
-  // onClose cambia de identidad en cada render del formulario padre (p. ej.
-  // al escribir en un input): se guarda en un ref para que el efecto de foco
-  // y scroll-lock corra solo cuando el modal se abre/cierra, no en cada
-  // render (eso movía el foco al botón X al teclear).
-  const requestCloseRef = useRef(drag.requestClose)
-  requestCloseRef.current = drag.requestClose
-
-  useEffect(() => {
-    if (!open) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        requestCloseRef.current()
-        return
-      }
-      // Focus trap: Tab/Shift+Tab se mantienen dentro del modal
-      if (e.key !== 'Tab') return
-      const panel = panelRef.current
-      if (!panel) return
-      const focusables = panel.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      )
-      if (focusables.length === 0) return
-      const first = focusables[0]
-      const last = focusables[focusables.length - 1]
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault()
-        first.focus()
-      }
-    }
-    // Scroll-lock del fondo: contador compartido (soporta modales anidados
-    // sin dejar el fondo bloqueado).
-    lockBodyScroll()
-    previousFocus.current = document.activeElement as HTMLElement | null
-    closeRef.current?.focus()
-
-    window.addEventListener('keydown', handler)
-    return () => {
-      window.removeEventListener('keydown', handler)
-      unlockBodyScroll()
-      previousFocus.current?.focus()
-    }
-  }, [open])
+  // Escape, Tab atrapado, scroll-lock y foco inicial/restaurado.
+  useDialogA11y(open, drag.requestClose, panelRef, closeRef)
 
   if (!open) return null
 

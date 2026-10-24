@@ -285,6 +285,7 @@ export default function Login() {
                     )}
                   />
                   <input
+                    id="login-nombre"
                     type="text"
                     required
                     value={name}

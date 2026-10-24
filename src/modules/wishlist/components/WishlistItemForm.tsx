@@ -13,9 +13,8 @@ import { currentMonthKey, formatDate } from '@/shared/lib/dates'
 import { formatCurrency, parseMoneyInput } from '@/shared/lib/money'
 import { cn, errorMessage } from '@/shared/lib/utils'
 import type { WishlistItem } from '@/shared/lib/types'
+import { fieldClass } from '@/shared/components/ui/fieldClass'
 
-const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 const PRIORITIES: { value: WishlistItem['priority']; label: string }[] = [
   { value: 'necesidad', label: 'Necesidad' },
@@ -144,14 +143,14 @@ export default function WishlistItemForm({ open, initial, onClose }: Props) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ej. Nevera, Viaje a la costa, Zapatos"
-            className={inputClass}
+            className={fieldClass}
             autoComplete="off"
           />
         </div>
 
         <div>
           <label className="mb-1.5 block text-sm font-medium text-ink/70">Precio</label>
-          <MoneyInput value={price} onChange={setPrice} placeholder="2.500.000" />
+          <MoneyInput label="Precio" value={price} onChange={setPrice} placeholder="2.500.000" />
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -182,7 +181,7 @@ export default function WishlistItemForm({ open, initial, onClose }: Props) {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-ink/70">Abono inicial (contado)</label>
-                <MoneyInput value={abono} onChange={setAbono} placeholder="500.000" />
+                <MoneyInput label="Abono inicial (contado)" value={abono} onChange={setAbono} placeholder="500.000" />
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-ink/70">Nº de cuotas</label>
