@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { cn } from '@/shared/lib/utils'
+import { fieldBase } from '@/shared/components/ui/fieldClass'
 import { formatMoneyInput, parseMoneyInput } from '@/shared/lib/money'
 
 interface MoneyInputProps {
@@ -9,6 +10,8 @@ interface MoneyInputProps {
   className?: string
   autoFocus?: boolean
   required?: boolean
+  /** Etiqueta accesible cuando el campo tiene un rótulo visual aparte. */
+  label?: string
 }
 
 // Campo de monto en pesos colombianos: acepta "450.000", "2.500.000,50" o "450000".
@@ -21,6 +24,7 @@ export default function MoneyInput({
   className,
   autoFocus,
   required,
+  label,
 }: MoneyInputProps) {
   const [text, setText] = useState(() => {
     const parsed = parseMoneyInput(value ?? '')
@@ -72,11 +76,12 @@ export default function MoneyInput({
         enterKeyHint="done"
         required={required}
         autoFocus={autoFocus}
+        aria-label={label}
         value={text}
         onChange={handleChange}
         onBlur={handleBlur}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-slate-200 bg-surface py-3 pl-8 pr-4 text-base tabular-nums text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20"
+        className={cn(fieldBase, 'py-3 pl-8 pr-4 tabular-nums')}
       />
     </div>
   )

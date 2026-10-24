@@ -143,7 +143,7 @@ export default function Forecast() {
                   onClick={() => setMonths(h)}
                   aria-pressed={months === h}
                   className={cn(
-                    'min-h-9 rounded-lg px-2 text-sm font-medium transition-colors sm:px-3',
+                    'min-h-11 rounded-lg px-2 text-sm font-medium transition-colors sm:px-3',
                     months === h
                       ? 'bg-pine-700 text-white shadow-sm'
                       : 'text-ink/55 hover:text-ink',

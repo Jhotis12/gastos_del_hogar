@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { AlertCircle, ArrowLeft, CheckCircle2, Lock } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { supabase } from '@/shared/lib/supabase'
@@ -25,6 +25,7 @@ export default function Recover() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [capsLock, setCapsLock] = useState(false)
+  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     // Llegada directa sin el flujo de recuperación (sin sesión ni token)
@@ -54,13 +55,17 @@ export default function Recover() {
       const { error: updateError } = await supabase.auth.updateUser({ password })
       if (updateError) throw updateError
       toast.success('Contraseña actualizada')
-      navigate('/', { replace: true })
+      setSaved(true)
     } catch (err) {
       setError(errorMessage(err))
     } finally {
       setBusy(false)
     }
   }
+
+  // Redirección declarativa: el destino final (hogar, setup o login) lo
+  // resuelven los guards de App.tsx, no este formulario.
+  if (saved) return <Navigate to="/" replace />
 
   return (
     <div className="force-light flex min-h-screen items-center justify-center bg-cream p-4">

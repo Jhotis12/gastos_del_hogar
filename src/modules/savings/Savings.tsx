@@ -15,7 +15,7 @@ import { formatCurrency } from '@/shared/lib/money'
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
 import Fab from '@/shared/components/ui/Fab'
 import { useForecast } from '@/modules/forecast/hooks/useForecast'
-import { shortMonthLabel, shiftMonth } from '@/shared/lib/dates'
+import { formatDate, shortMonthLabel, shiftMonth } from '@/shared/lib/dates'
 
 export default function Savings() {
   usePageTitle('Metas de Ahorro')
@@ -134,7 +134,7 @@ export default function Savings() {
                     </p>
                     {g.target_date && (
                       <p className="mt-0.5 text-xs text-ink/40">
-                        Para el {g.target_date}
+                        Para el {formatDate(g.target_date)}
                       </p>
                     )}
                   </div>
@@ -183,14 +183,14 @@ export default function Savings() {
                   )}
                   <button
                     onClick={() => setAdjusting({ goal: g, mode: 'deposit' })}
-                    className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-pine-50 px-3 py-2 text-xs font-medium text-pine-600 hover:bg-pine-100"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-50 px-3 py-2 text-xs font-medium text-pine-600 hover:bg-pine-100"
                   >
                     <ArrowDownToLine size={14} />
                     Depositar
                   </button>
                   <button
                     onClick={() => setAdjusting({ goal: g, mode: 'withdraw' })}
-                    className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-gold-100/60 px-3 py-2 text-xs font-medium text-gold-600 hover:bg-gold-100"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-gold-100/60 px-3 py-2 text-xs font-medium text-gold-600 hover:bg-gold-100"
                   >
                     <ArrowUpFromLine size={14} />
                     Retirar

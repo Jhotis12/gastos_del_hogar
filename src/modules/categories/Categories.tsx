@@ -7,6 +7,7 @@ import ConfirmDialog from '@/shared/components/ui/ConfirmDialog'
 import EmptyState from '@/shared/components/ui/EmptyState'
 import PageSkeleton from '@/shared/components/ui/PageSkeleton'
 import QueryError from '@/shared/components/ui/QueryError'
+import { fieldClass } from '@/shared/components/ui/fieldClass'
 import { useToast } from '@/shared/components/ui/Toast'
 import type { Category } from '@/shared/lib/types'
 import { cn, errorMessage } from '@/shared/lib/utils'
@@ -128,7 +129,7 @@ export default function Categories() {
                     <p className="truncate text-sm font-medium text-ink">{c.name}</p>
                     <button
                       onClick={() => openBudget(c)}
-                      className="mt-0.5 inline-flex min-h-8 items-center gap-1 text-xs text-ink/40 hover:text-pine-600"
+                      className="mt-0.5 inline-flex min-h-11 items-center gap-1 text-xs text-ink/40 hover:text-pine-600"
                       aria-label="Editar presupuesto"
                     >
                       <Wallet size={12} />
@@ -165,7 +166,7 @@ export default function Categories() {
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-base focus:border-pine-500 focus:outline-none"
+              className={fieldClass}
               placeholder="Ej. Educación"
             />
           </div>

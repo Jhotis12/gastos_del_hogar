@@ -12,9 +12,8 @@ import { errorMessage } from '@/shared/lib/utils'
 import { FREQUENCIES } from '@/shared/lib/constants'
 import { parseMoneyInput } from '@/shared/lib/money'
 import { todayISO } from '@/shared/lib/dates'
+import { fieldClass } from '@/shared/components/ui/fieldClass'
 
-const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 export default function ServiceForm({
   open,
@@ -101,13 +100,14 @@ export default function ServiceForm({
             autoFocus
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className={inputClass}
+            className={fieldClass}
             enterKeyHint="next" placeholder="Ej. Internet del hogar"
           />
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-ink/70">Monto</label>
           <MoneyInput
+            label="Monto"
             value={amount}
             onChange={setAmount}
             placeholder="Ej. 450.000"

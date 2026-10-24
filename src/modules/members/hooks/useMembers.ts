@@ -4,8 +4,6 @@ import { useAuth } from '@/shared/hooks/useAuth'
 import { supabase } from '@/shared/lib/supabase'
 import { effectiveSalariesForMonth } from '@/modules/members/lib/salaries'
 import { resizeAvatar } from '@/shared/lib/images'
-import { errorMessage } from '@/shared/lib/utils'
-import { useToast } from '@/shared/components/ui/Toast'
 import { runWithOfflineFallback, invalidateIfOnline } from '@/shared/lib/offline/offlineSafe'
 import { enqueueSalaryUpsert, enqueueSalaryDelete } from '@/shared/lib/offline/optimistic'
 import type { EffectiveSalary, Profile, Salary } from '@/shared/lib/types'
@@ -185,7 +183,6 @@ export function useDeleteSalary() {
 // efectivos porque la fecha de pago heredada depende del día.
 export function useUpdatePayday() {
   const queryClient = useQueryClient()
-  const toast = useToast()
 
   return useMutation({
     mutationFn: async ({ profileId, payday }: { profileId: string; payday: number }) => {
@@ -195,14 +192,12 @@ export function useUpdatePayday() {
         .eq('id', profileId)
       if (error) throw error
     },
-    onSuccess: (_d, vars) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['members'] })
       queryClient.invalidateQueries({ queryKey: ['salaries'] })
       queryClient.invalidateQueries({ queryKey: ['running-balance'] })
       queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
-      toast.success(`Día de pago: ${vars.payday}`)
     },
-    onError: (err) => toast.error(errorMessage(err)),
   })
 }
 

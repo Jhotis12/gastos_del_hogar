@@ -2,16 +2,26 @@ import { Link } from 'react-router-dom'
 import { TrendingUp } from 'lucide-react'
 import { useForecast } from '@/modules/forecast/hooks/useForecast'
 import { savingsInMonths } from '@/modules/forecast/lib/forecast'
+import QueryError from '@/shared/components/ui/QueryError'
 import { shortMonthLabel } from '@/shared/lib/dates'
 import { formatCurrency } from '@/shared/lib/money'
 
 // Widget compacto: proyección del próximo mes y ahorro a 3 meses.
 export default function ForecastWidget() {
-  const { data, error, isLoading } = useForecast()
+  const { data, error, isLoading, refetch } = useForecast()
   const next = data?.totalExpense?.median
   const savings = data?.surplus ? savingsInMonths(data.baseBalance, data.surplus, 3) : null
 
-  if (isLoading || error || !data || next === undefined || !savings) return null
+  if (isLoading) return null
+  // Un fallo no puede esconder el widget en silencio: se muestra y se puede reintentar.
+  if (error) {
+    return (
+      <div className="animate-fade-up" style={{ animationDelay: '360ms' }}>
+        <QueryError error={error} onRetry={refetch} />
+      </div>
+    )
+  }
+  if (!data || next === undefined || !savings) return null
 
   return (
     <Link

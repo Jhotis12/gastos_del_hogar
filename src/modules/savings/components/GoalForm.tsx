@@ -7,9 +7,8 @@ import { useToast } from '@/shared/components/ui/Toast'
 import type { SavingsGoal } from '@/shared/lib/types'
 import { errorMessage } from '@/shared/lib/utils'
 import { parseMoneyInput } from '@/shared/lib/money'
+import { fieldClass } from '@/shared/components/ui/fieldClass'
 
-const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 type GoalModalProps = {
   open: boolean
@@ -89,7 +88,7 @@ export default function GoalForm({ open, initial, onClose }: GoalModalProps) {
             autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className={inputClass}
+            className={fieldClass}
             enterKeyHint="next" placeholder="Ej. Viaje de fin de año"
           />
         </div>
@@ -98,13 +97,13 @@ export default function GoalForm({ open, initial, onClose }: GoalModalProps) {
             <label className="mb-1 block text-sm font-medium text-ink/70">
               Monto objetivo
             </label>
-            <MoneyInput value={target} onChange={setTarget} placeholder="Ej. 2.000.000" />
+            <MoneyInput label="Monto objetivo" value={target} onChange={setTarget} placeholder="Ej. 2.000.000" />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-ink/70">
               Ahorrado inicial
             </label>
-            <MoneyInput value={saved} onChange={setSaved} placeholder="0" />
+            <MoneyInput label="Ahorrado inicial" value={saved} onChange={setSaved} placeholder="0" />
           </div>
         </div>
         <div>

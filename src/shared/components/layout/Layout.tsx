@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -19,6 +19,7 @@ import {
 import { useAuth } from '@/shared/hooks/useAuth'
 import { useRealtimeSync } from '@/shared/hooks/useRealtimeSync'
 import { useDragToClose } from '@/shared/hooks/useDragToClose'
+import { useDialogA11y } from '@/shared/hooks/useDialogA11y'
 import { cn } from '@/shared/lib/utils'
 import AppLogo from '@/shared/components/ui/AppLogo'
 import ConfirmDialog from '@/shared/components/ui/ConfirmDialog'
@@ -104,15 +105,8 @@ export default function Layout() {
   const closeMore = () => setMoreOpen(false)
   const moreDrag = useDragToClose(closeMore)
   const moreRequestClose = moreDrag.requestClose
-
-  useEffect(() => {
-    if (!moreOpen) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeMore()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [moreOpen])
+  // Sheet "Más": mismo comportamiento de diálogo que el Modal compartido.
+  useDialogA11y(moreOpen, moreRequestClose, moreDrag.panelRef)
 
   return (
     <div className="min-h-screen bg-cream">
@@ -246,6 +240,9 @@ export default function Layout() {
           <div
             ref={moreDrag.panelRef}
             style={moreDrag.style}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Más opciones"
             className={cn(
               'animate-sheet-up absolute inset-x-0 bottom-0 max-h-[80dvh] overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl',
               !moreDrag.dragging && !moreDrag.closing && 'transition-transform duration-300 ease-out',

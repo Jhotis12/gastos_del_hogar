@@ -35,7 +35,7 @@ export function shiftMonth(key: string, delta: number): string {
 
 export function formatDate(iso: string): string {
   return new Date(iso + (iso.length === 10 ? 'T00:00:00' : '')).toLocaleDateString(
-    'es-MX',
+    'es-CO',
     { day: 'numeric', month: 'short' },
   )
 }

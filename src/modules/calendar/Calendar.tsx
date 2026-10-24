@@ -18,6 +18,7 @@ import { formatCurrency } from '@/shared/lib/money'
 
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
 import { useMonthParam } from '@/shared/hooks/useMonthParam'
+import { OFFLINE_QUEUED } from '@/shared/lib/offline/offlineSafe'
 
 export default function Calendar() {
   usePageTitle('Calendario')
@@ -84,8 +85,8 @@ export default function Calendar() {
     expense_date: string
   }) => {
     try {
-      await addExpense.mutateAsync(input)
-      toast.success('Gasto registrado')
+      const res = await addExpense.mutateAsync(input)
+      if (res !== OFFLINE_QUEUED) toast.success('Gasto registrado')
     } catch (err) {
       toast.error(errorMessage(err))
       throw err

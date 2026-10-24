@@ -9,6 +9,7 @@ import { useMembers } from '@/modules/members/hooks/useMembers'
 import type { ExpenseWithRelations } from '@/shared/lib/types'
 import { parseMoneyInput } from '@/shared/lib/money'
 import { todayISO } from '@/shared/lib/dates'
+import { fieldClass } from '@/shared/components/ui/fieldClass'
 
 interface ExpenseFormProps {
   open: boolean
@@ -25,8 +26,6 @@ interface ExpenseFormProps {
   busy?: boolean
 }
 
-const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 export default function ExpenseForm({
   open,
@@ -104,6 +103,7 @@ export default function ExpenseForm({
         <div>
           <label className="mb-1 block text-sm font-medium text-ink/70">Monto</label>
           <MoneyInput
+            label="Monto"
             value={amount}
             onChange={setAmount}
             autoFocus
@@ -112,14 +112,15 @@ export default function ExpenseForm({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-ink/70">
+          <label htmlFor="expense-description" className="mb-1 block text-sm font-medium text-ink/70">
             Descripción
           </label>
           <input
+            id="expense-description"
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className={inputClass}
+            className={fieldClass}
             enterKeyHint="next" placeholder="Ej. Supermercado del mes"
           />
         </div>
@@ -130,6 +131,7 @@ export default function ExpenseForm({
               Categoría
             </label>
             <SelectInput
+              aria-label="Categoría"
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
             >
@@ -146,6 +148,7 @@ export default function ExpenseForm({
               ¿Quién pagó?
             </label>
             <SelectInput
+              aria-label="¿Quién pagó?"
               value={paidBy}
               onChange={(e) => setPaidBy(e.target.value)}
             >
@@ -160,8 +163,9 @@ export default function ExpenseForm({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-ink/70">Fecha</label>
+          <label htmlFor="expense-date" className="mb-1 block text-sm font-medium text-ink/70">Fecha</label>
           <DateInput
+            id="expense-date"
             type="date"
             required
             value={date}

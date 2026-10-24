@@ -67,6 +67,7 @@ export default function AdjustModal({ open, goal, mode, onClose }: AdjustModalPr
               {mode === 'deposit' ? 'Monto a depositar' : 'Monto a retirar'}
             </label>
             <MoneyInput
+              label={mode === 'deposit' ? 'Monto a depositar' : 'Monto a retirar'}
               value={amount}
               onChange={setAmount}
               autoFocus

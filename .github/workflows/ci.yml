@@ -2,7 +2,8 @@ name: CI
 
 # Validación rápida en cada PR a master: typecheck + build + lint.
 # El flujo completo (Supabase local + suites e2e) corre en e2e.yml.
-# Rama master protegida: exigir estos checks antes de aceptar la PR.
+# Los checks se exigen por convención (GitHub Free no permite branch
+# protection): Jhotis12 revisa y no se mergea con checks en rojo.
 # Ver .agents/skills/pull-request-workflow/SKILL.md
 
 on:

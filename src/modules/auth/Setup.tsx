@@ -2,9 +2,8 @@ import { useState } from 'react'
 import { Home, UserPlus } from 'lucide-react'
 import AppLogo from '@/shared/components/ui/AppLogo'
 import { useCreateHousehold, useJoinHousehold } from '@/modules/profile/hooks/useHousehold'
+import { fieldClass } from '@/shared/components/ui/fieldClass'
 
-const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 export default function Setup() {
   const createHousehold = useCreateHousehold()
@@ -86,7 +85,7 @@ export default function Setup() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className={inputClass}
+                className={fieldClass}
                 autoComplete="organization"
                 autoCapitalize="words"
                 placeholder="Ej. Casa de la familia"
@@ -102,7 +101,7 @@ export default function Setup() {
                 required
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
-                className={`${inputClass} uppercase tracking-widest`}
+                className={`${fieldClass} uppercase tracking-widest`}
                 autoCapitalize="characters"
                 autoCorrect="off"
                 spellCheck={false}

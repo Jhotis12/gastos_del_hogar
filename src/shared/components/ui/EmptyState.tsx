@@ -24,8 +24,8 @@ export default function EmptyState({ icon, title, hint, action, compact }: Empty
           {icon}
         </span>
       )}
-      <p className="text-sm text-ink/40">{title}</p>
-      {hint && <p className="mt-1 text-xs text-ink/30">{hint}</p>}
+      <p className="text-sm font-medium text-ink/80">{title}</p>
+      {hint && <p className="mt-1 text-xs text-ink/70">{hint}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   )
