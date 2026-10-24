@@ -9,11 +9,11 @@ import { useMembers } from '@/modules/members/hooks/useMembers'
 import { useToast } from '@/shared/components/ui/Toast'
 import type { Receipt } from '@/shared/lib/types'
 import { errorMessage } from '@/shared/lib/utils'
+import { OFFLINE_QUEUED } from '@/shared/lib/offline/offlineSafe'
 import { formatCurrency, parseMoneyInput } from '@/shared/lib/money'
 import { todayISO } from '@/shared/lib/dates'
+import { fieldClass } from '@/shared/components/ui/fieldClass'
 
-const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 interface ReceiptResultProps {
   receipt: Receipt | null
@@ -25,7 +25,7 @@ interface ReceiptResultProps {
     category_id: string | null
     paid_by: string | null
     expense_date: string
-  }) => Promise<void>
+  }) => Promise<unknown>
 }
 
 export default function ReceiptResult({ receipt, busy, onClose, onCreate }: ReceiptResultProps) {
@@ -54,6 +54,10 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
   const items = useMemo(() => receipt?.parsed_data.items ?? [], [receipt])
   const itemsTotal = items.reduce((s, i) => s + Number(i.subtotal ?? 0), 0)
 
+  // El campo llega crudo del análisis ("20500") o formateado si el usuario lo
+  // edita ("20.500"): siempre se interpreta con la convención colombiana.
+  const totalValue = useMemo(() => (total ? parseMoneyInput(total) : null), [total])
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!receipt) return
@@ -67,14 +71,14 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
       return
     }
     try {
-      await onCreate({
+      const res = await onCreate({
         amount,
         description: comercio.trim(),
         category_id: categoryId || null,
         paid_by: paidBy || null,
         expense_date: date,
       })
-      toast.success('Gasto creado desde la factura')
+      if (res !== OFFLINE_QUEUED) toast.success('Gasto creado desde la factura')
     } catch (err) {
       toast.error(errorMessage(err))
       throw err
@@ -123,10 +127,10 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
                 TOTAL
               </span>
               <span className="font-display text-xl font-bold text-ink">
-                {total ? formatCurrency(Number(total)) : formatCurrency(itemsTotal)}
+                {formatCurrency(totalValue ?? itemsTotal)}
               </span>
             </div>
-            {items.length > 0 && Number(total) !== itemsTotal && (
+            {items.length > 0 && totalValue !== itemsTotal && (
               <p className="mt-1 text-xs text-ink/40">
                 Suma de items: {formatCurrency(itemsTotal)}
               </p>
@@ -141,7 +145,7 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
               type="text"
               value={comercio}
               onChange={(e) => setComercio(e.target.value)}
-              className={inputClass}
+              className={fieldClass}
               placeholder="Ej. Supermercado Don José"
             />
           </div>
@@ -149,7 +153,7 @@ export default function ReceiptResult({ receipt, busy, onClose, onCreate }: Rece
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-sm font-medium text-ink/70">Total</label>
-              <MoneyInput value={total} onChange={setTotal} placeholder="Ej. 20.500" />
+              <MoneyInput label="Total" value={total} onChange={setTotal} placeholder="Ej. 20.500" />
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-ink/70">Fecha</label>

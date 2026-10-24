@@ -7,6 +7,7 @@ import { useToast } from '@/shared/components/ui/Toast'
 import type { RecurringExpenseWithRelations } from '@/shared/lib/types'
 import { errorMessage } from '@/shared/lib/utils'
 import { FREQUENCY_LABELS } from '@/shared/lib/constants'
+import { formatDate } from '@/shared/lib/dates'
 import { formatCurrency } from '@/shared/lib/money'
 
 interface ApplyRecurringModalProps {
@@ -85,7 +86,7 @@ export default function ApplyRecurringModal({ open, month, pending, onClose }: A
             )}
             <span>{current.payer?.full_name || 'Sin asignar'}</span>
             <span>· {FREQUENCY_LABELS[current.frequency] ?? current.frequency}</span>
-            <span>· vence {current.next_due_date}</span>
+            <span>· vence {formatDate(current.next_due_date)}</span>
           </div>
         </div>
 
