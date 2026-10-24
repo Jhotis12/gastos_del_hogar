@@ -1,13 +1,14 @@
 {
   "name": "app-gastos",
   "private": true,
-  "version": "1.0.68",
+  "version": "1.0.69",
   "packageManager": "pnpm@12.14.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "test": "node --test tests/unit/*.test.ts",
     "preview": "vite preview",
     "prepare": "git config core.hooksPath .githooks"
   },
