@@ -1,5 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { VOICE_PROMPT, parseVoiceDraft } from './parser.ts'
+import { VOICE_PROMPT, normalizeAudioMimeType, parseVoiceDraft } from './parser.ts'
 
 const GEMINI_KEY = Deno.env.get('GEMINI_API_KEY')
 const MODEL = 'gemini-flash-latest'
@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
     }
 
     const householdId = String(body.household_id ?? '')
-    const mimeType = String(body.mime_type ?? '')
+    const mimeType = normalizeAudioMimeType(String(body.mime_type ?? ''))
     const audioBase64 = String(body.audio_base64 ?? '').replace(
       /^data:[^;]+;base64,/,
       '',
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
     ) {
       return json({ error: 'Parámetros inválidos' }, 400)
     }
-    if (!/^audio\/[a-z0-9.+-]+$/i.test(mimeType)) {
+    if (!mimeType) {
       return json({ error: 'Formato de audio no válido' }, 400)
     }
     if (!audioBase64) return json({ error: 'El audio está vacío' }, 400)

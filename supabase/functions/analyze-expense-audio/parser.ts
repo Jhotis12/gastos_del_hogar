@@ -9,6 +9,12 @@ export type VoiceDraft = {
 
 export type ParsedVoiceDraft = { draft: VoiceDraft } | { error: string }
 
+// MediaRecorder agrega ";codecs=opus" al MIME; Gemini solo acepta el tipo base.
+export function normalizeAudioMimeType(value: string): string | null {
+  const base = value.split(';')[0]?.trim().toLowerCase() ?? ''
+  return /^audio\/[a-z0-9.+-]+$/.test(base) ? base : null
+}
+
 export const VOICE_PROMPT = `
 Eres un asistente que convierte una nota de voz de un gasto colombiano en un
 borrador estructurado. Escucha el audio y extrae:

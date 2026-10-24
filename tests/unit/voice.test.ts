@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
-import { parseVoiceDraft } from '../../supabase/functions/analyze-expense-audio/parser.ts'
+import {
+  normalizeAudioMimeType,
+  parseVoiceDraft,
+} from '../../supabase/functions/analyze-expense-audio/parser.ts'
 
 test('parseVoiceDraft acepta un borrador válido y normaliza', () => {
   assert.deepEqual(
@@ -47,6 +50,14 @@ test('parseVoiceDraft deja fecha inválida en null', () => {
   )
   assert.ok('draft' in parsed)
   assert.equal(parsed.draft.date, null)
+})
+
+test('normalizeAudioMimeType quita los codecs de MediaRecorder', () => {
+  assert.equal(normalizeAudioMimeType('audio/webm;codecs=opus'), 'audio/webm')
+  assert.equal(normalizeAudioMimeType('audio/ogg; codecs=opus'), 'audio/ogg')
+  assert.equal(normalizeAudioMimeType('AUDIO/WEBM'), 'audio/webm')
+  assert.equal(normalizeAudioMimeType('video/webm'), null)
+  assert.equal(normalizeAudioMimeType(''), null)
 })
 
 test('el fixture de audio existe y no está vacío', () => {

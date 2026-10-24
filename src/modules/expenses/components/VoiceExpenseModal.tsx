@@ -29,6 +29,18 @@ function blobToBase64(blob: Blob): Promise<string> {
   })
 }
 
+// supabase-js solo expone el mensaje genérico; el detalle viene en el body.
+async function invokeErrorMessage(err: unknown): Promise<string> {
+  const context = (err as { context?: Response }).context
+  if (context) {
+    const payload = (await context.json().catch(() => null)) as {
+      error?: unknown
+    } | null
+    if (typeof payload?.error === 'string' && payload.error) return payload.error
+  }
+  return errorMessage(err)
+}
+
 export default function VoiceExpenseModal({ open, onClose, onDraft }: Props) {
   const { profile } = useAuth()
   const [phase, setPhase] = useState<Phase>('consent')
@@ -98,10 +110,7 @@ export default function VoiceExpenseModal({ open, onClose, onDraft }: Props) {
       onDraft(payload.draft)
       onClose()
     } catch (err) {
-      setError(
-        errorMessage(err) ||
-          'No se pudo analizar el audio. Intenta de nuevo o registra el gasto manualmente.',
-      )
+      setError(await invokeErrorMessage(err))
       setPhase('error')
     }
   }
