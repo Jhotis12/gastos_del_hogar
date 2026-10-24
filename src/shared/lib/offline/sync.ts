@@ -142,6 +142,16 @@ async function replay(op: PendingOp): Promise<'ok' | 'retry' | 'fail'> {
 
     if (error) {
       if (isNetworkError(error) || isAuthRetryableFetchError(error as unknown as Error)) return 'retry'
+      if (
+        op.entity === 'expenses' &&
+        (error.code === '42501' || /row-level security/i.test(error.message))
+      ) {
+        emitToast(
+          'error',
+          'Gasto sin pagador válido: edítalo para asignar un miembro del hogar',
+        )
+        return 'fail'
+      }
       emitToast('error', `No se pudo sincronizar: ${error.message}`)
       return 'fail'
     }

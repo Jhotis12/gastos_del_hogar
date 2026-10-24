@@ -15,7 +15,7 @@ import {
   useDeleteWishlistItem,
 } from '@/modules/wishlist/hooks/useWishlist'
 import { useMemberAvailable } from '@/modules/finance/hooks/useMemberAvailable'
-import { useForecast } from '@/modules/forecast/hooks/useForecast'
+import { usePersonalMonthlyHistory } from '@/modules/finance/hooks/usePersonalMonthlyHistory'
 import { calculatePlan, monthsToAfford } from '@/modules/wishlist/lib/installments'
 import WishlistItemForm from '@/modules/wishlist/components/WishlistItemForm'
 import ConfirmDialog from '@/shared/components/ui/ConfirmDialog'
@@ -48,7 +48,7 @@ export default function Wishlist() {
   const { data: items, isLoading, error, refetch } = useWishlist()
   const { data: memberAvailable } = useMemberAvailable(todayISO())
   const balance = memberAvailable?.available ?? null
-  const { data: forecast } = useForecast()
+  const { data: history } = usePersonalMonthlyHistory()
   const setStatus = useSetWishlistStatus()
   const remove = useDeleteWishlistItem()
   const toast = useToast()
@@ -84,7 +84,7 @@ export default function Wishlist() {
     return { total, count }
   }, [pending])
 
-  const surplus = forecast?.surplus?.median ?? null
+  const surplus = history?.at(-1)?.free ?? null
   const commitmentPct = surplus && surplus > 0 ? Math.round((monthCommitment.total / surplus) * 100) : null
 
   const handleDelete = async () => {
@@ -137,10 +137,10 @@ export default function Wishlist() {
         <div className="card p-5">
           <div className="flex items-center gap-2">
             <Wallet size={16} className="text-pine-600" />
-            <p className="text-sm font-medium text-ink/50">Saldo disponible</p>
+            <p className="text-sm font-medium text-ink/50">Mi disponible</p>
           </div>
           <p className="mt-2 font-display text-2xl font-bold tracking-tight text-ink">
-            {formatCurrency(balance ?? 0)}
+            {balance === null ? 'Sin base de ingresos' : formatCurrency(balance)}
           </p>
         </div>
         <div className="card p-5">
@@ -292,12 +292,14 @@ export default function Wishlist() {
                       <span
                         className={cn(
                           'font-bold',
-                          (balance ?? 0) - (itemInitial + plan.installment) >= 0
+                          balance !== null && balance - (itemInitial + plan.installment) >= 0
                             ? 'text-pine-600'
                             : 'text-coral-600',
                         )}
                       >
-                        {formatCurrency((balance ?? 0) - (itemInitial + plan.installment))}
+                        {balance === null
+                          ? '—'
+                          : formatCurrency(balance - (itemInitial + plan.installment))}
                       </span>
                     </div>
                     {monthsCash === 0 ? (

@@ -34,7 +34,7 @@ function RangeRow({ label, value }: { label: string; value: number }) {
 }
 
 export default function Forecast() {
-  usePageTitle('Proyección')
+  usePageTitle('Mi proyección')
   const { data, error, isLoading, refetch } = useForecast()
   const [months, setMonths] = useState(3)
   const animatedTotal = useCountUp(data?.totalExpense?.median ?? 0)
@@ -69,6 +69,7 @@ export default function Forecast() {
     avg,
     historyMonths,
     hasEnoughHistory,
+    hasIncomeBase,
   } = data
 
   const savings =
@@ -84,6 +85,17 @@ export default function Forecast() {
   return (
     <div className="space-y-6">
       <Header />
+
+      {!hasIncomeBase && (
+        <div className="animate-fade-up flex items-start gap-2.5 rounded-2xl border border-gold-200 bg-gold-100/60 p-4 text-sm text-gold-600">
+          <Info size={16} className="mt-0.5 shrink-0" />
+          <p>
+            No tienes ingresos registrados: no se inventa un disponible. La
+            proyección usa tus gastos y tus servicios; registra un ingreso si
+            quieres ver cuánto podrías ahorrar.
+          </p>
+        </div>
+      )}
 
       {!hasEnoughHistory && (
         <div className="animate-fade-up flex items-start gap-2.5 rounded-2xl border border-gold-200 bg-gold-100/60 p-4 text-sm text-gold-600">
@@ -306,7 +318,7 @@ export default function Forecast() {
       {/* Nota metodológica */}
       <p className="animate-fade-up flex items-start gap-2 px-1 text-xs leading-relaxed text-ink/40">
         <Info size={14} className="mt-0.5 shrink-0" />
-        Proyección estimada: gastos fijos exactos (servicios con fecha de pago en el mes)
+        Mi proyección estimada: gastos fijos exactos (servicios con fecha de pago en el mes)
         + mediana de tus gastos variables de los últimos meses. No es una promesa,
         es un punto de partida basado en tu historial.
       </p>
@@ -319,10 +331,10 @@ function Header() {
     <div className="animate-fade-up">
       <h1 className="flex items-center gap-2 font-display text-xl font-bold tracking-tight text-ink">
         <TrendingUp size={22} className="text-pine-600" />
-        Proyección
+        Mi proyección
       </h1>
       <p className="mt-1 text-sm text-ink/50">
-        Cuánto gastas al mes normalmente y cuánto podrías tener ahorrado.
+        Tu gasto normal, tu disponible y cuánto podrías ahorrar.
       </p>
     </div>
   )

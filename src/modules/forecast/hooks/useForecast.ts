@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { useMemberAvailable } from '@/modules/finance/hooks/useMemberAvailable'
-import { useHouseholdMonthlyHistory } from '@/modules/finance/hooks/useHouseholdMonthlyHistory'
+import { usePersonalMonthlyHistory } from '@/modules/finance/hooks/usePersonalMonthlyHistory'
 import { useRecurringExpenses } from '@/modules/services/hooks/useRecurring'
 import { useSalaries } from '@/modules/members/hooks/useMembers'
 import { supabase } from '@/shared/lib/supabase'
@@ -16,20 +16,22 @@ import {
 } from '@/modules/forecast/lib/forecast'
 import type { ProjectionRange } from '@/modules/forecast/lib/forecast'
 
-// Historial de gastos VARIABLES (no recurrentes) de los últimos meses
-// completos — la base para la mediana y los rangos p25/p75.
+// Historial personal de gastos VARIABLES (no recurrentes) de los últimos
+// meses completos — la base para la mediana y los rangos p25/p75.
 function useVariableHistory(month: string) {
   const { profile } = useAuth()
   const householdId = profile?.household_id
+  const memberId = profile?.id
   const from = shiftMonth(month, -MAX_VARIABLE_MONTHS)
 
   return useQuery({
-    queryKey: ['expenses', 'history', householdId],
+    queryKey: ['expenses', 'history', householdId, memberId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('expenses')
         .select('amount, expense_date')
         .eq('household_id', householdId!)
+        .eq('paid_by', memberId!)
         .is('recurring_id', null)
         .gte('expense_date', from)
         .lt('expense_date', month)
@@ -43,23 +45,25 @@ function useVariableHistory(month: string) {
         .map(([monthKey, total]) => ({ month: monthKey, total }))
         .sort((a, b) => a.month.localeCompare(b.month))
     },
-    enabled: !!householdId,
+    enabled: !!householdId && !!memberId,
   })
 }
 
-// Historial de ingresos extra (no nómina) de los últimos meses completos.
+// Historial personal de ingresos extra (no nómina) de los últimos meses.
 function useExtraIncomeHistory(month: string) {
   const { profile } = useAuth()
   const householdId = profile?.household_id
+  const memberId = profile?.id
   const from = shiftMonth(month, -MAX_VARIABLE_MONTHS)
 
   return useQuery({
-    queryKey: ['incomes', 'history', householdId],
+    queryKey: ['incomes', 'history', householdId, memberId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('incomes')
         .select('amount, income_date')
         .eq('household_id', householdId!)
+        .eq('member_id', memberId!)
         .gte('income_date', from)
         .lt('income_date', month)
       if (error) throw error
@@ -72,7 +76,7 @@ function useExtraIncomeHistory(month: string) {
         .map(([monthKey, total]) => ({ month: monthKey, total }))
         .sort((a, b) => a.month.localeCompare(b.month))
     },
-    enabled: !!householdId,
+    enabled: !!householdId && !!memberId,
   })
 }
 
@@ -90,15 +94,26 @@ export interface ForecastData {
   balance: number
   historyMonths: { month: string; expenses: number }[]
   hasEnoughHistory: boolean
+  hasIncomeBase: boolean
 }
 
 export function useForecast() {
+  const { profile } = useAuth()
   const currentMonth = currentMonthKey()
   const nextMonth = shiftMonth(currentMonth, 1)
 
   const queryClient = useQueryClient()
-  const { data: history, error: historyError, refetch: refetchHistory } = useHouseholdMonthlyHistory()
+  const { data: history, error: historyError, refetch: refetchHistory } = usePersonalMonthlyHistory()
   const { data: memberAvailable, error: balanceError, refetch: refetchBalance } = useMemberAvailable(todayISO())
+  const { data: recurringAll, error: recurringError, refetch: refetchRecurring } = useRecurringExpenses()
+  const { salaries: allNext, isPending: salariesPending } = useSalaries(nextMonth)
+  const { salaries: allCurrent, isPending: currentSalariesPending } = useSalaries(currentMonth)
+  const { data: variableHistory, error: variableError, refetch: refetchVariable } = useVariableHistory(currentMonth)
+  const { data: extraIncomeHistory, error: extraError, refetch: refetchExtra } = useExtraIncomeHistory(currentMonth)
+
+  const recurring = (recurringAll ?? []).filter((item) => item.paid_by === profile?.id)
+  const salaries = (allNext ?? []).filter((salary) => salary.profile_id === profile?.id)
+  const currentSalaries = (allCurrent ?? []).filter((salary) => salary.profile_id === profile?.id)
   const surpluses = history?.map((row) => ({
     month: row.month,
     income: row.income,
@@ -106,26 +121,21 @@ export function useForecast() {
     surplus: row.free,
   }))
   const runningBalance = memberAvailable?.available ?? null
-  const { data: recurring, error: recurringError, refetch: refetchRecurring } = useRecurringExpenses()
-  const { salaries, isPending: salariesPending } = useSalaries(nextMonth)
-  const { salaries: currentSalaries, isPending: currentSalariesPending } = useSalaries(currentMonth)
-  const { data: variableHistory, error: variableError, refetch: refetchVariable } = useVariableHistory(currentMonth)
-  const { data: extraIncomeHistory, error: extraError, refetch: refetchExtra } = useExtraIncomeHistory(currentMonth)
 
   const error = [historyError, recurringError, balanceError, variableError, extraError].find(Boolean)
   const isLoading =
     salariesPending || currentSalariesPending ||
-    (surpluses === undefined && !historyError) ||
-    (recurring === undefined && !recurringError) ||
+    (history === undefined && !historyError) ||
+    (recurringAll === undefined && !recurringError) ||
     (memberAvailable === undefined && !balanceError) ||
     (variableHistory === undefined && !variableError) ||
     (extraIncomeHistory === undefined && !extraError)
 
   const data = useMemo<ForecastData | null>(() => {
-    if (error || surpluses === undefined || recurring === undefined || runningBalance === undefined) {
+    if (error || history === undefined || recurringAll === undefined || memberAvailable === undefined) {
       return null
     }
-    const fixed = fixedExpensesForMonth(recurring ?? [], nextMonth)
+    const fixed = fixedExpensesForMonth(recurring, nextMonth)
     const variableValues = (variableHistory ?? [])
       .filter((m) => m.total > 0)
       .map((m) => m.total)
@@ -137,7 +147,7 @@ export function useForecast() {
           high: fixed.total + variable.high,
         }
       : null
-    const income = salaries?.reduce((sum, s) => sum + Number(s.amount), 0) ?? 0
+    const income = salaries.reduce((sum, s) => sum + Number(s.amount), 0)
     const extraValues = (extraIncomeHistory ?? [])
       .filter((m) => m.total > 0)
       .map((m) => m.total)
@@ -147,11 +157,9 @@ export function useForecast() {
         : 0
     const surplus = monthlySurplusProjection(income + extraIncomeAvg, fixed.total, variable)
     const avg = averageFromSurpluses(surpluses ?? [], currentMonth)
-    // Saldo base de la proyección: saldo disponible HOY + nóminas ya
-    // programadas este mes (pay_date futura). Evita que el ahorro
-    // proyectado salte en negativo justo antes del día de pago.
+    // Disponible personal HOY + nóminas personales ya programadas este mes.
     const pendingIncome =
-      (currentSalaries ?? [])
+      currentSalaries
         .filter((s) => s.pay_date > todayISO())
         .reduce((sum, s) => sum + Number(s.amount), 0)
     const baseBalance = Number(runningBalance ?? 0) + pendingIncome
@@ -168,10 +176,14 @@ export function useForecast() {
       surplus,
       avg,
       balance: Number(runningBalance ?? 0),
-      historyMonths: (surpluses ?? []).slice(-6),
+      historyMonths: (history ?? []).slice(-6).map((row) => ({
+        month: row.month,
+        expenses: row.expenses,
+      })),
       hasEnoughHistory: variableValues.length >= 2,
+      hasIncomeBase: memberAvailable.available !== null,
     }
-  }, [error, surpluses, recurring, runningBalance, nextMonth, variableHistory, extraIncomeHistory, salaries, currentSalaries, currentMonth])
+  }, [error, history, recurringAll, recurring, memberAvailable, runningBalance, nextMonth, variableHistory, extraIncomeHistory, salaries, currentSalaries, currentMonth, surpluses])
 
   const refetch = () => {
     void refetchHistory()

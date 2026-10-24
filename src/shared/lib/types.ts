@@ -87,7 +87,7 @@ export interface ExpenseWithRelations extends Expense {
 }
 
 // Dinero extra: ingreso que no es nómina (venta, regalo, reembolso…).
-// Se suma al fondo común como ingreso; member_id (quién recibió) es opcional.
+// Ingreso del hogar; member_id (quién recibió) es opcional.
 export interface Income {
   id: string
   household_id: string

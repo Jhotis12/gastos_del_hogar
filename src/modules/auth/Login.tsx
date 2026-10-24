@@ -187,7 +187,7 @@ export default function Login() {
           <div key={`header-${mode}-${view}`} className="animate-form-in mb-8 text-center lg:text-left">
             <AppLogo size={64} className="mx-auto mb-4 lg:hidden" />
             <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-pine-600">
-              Fondo común
+              Finanzas del hogar
             </p>
             <h2 className="font-display text-2xl font-bold tracking-tight text-ink">
               {view === 'forgot'

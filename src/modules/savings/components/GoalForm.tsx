@@ -2,13 +2,16 @@ import { useEffect, useState } from 'react'
 import Modal from '@/shared/components/ui/Modal'
 import MoneyInput from '@/shared/components/ui/MoneyInput'
 import DateInput from '@/shared/components/ui/DateInput'
+import SelectInput from '@/shared/components/ui/SelectInput'
 import { useAddSavingsGoal, useUpdateSavingsGoal } from '@/modules/savings/hooks/useSavings'
+import { useCreateSavingsMovement } from '@/modules/savings/hooks/useSavingsMovements'
+import { useAuth } from '@/shared/hooks/useAuth'
 import { useToast } from '@/shared/components/ui/Toast'
 import type { SavingsGoal } from '@/shared/lib/types'
 import { errorMessage } from '@/shared/lib/utils'
 import { parseMoneyInput } from '@/shared/lib/money'
+import { todayISO } from '@/shared/lib/dates'
 import { fieldClass } from '@/shared/components/ui/fieldClass'
-
 
 type GoalModalProps = {
   open: boolean
@@ -17,14 +20,16 @@ type GoalModalProps = {
 }
 
 export default function GoalForm({ open, initial, onClose }: GoalModalProps) {
-
+  const { profile } = useAuth()
   const add = useAddSavingsGoal()
   const update = useUpdateSavingsGoal()
+  const createMovement = useCreateSavingsMovement()
   const toast = useToast()
 
   const [name, setName] = useState('')
   const [target, setTarget] = useState('')
-  const [saved, setSaved] = useState('')
+  const [initialDeposit, setInitialDeposit] = useState('')
+  const [owner, setOwner] = useState<'personal' | 'shared'>('personal')
   const [date, setDate] = useState('')
   const [error, setError] = useState('')
 
@@ -32,10 +37,13 @@ export default function GoalForm({ open, initial, onClose }: GoalModalProps) {
     if (!open) return
     setName(initial?.name ?? '')
     setTarget(initial ? String(initial.target_amount) : '')
-    setSaved(initial ? String(initial.saved_amount) : '')
+    setInitialDeposit('')
+    setOwner(initial ? (initial.owner_id ? 'personal' : 'shared') : 'personal')
     setDate(initial?.target_date ?? '')
     setError('')
   }, [open, initial])
+
+  const busy = add.isPending || update.isPending || createMovement.isPending
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,7 +56,7 @@ export default function GoalForm({ open, initial, onClose }: GoalModalProps) {
       setError('Dale un nombre a la meta (ej. Viaje, Emergencias)')
       return
     }
-    const savedValue = parseMoneyInput(saved) ?? 0
+
     try {
       if (initial) {
         await update.mutateAsync({
@@ -58,18 +66,36 @@ export default function GoalForm({ open, initial, onClose }: GoalModalProps) {
           target_date: date || null,
         })
         toast.success('Meta actualizada')
-      } else {
-        await add.mutateAsync({
-          name: name.trim(),
-          target_amount: targetValue,
-          target_date: date || null,
-          saved_amount: savedValue,
-        })
-        toast.success('Meta creada')
+        onClose()
+        return
       }
+
+      if (!profile?.id) throw new Error('Sin perfil')
+      const goalId = await add.mutateAsync({
+        name: name.trim(),
+        target_amount: targetValue,
+        target_date: date || null,
+        owner_id: owner === 'personal' ? profile.id : null,
+      })
+
+      const deposit = parseMoneyInput(initialDeposit) ?? 0
+      if (deposit > 0) {
+        try {
+          await createMovement.mutateAsync({
+            goalId,
+            amount: deposit,
+            kind: 'deposit',
+            movementDate: todayISO(),
+          })
+        } catch (err) {
+          toast.error(`Meta creada, pero el depósito inicial falló: ${errorMessage(err)}`)
+        }
+      }
+
+      toast.success('Meta creada')
       onClose()
     } catch (err) {
-      toast.error(errorMessage(err))
+      setError(errorMessage(err))
     }
   }
 
@@ -89,23 +115,57 @@ export default function GoalForm({ open, initial, onClose }: GoalModalProps) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className={fieldClass}
-            enterKeyHint="next" placeholder="Ej. Viaje de fin de año"
+            enterKeyHint="next"
+            placeholder="Ej. Viaje de fin de año"
           />
         </div>
+
+        {!initial && (
+          <div>
+            <label className="mb-1 block text-sm font-medium text-ink/70">
+              ¿Quién puede verla?
+            </label>
+            <SelectInput
+              aria-label="Tipo de meta"
+              value={owner}
+              onChange={(event) => setOwner(event.target.value as 'personal' | 'shared')}
+            >
+              <option value="personal">Personal (solo yo)</option>
+              <option value="shared">Compartida (todo el hogar)</option>
+            </SelectInput>
+            <p className="mt-1 text-xs text-ink/45">
+              Las metas personales no aparecen para los demás miembros.
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium text-ink/70">
               Monto objetivo
             </label>
-            <MoneyInput label="Monto objetivo" value={target} onChange={setTarget} placeholder="Ej. 2.000.000" />
+            <MoneyInput
+              label="Monto objetivo"
+              value={target}
+              onChange={setTarget}
+              placeholder="Ej. 2.000.000"
+            />
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-ink/70">
-              Ahorrado inicial
-            </label>
-            <MoneyInput label="Ahorrado inicial" value={saved} onChange={setSaved} placeholder="0" />
-          </div>
+          {!initial && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-ink/70">
+                Depósito inicial (opcional)
+              </label>
+              <MoneyInput
+                label="Depósito inicial"
+                value={initialDeposit}
+                onChange={setInitialDeposit}
+                placeholder="0"
+              />
+            </div>
+          )}
         </div>
+
         <div>
           <label className="mb-1 block text-sm font-medium text-ink/70">
             Fecha objetivo (opcional)
@@ -116,9 +176,20 @@ export default function GoalForm({ open, initial, onClose }: GoalModalProps) {
             onChange={(e) => setDate(e.target.value)}
           />
         </div>
-        {error && (
-          <p role="alert" className="rounded-lg bg-coral-100/60 px-3 py-2 text-sm text-coral-600">{error}</p>
+
+        {initial && (
+          <p className="rounded-lg bg-cream px-3 py-2 text-xs text-ink/55">
+            {initial.owner_id ? 'Meta personal' : 'Meta compartida del hogar'} ·
+            el saldo solo cambia con depósitos y retiros.
+          </p>
         )}
+
+        {error && (
+          <p role="alert" className="rounded-lg bg-coral-100/60 px-3 py-2 text-sm text-coral-600">
+            {error}
+          </p>
+        )}
+
         <div className="flex justify-end gap-2 pt-2">
           <button
             type="button"
@@ -129,10 +200,10 @@ export default function GoalForm({ open, initial, onClose }: GoalModalProps) {
           </button>
           <button
             type="submit"
-            disabled={add.isPending || update.isPending}
+            disabled={busy}
             className="rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800 disabled:opacity-50"
           >
-            {add.isPending || update.isPending
+            {busy
               ? 'Guardando…'
               : initial
                 ? 'Guardar cambios'

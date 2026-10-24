@@ -19,17 +19,28 @@ import { formatCurrency } from '@/shared/lib/money'
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
 import { useMonthParam } from '@/shared/hooks/useMonthParam'
 import { OFFLINE_QUEUED } from '@/shared/lib/offline/offlineSafe'
+import { useAuth } from '@/shared/hooks/useAuth'
 
 export default function Calendar() {
   usePageTitle('Calendario')
   const [month, setMonth] = useMonthParam()
+  const [filter, setFilter] = useState<'all' | 'mine'>('all')
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [formDate, setFormDate] = useState<string | null>(null)
   const toast = useToast()
+  const { profile } = useAuth()
 
   const { data: expenses, isLoading, error, refetch } = useExpenses(month)
   const { data: recurring } = useRecurringExpenses()
   const addExpense = useAddExpense()
+
+  const filteredExpenses = useMemo(
+    () =>
+      filter === 'mine'
+        ? (expenses ?? []).filter((expense) => expense.paid_by === profile?.id)
+        : (expenses ?? []),
+    [expenses, filter, profile?.id],
+  )
 
   const [year, m] = month.split('-').map(Number)
   const month0 = (m ?? 1) - 1
@@ -45,13 +56,13 @@ export default function Calendar() {
 
   const byDay = useMemo(() => {
     const map = new Map<string, ExpenseWithRelations[]>()
-    for (const e of expenses ?? []) {
+    for (const e of filteredExpenses) {
       const list = map.get(e.expense_date) ?? []
       list.push(e)
       map.set(e.expense_date, list)
     }
     return map
-  }, [expenses])
+  }, [filteredExpenses])
 
   const servicesDueByDay = useMemo(() => {
     const map = new Map<string, number>()
@@ -65,7 +76,7 @@ export default function Calendar() {
   const dayTotal = (iso: string) =>
     (byDay.get(iso) ?? []).reduce((sum, e) => sum + Number(e.amount), 0)
 
-  const monthTotal = (expenses ?? []).reduce((sum, e) => sum + Number(e.amount), 0)
+  const monthTotal = filteredExpenses.reduce((sum, e) => sum + Number(e.amount), 0)
   const monthPrefix = month.slice(0, 7)
   const servicesDueCount = [...servicesDueByDay.entries()]
     .filter(([iso]) => iso.startsWith(monthPrefix))
@@ -106,6 +117,33 @@ export default function Calendar() {
           </p>
         </div>
         <MonthPicker month={month} onChange={setMonth} />
+      </div>
+
+      <div
+        role="group"
+        aria-label="Filtro de gastos del calendario"
+        className="animate-fade-up inline-flex rounded-full bg-cream p-1 ring-1 ring-ink/5"
+      >
+        <button
+          aria-pressed={filter === 'all'}
+          onClick={() => setFilter('all')}
+          className={cn(
+            'min-h-10 rounded-full px-4 py-2 text-sm font-medium transition-colors',
+            filter === 'all' ? 'bg-ink text-cream' : 'text-ink/55 hover:text-ink',
+          )}
+        >
+          Todos
+        </button>
+        <button
+          aria-pressed={filter === 'mine'}
+          onClick={() => setFilter('mine')}
+          className={cn(
+            'min-h-10 rounded-full px-4 py-2 text-sm font-medium transition-colors',
+            filter === 'mine' ? 'bg-ink text-cream' : 'text-ink/55 hover:text-ink',
+          )}
+        >
+          Mis gastos
+        </button>
       </div>
 
       <div className="animate-fade-up grid grid-cols-1 gap-4 sm:grid-cols-3" style={{ animationDelay: '90ms' }}>

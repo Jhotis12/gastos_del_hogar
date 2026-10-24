@@ -27,6 +27,7 @@ type SavingsInput = {
   name: string
   target_amount: number
   target_date: string | null
+  owner_id?: string | null
 }
 
 export function useAddSavingsGoal() {
@@ -34,12 +35,21 @@ export function useAddSavingsGoal() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (input: SavingsInput & { saved_amount: number }) => {
+    mutationFn: async (input: SavingsInput) => {
       if (!profile?.household_id) throw new Error('Sin hogar')
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('savings_goals')
-        .insert({ ...input, household_id: profile.household_id })
+        .insert({
+          name: input.name,
+          target_amount: input.target_amount,
+          target_date: input.target_date,
+          owner_id: input.owner_id ?? null,
+          household_id: profile.household_id,
+        })
+        .select('id')
+        .single()
       if (error) throw error
+      return data.id as string
     },
     onSuccess: () => invalidateLedger(queryClient, LEDGER_INVALIDATION.savings),
   })
@@ -49,25 +59,18 @@ export function useUpdateSavingsGoal() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, ...input }: SavingsInput & { id: string }) => {
+    mutationFn: async ({
+      id,
+      ...input
+    }: {
+      id: string
+      name: string
+      target_amount: number
+      target_date: string | null
+    }) => {
       const { error } = await supabase
         .from('savings_goals')
         .update(input)
-        .eq('id', id)
-      if (error) throw error
-    },
-    onSuccess: () => invalidateLedger(queryClient, LEDGER_INVALIDATION.savings),
-  })
-}
-
-export function useAdjustSavingsGoal() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async ({ id, saved_amount }: { id: string; saved_amount: number }) => {
-      const { error } = await supabase
-        .from('savings_goals')
-        .update({ saved_amount: Math.max(0, saved_amount) })
         .eq('id', id)
       if (error) throw error
     },

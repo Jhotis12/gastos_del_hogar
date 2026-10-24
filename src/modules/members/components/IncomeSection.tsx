@@ -229,7 +229,7 @@ export default function IncomeSection({ month, members }: IncomeSectionProps) {
                 value={draft.memberId}
                 onChange={(e) => setDraft({ ...draft, memberId: e.target.value })}
               >
-                <option value="">Sin asignar</option>
+                <option value="">Hogar (sin miembro)</option>
                 {members?.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.full_name}

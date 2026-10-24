@@ -56,6 +56,22 @@ export function useCreateSavingsMovement() {
   })
 }
 
+export function useDeleteSavingsMovement() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('savings_movements')
+        .delete()
+        .eq('id', id)
+        .in('kind', ['deposit', 'withdrawal'])
+      if (error) throw error
+    },
+    onSuccess: () => invalidateSavings(queryClient),
+  })
+}
+
 export function useArchiveSavingsGoal() {
   const queryClient = useQueryClient()
 

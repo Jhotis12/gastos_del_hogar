@@ -4,6 +4,7 @@ export type InvalidationKeys = string[][]
 export const LEDGER_INVALIDATION = {
   expenses: [
     ['expenses'],
+    ['finance-window'],
     ['member-available'],
     ['personal-history'],
     ['household-history'],
@@ -12,6 +13,7 @@ export const LEDGER_INVALIDATION = {
   ],
   incomes: [
     ['incomes'],
+    ['finance-window'],
     ['member-available'],
     ['personal-history'],
     ['household-history'],
@@ -20,6 +22,7 @@ export const LEDGER_INVALIDATION = {
   ],
   salaries: [
     ['salaries'],
+    ['finance-window'],
     ['member-available'],
     ['personal-history'],
     ['household-history'],
@@ -29,6 +32,7 @@ export const LEDGER_INVALIDATION = {
   payday: [
     ['members'],
     ['salaries'],
+    ['finance-window'],
     ['member-available'],
     ['personal-history'],
     ['household-history'],

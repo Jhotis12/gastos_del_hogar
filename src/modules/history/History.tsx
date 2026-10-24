@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowDownCircle, ArrowUpCircle, Wallet, History as HistoryIcon, Plus } from 'lucide-react'
 import { useHouseholdMonthlyHistory } from '@/modules/finance/hooks/useHouseholdMonthlyHistory'
+import { usePersonalMonthlyHistory } from '@/modules/finance/hooks/usePersonalMonthlyHistory'
 import StatCard from '@/shared/components/ui/StatCard'
 import PageSkeleton from '@/shared/components/ui/PageSkeleton'
 import QueryError from '@/shared/components/ui/QueryError'
@@ -13,7 +15,13 @@ import { usePageTitle } from '@/shared/hooks/usePageTitle'
 
 export default function History() {
   usePageTitle('Historial')
-  const { data: history, isLoading, error, refetch } = useHouseholdMonthlyHistory()
+  const [view, setView] = useState<'hogar' | 'personal'>('hogar')
+  const householdQuery = useHouseholdMonthlyHistory()
+  const personalQuery = usePersonalMonthlyHistory()
+  const history = view === 'hogar' ? householdQuery.data : personalQuery.data
+  const isLoading = view === 'hogar' ? householdQuery.isLoading : personalQuery.isLoading
+  const error = view === 'hogar' ? householdQuery.error : personalQuery.error
+  const refetch = view === 'hogar' ? householdQuery.refetch : personalQuery.refetch
 
   const rows = history ?? []
 
@@ -32,8 +40,35 @@ export default function History() {
           Historial
         </h1>
         <p className="text-sm text-ink/50">
-          Ingresos, gastos, ahorro y libre por mes
+          {view === 'hogar'
+            ? 'Ingresos, gastos, ahorro compartido y libre del hogar, mes a mes'
+            : 'Tus ingresos, gastos, ahorro y libre, mes a mes'}
         </p>
+      </div>
+
+      <div role="tablist" aria-label="Vista del historial" className="inline-flex rounded-full bg-cream p-1 ring-1 ring-ink/5">
+        <button
+          role="tab"
+          aria-selected={view === 'hogar'}
+          onClick={() => setView('hogar')}
+          className={cn(
+            'min-h-10 rounded-full px-4 py-2 text-sm font-medium transition-colors',
+            view === 'hogar' ? 'bg-ink text-cream' : 'text-ink/55 hover:text-ink',
+          )}
+        >
+          Hogar
+        </button>
+        <button
+          role="tab"
+          aria-selected={view === 'personal'}
+          onClick={() => setView('personal')}
+          className={cn(
+            'min-h-10 rounded-full px-4 py-2 text-sm font-medium transition-colors',
+            view === 'personal' ? 'bg-ink text-cream' : 'text-ink/55 hover:text-ink',
+          )}
+        >
+          Mis meses
+        </button>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -65,7 +100,11 @@ export default function History() {
           <EmptyState
             icon={<HistoryIcon size={22} />}
             title="Aún no hay movimientos registrados"
-            hint="Los sobrantes por mes aparecen cuando registres salarios o gastos"
+            hint={
+              view === 'personal'
+                ? 'Tus meses aparecen cuando registras gastos, ingresos o ahorro'
+                : 'Los meses aparecen cuando el hogar registra salarios, ingresos o gastos'
+            }
             action={
               <Link
                 to="/gastos"

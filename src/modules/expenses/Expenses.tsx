@@ -1,7 +1,10 @@
 import { useState } from 'react'
-import { Plus, Pencil, Trash2, Search, Download, ScanLine, ReceiptText } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, Download, ScanLine, ReceiptText, AlertTriangle } from 'lucide-react'
 import { useAddExpense, useDeleteExpense, useExpenses, useUpdateExpense } from '@/modules/expenses/hooks/useExpenses'
 import { useFinanceWindow } from '@/modules/finance/hooks/useFinanceWindow'
+import { categoryBreakdown } from '@/modules/finance/lib/ledger'
+import { useMembers } from '@/modules/members/hooks/useMembers'
+import LegacyPayerModal from '@/modules/expenses/components/LegacyPayerModal'
 import ExpenseForm from '@/modules/expenses/components/ExpenseForm'
 import ConfirmDialog from '@/shared/components/ui/ConfirmDialog'
 import EmptyState from '@/shared/components/ui/EmptyState'
@@ -34,6 +37,7 @@ export default function Expenses() {
   const [month, setMonth] = useMonthParam()
   const [view, setView] = useState<'hogar' | 'personal'>('hogar')
   const [personalRange, setPersonalRange] = useState<'month' | 'cycle'>('month')
+  const [legacyOpen, setLegacyOpen] = useState(false)
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [formOpen, setFormOpen] = useState(false)
@@ -65,6 +69,7 @@ export default function Expenses() {
   const addExpense = useAddExpense()
   const updateExpense = useUpdateExpense()
   const deleteExpense = useDeleteExpense()
+  const { data: members } = useMembers()
 
   const query = search.trim().toLowerCase()
   const expenses = allExpenses ?? []
@@ -87,6 +92,38 @@ export default function Expenses() {
       ? `Total del mes filtrado · ${monthLabel(month)}`
       : `Total filtrado · ${rangeLabel(personalWindow)}`
   const filtersActive = !!query || activeCategory !== 'all'
+  const unassigned = view === 'hogar' ? expenses.filter((expense) => expense.paid_by === null) : []
+  const unassignedTotal = unassigned.reduce(
+    (sum, expense) => sum + Number(expense.amount),
+    0,
+  )
+  const categoryRows =
+    view === 'personal'
+      ? categoryBreakdown(searched).map((row) => {
+          const category =
+            searched.find((expense) => expense.category_id === row.categoryId)?.category ?? null
+          return {
+            ...row,
+            name: category?.name ?? 'Sin categoría',
+            color: category?.color ?? '#94a3b8',
+          }
+        })
+      : []
+
+  const assignLegacy = async (ids: string[], memberId: string) => {
+    for (const id of ids) {
+      const expense = expenses.find((row) => row.id === id)
+      if (!expense) continue
+      await updateExpense.mutateAsync({
+        id,
+        amount: Number(expense.amount),
+        description: expense.description,
+        category_id: expense.category_id,
+        paid_by: memberId,
+        expense_date: expense.expense_date,
+      })
+    }
+  }
 
   const exportCSV = () => {
     const header = ['Fecha', 'Descripción', 'Categoría', 'Quién pagó', 'Monto']
@@ -244,6 +281,22 @@ export default function Expenses() {
         )}
       </div>
 
+      {view === 'hogar' && unassigned.length > 0 && (
+        <div className="animate-fade-up flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold-200 bg-gold-100/60 p-4">
+          <p className="flex items-center gap-2 text-sm text-gold-600">
+            <AlertTriangle size={16} />
+            {unassigned.length} gasto{unassigned.length !== 1 && 's'} sin pagador
+            (histórico) · {formatCurrency(unassignedTotal)}
+          </p>
+          <button
+            onClick={() => setLegacyOpen(true)}
+            className="inline-flex min-h-11 items-center rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+          >
+            Asignar pagador
+          </button>
+        </div>
+      )}
+
       <div className="animate-fade-up flex flex-wrap items-center gap-2" style={{ animationDelay: '90ms' }}>
         <div className="relative w-full sm:w-auto">
           <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink/40" />
@@ -295,6 +348,49 @@ export default function Expenses() {
           </button>
         )}
       </div>
+
+      {view === 'personal' && categoryRows.length > 0 && (
+        <section className="card animate-fade-up p-5" style={{ animationDelay: '140ms' }}>
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-display text-sm font-semibold text-ink">
+              Mis gastos por categoría
+            </h2>
+            <p className="text-xs text-ink/50">
+              La suma coincide con el total filtrado
+            </p>
+          </div>
+          <ul className="space-y-2.5">
+            {categoryRows.map((row) => (
+              <li key={row.categoryId ?? 'sin-categoria'}>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="flex min-w-0 items-center gap-2 text-ink/70">
+                    <span
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: row.color }}
+                    />
+                    <span className="truncate">{row.name}</span>
+                  </span>
+                  <span className="shrink-0 font-medium text-ink">
+                    {formatCurrency(row.total)}
+                    <span className="ml-2 text-xs font-normal text-ink/40">
+                      {Math.round(row.share * 100)}%
+                    </span>
+                  </span>
+                </div>
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-cream">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${Math.max(3, row.share * 100)}%`,
+                      backgroundColor: row.color,
+                    }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {isLoading ? (
         <PageSkeleton />
@@ -362,7 +458,7 @@ export default function Expenses() {
                 </div>
                 <div className="flex shrink-0 items-center gap-4">
                   <div className="text-right">
-                    <p className="text-sm font-semibold text-ink">
+                    <p className="whitespace-nowrap text-sm font-semibold text-ink">
                       -{formatCurrency(Number(e.amount))}
                     </p>
                     <p className="text-xs text-ink/40">
@@ -436,6 +532,15 @@ export default function Expenses() {
         onClose={() => setFormOpen(false)}
         busy={addExpense.isPending || updateExpense.isPending}
         onSave={handleSave}
+      />
+
+      <LegacyPayerModal
+        open={legacyOpen}
+        expenses={unassigned}
+        members={members ?? []}
+        busy={updateExpense.isPending}
+        onClose={() => setLegacyOpen(false)}
+        onAssign={assignLegacy}
       />
 
       <ConfirmDialog

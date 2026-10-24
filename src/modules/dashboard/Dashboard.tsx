@@ -342,7 +342,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-semibold text-ink">
+                    <p className="whitespace-nowrap text-sm font-semibold text-ink">
                       -{formatCurrency(Number(expense.amount))}
                     </p>
                     <p className="text-xs text-ink/40">{formatDate(expense.expense_date)}</p>

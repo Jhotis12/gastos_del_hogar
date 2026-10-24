@@ -43,6 +43,8 @@ export default function ApplyRecurringModal({ open, month, pending, onClose }: A
   const current = pending[index]
   if (!open || !current) return null
 
+  const missingPayer = !current.paid_by
+
   const advance = () => setIndex((i) => i + 1)
 
   const handlePaid = async () => {
@@ -91,9 +93,15 @@ export default function ApplyRecurringModal({ open, month, pending, onClose }: A
         </div>
 
         <div className="space-y-2">
+          {missingPayer && (
+            <p className="rounded-lg bg-coral-100/60 px-3 py-2 text-sm text-coral-600">
+              Este servicio no tiene responsable. Edítalo en Servicios y asígnale
+              un miembro del hogar antes de aplicarlo.
+            </p>
+          )}
           <button
             onClick={handlePaid}
-            disabled={applyOne.isPending}
+            disabled={applyOne.isPending || missingPayer}
             className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-pine-700 text-sm font-semibold text-white hover:bg-pine-800 disabled:opacity-50"
           >
             {applyOne.isPending ? (

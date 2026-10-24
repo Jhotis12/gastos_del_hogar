@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { supabase } from '@/shared/lib/supabase'
 import { cn } from '@/shared/lib/utils'
 
@@ -30,14 +31,20 @@ export default function UserAvatar({
   const src = avatarPath
     ? supabase.storage.from('avatars').getPublicUrl(avatarPath).data.publicUrl
     : null
+  const [failed, setFailed] = useState(false)
 
-  if (src) {
+  useEffect(() => {
+    setFailed(false)
+  }, [src])
+
+  if (src && !failed) {
     return (
       <img
         src={src}
         alt={name ? `Foto de ${name}` : 'Foto de perfil'}
         loading="lazy"
         onClick={onClick}
+        onError={() => setFailed(true)}
         className={cn(
           'shrink-0 rounded-full object-cover ring-1 ring-ink/10',
           onClick && 'cursor-pointer transition-transform hover:scale-105 active:scale-95',
