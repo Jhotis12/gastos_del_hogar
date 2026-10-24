@@ -122,23 +122,64 @@ try {
   console.log('FAIL: B no vio el gasto en 20s')
 }
 
-// 4) B registra su salario; el dashboard de A debe actualizarse solo
+// 4) B registra su salario; el historial de A debe actualizarse solo
+await pageA.goto(`${BASE}/historial`, { waitUntil: 'domcontentloaded' })
+await pageA.waitForTimeout(1500)
 await pageB.goto(`${BASE}/miembros`, { waitUntil: 'domcontentloaded' })
 await pageB.waitForTimeout(1500)
-await pageB.click('text=+ Registrar salario')
-await pageB.fill('input[inputmode="decimal"]', '1.800.000')
-await pageB.click('text=Guardar')
+await pageB.getByText('+ Registrar salario').first().click()
+await pageB.locator('input[aria-label="Monto del salario"]').fill('1.800.000')
+await pageB.getByRole('button', { name: 'Guardar', exact: true }).first().click()
 await pageB.waitForTimeout(1500)
 
-await pageA.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' })
-await pageA.waitForTimeout(1500)
-console.log('Esperando que el dashboard de A sume el salario de B…')
+console.log('Esperando que el historial de A refleje el salario de B…')
 try {
   await pageA.waitForSelector('text=1.800.000', { timeout: 20000 })
-  console.log('PASS: el dashboard de A reflejó el salario de B en tiempo real')
+  console.log('PASS: el historial de A reflejó el salario de B en tiempo real')
 } catch {
   failed++
-  console.log('FAIL: el dashboard de A no reflejó el salario de B en 20s')
+  console.log('FAIL: el historial de A no reflejó el salario de B en 20s')
+}
+
+// 5) Meta compartida + movimiento visibles para B sin recargar
+await pageB.goto(`${BASE}/ahorros`, { waitUntil: 'domcontentloaded' })
+await pageB.waitForTimeout(1500)
+await pageB.getByRole('tab', { name: 'Compartidas' }).click()
+
+await pageA.goto(`${BASE}/ahorros`, { waitUntil: 'domcontentloaded' })
+await pageA.waitForTimeout(1500)
+await pageA.getByRole('button', { name: 'Nueva meta' }).first().click()
+await pageA.locator('input[placeholder="Ej. Viaje de fin de año"]').fill('Meta Realtime')
+await pageA.getByLabel('Monto objetivo').fill('200000')
+await pageA.getByLabel('Depósito inicial').fill('10000')
+await pageA.locator('[role="dialog"] button[data-select]').first().click()
+await pageA.click('[role="option"] >> text=Compartida (todo el hogar)')
+await pageA.getByRole('button', { name: 'Crear meta' }).click()
+await pageA.waitForTimeout(2000)
+
+console.log('Esperando que B vea la meta compartida…')
+try {
+  await pageB.waitForSelector('text=Meta Realtime', { timeout: 20000 })
+  await pageB.waitForSelector('text=10.000', { timeout: 20000 })
+  console.log('PASS: B vio la meta compartida y su saldo inicial')
+} catch {
+  failed++
+  console.log('FAIL: B no vio la meta compartida en 20s')
+}
+
+await pageA.getByRole('tab', { name: 'Compartidas' }).click()
+const sharedCard = pageA.locator('.card', { hasText: 'Meta Realtime' }).first()
+await sharedCard.getByRole('button', { name: 'Depositar' }).click()
+await pageA.getByLabel('Monto a depositar').fill('5000')
+await pageA.getByRole('button', { name: 'Confirmar depósito' }).click()
+await pageA.waitForTimeout(1500)
+console.log('Esperando que B vea el movimiento…')
+try {
+  await pageB.waitForSelector('text=15.000', { timeout: 20000 })
+  console.log('PASS: B vio el movimiento y el saldo actualizado')
+} catch {
+  failed++
+  console.log('FAIL: B no vio el movimiento de la meta compartida en 20s')
 }
 
 // Limpieza: borrar miembro B
