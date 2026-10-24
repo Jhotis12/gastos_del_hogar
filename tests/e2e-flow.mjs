@@ -522,6 +522,12 @@ await step('registros sin conexión y sincronización al reconectar', async () =
   await page.fill('input[placeholder="Ej. Supermercado del mes"]', 'Offline gasto')
   await page.click('text="Agregar gasto"')
   await waitForText('Offline gasto')
+  // Un solo aviso: el encolado muestra "Guardado sin conexión" y la página NO
+  // agrega su confirmación de éxito ("Gasto registrado").
+  await waitForText('Guardado sin conexión')
+  if ((await page.locator('text="Gasto registrado"').count()) > 0) {
+    throw new Error('aviso duplicado: "Gasto registrado" con el gasto encolado offline')
+  }
   await page.waitForSelector('button[aria-label*="Sin conexión"]', { timeout: 6000 })
 
   // Dinero extra sin red

@@ -37,7 +37,9 @@ import {
 import { formatCurrency } from '@/shared/lib/money'
 
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
+import Fab from '@/shared/components/ui/Fab'
 import { useMonthParam } from '@/shared/hooks/useMonthParam'
+import { OFFLINE_QUEUED } from '@/shared/lib/offline/offlineSafe'
 
 export default function Dashboard() {
   usePageTitle('Dashboard')
@@ -55,8 +57,8 @@ export default function Dashboard() {
     expense_date: string
   }) => {
     try {
-      await addExpense.mutateAsync(input)
-      toast.success('Gasto registrado')
+      const res = await addExpense.mutateAsync(input)
+      if (res !== OFFLINE_QUEUED) toast.success('Gasto registrado')
       setQuickOpen(false)
     } catch (err) {
       toast.error(errorMessage(err))
@@ -565,6 +567,8 @@ export default function Dashboard() {
 
       <ForecastWidget />
 
+      {/* Acción principal en móvil (el botón del header queda para desktop) */}
+      <Fab onClick={() => setQuickOpen(true)} label="Agregar gasto" />
 
       <ExpenseForm
         open={quickOpen}

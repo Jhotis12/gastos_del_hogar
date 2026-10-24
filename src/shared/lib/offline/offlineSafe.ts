@@ -22,18 +22,24 @@ export function invalidateIfOnline(
   for (const key of keys) queryClient.invalidateQueries({ queryKey: key })
 }
 
+// Resultado de una mutación que quedó en la cola offline (todavía no se
+// escribió en el servidor): las páginas lo usan para no mostrar además su
+// propio aviso de éxito, porque la señal es "Guardado sin conexión".
+export const OFFLINE_QUEUED = { offline: true } as const
+export type OfflineQueued = typeof OFFLINE_QUEUED
+
 // Intenta la mutación directa; si falla por red, ejecuta la estrategia
-// offline (encolar + actualización optimista) y resuelve como éxito.
+// offline (encolar + actualización optimista) y resuelve con OFFLINE_QUEUED.
 export async function runWithOfflineFallback<T>(
   run: () => Promise<T>,
   onOffline: () => Promise<void> | void,
-): Promise<T> {
+): Promise<T | OfflineQueued> {
   try {
     return await run()
   } catch (err) {
     if (isNetworkError(err)) {
       await onOffline()
-      return undefined as T
+      return OFFLINE_QUEUED
     }
     throw err
   }
