@@ -97,6 +97,16 @@ export default function Wishlist() {
     }
   }
 
+  // Cambiar el estado es una acción que requiere red: si falla (sin conexión,
+  // RLS) se avisa, nunca queda una promesa rechazada sin manejar.
+  const handleStatus = async (id: string, status: WishlistItem['status']) => {
+    try {
+      await setStatus.mutateAsync({ id, status })
+    } catch (err) {
+      toast.error(errorMessage(err))
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="animate-fade-up flex flex-wrap items-center justify-between gap-4">
@@ -306,15 +316,15 @@ export default function Wishlist() {
                   {isPending && (
                     <>
                       <button
-                        onClick={() => void setStatus.mutateAsync({ id: item.id, status: 'comprado' })}
-                        className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-pine-50 px-3 py-2 text-xs font-medium text-pine-600 hover:bg-pine-100"
+                        onClick={() => void handleStatus(item.id, 'comprado')}
+                        className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-pine-50 px-3 py-2 text-xs font-medium text-pine-600 hover:bg-pine-100"
                       >
                         <CheckCircle2 size={14} />
                         Compré
                       </button>
                       <button
-                        onClick={() => void setStatus.mutateAsync({ id: item.id, status: 'descartado' })}
-                        className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-xs font-medium text-ink/55 hover:bg-cream"
+                        onClick={() => void handleStatus(item.id, 'descartado')}
+                        className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-xs font-medium text-ink/55 hover:bg-cream"
                       >
                         <XCircle size={14} />
                         Descartar
@@ -323,8 +333,8 @@ export default function Wishlist() {
                   )}
                   {!isPending && (
                     <button
-                      onClick={() => void setStatus.mutateAsync({ id: item.id, status: 'pendiente' })}
-                      className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-cream px-3 py-2 text-xs font-medium text-ink/55 hover:bg-surface"
+                      onClick={() => void handleStatus(item.id, 'pendiente')}
+                      className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-cream px-3 py-2 text-xs font-medium text-ink/55 hover:bg-surface"
                     >
                       Volver a pendiente
                     </button>

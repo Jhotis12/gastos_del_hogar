@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import ConfirmDialog from '@/shared/components/ui/ConfirmDialog'
+import QueryError from '@/shared/components/ui/QueryError'
 import Skeleton from '@/shared/components/ui/Skeleton'
 import DateInput from '@/shared/components/ui/DateInput'
 import UserAvatar from '@/shared/components/ui/UserAvatar'
@@ -17,9 +18,9 @@ import { formatDate, todayISO } from '@/shared/lib/dates'
 import { formatCurrency, parseMoneyInput } from '@/shared/lib/money'
 import { errorMessage } from '@/shared/lib/utils'
 import type { IncomeWithRelations, Profile } from '@/shared/lib/types'
+import { fieldClass } from '@/shared/components/ui/fieldClass'
+import { OFFLINE_QUEUED } from '@/shared/lib/offline/offlineSafe'
 
-const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 interface IncomeSectionProps {
   month: string
@@ -35,7 +36,12 @@ type Draft = {
 }
 
 export default function IncomeSection({ month, members }: IncomeSectionProps) {
-  const { data: incomes, isLoading: incomesLoading, error: incomesError } = useIncomes(month)
+  const {
+    data: incomes,
+    isLoading: incomesLoading,
+    error: incomesError,
+    refetch: refetchIncomes,
+  } = useIncomes(month)
   const addIncome = useAddIncome()
   const updateIncome = useUpdateIncome()
   const removeIncome = useDeleteIncome()
@@ -73,11 +79,11 @@ export default function IncomeSection({ month, members }: IncomeSectionProps) {
     }
     try {
       if (draft.id) {
-        await updateIncome.mutateAsync({ id: draft.id, ...payload })
-        toast.success('Dinero extra actualizado')
+        const res = await updateIncome.mutateAsync({ id: draft.id, ...payload })
+        if (res !== OFFLINE_QUEUED) toast.success('Dinero extra actualizado')
       } else {
-        await addIncome.mutateAsync(payload)
-        toast.success('Dinero extra registrado')
+        const res = await addIncome.mutateAsync(payload)
+        if (res !== OFFLINE_QUEUED) toast.success('Dinero extra registrado')
       }
       setDraft(null)
     } catch (err) {
@@ -88,8 +94,8 @@ export default function IncomeSection({ month, members }: IncomeSectionProps) {
   const confirmDelete = async () => {
     if (!confirmId) return
     try {
-      await removeIncome.mutateAsync(confirmId)
-      toast.success('Dinero extra eliminado')
+      const res = await removeIncome.mutateAsync(confirmId)
+      if (res !== OFFLINE_QUEUED) toast.success('Dinero extra eliminado')
       setConfirmId(null)
     } catch (err) {
       toast.error(errorMessage(err))
@@ -125,9 +131,9 @@ export default function IncomeSection({ month, members }: IncomeSectionProps) {
           ))}
         </div>
       ) : incomesError ? (
-        <p className="px-5 py-6 text-center text-sm text-coral-600">
-          No se pudieron cargar los otros ingresos
-        </p>
+        <div className="px-5 py-6">
+          <QueryError error={incomesError} onRetry={refetchIncomes} />
+        </div>
       ) : !incomes || incomes.length === 0 ? (
         <p className="px-5 py-8 text-center text-sm text-ink/40">
           Aún no hay otros ingresos este mes
@@ -195,6 +201,7 @@ export default function IncomeSection({ month, members }: IncomeSectionProps) {
           <div>
             <label className="mb-1 block text-sm font-medium text-ink/70">Monto</label>
             <MoneyInput
+              label="Monto"
               value={draft.amount}
               onChange={(amount) => setDraft({ ...draft, amount })}
               autoFocus
@@ -209,7 +216,7 @@ export default function IncomeSection({ month, members }: IncomeSectionProps) {
               type="text"
               value={draft.description}
               onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-              className={inputClass}
+              className={fieldClass}
               placeholder="Ej. Vendí la bici, regalo, reembolso…"
             />
           </div>

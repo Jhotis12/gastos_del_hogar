@@ -68,13 +68,13 @@ function SalaryInput({
 
   const doSave = async (value: number, date: string) => {
     try {
-      await upsert.mutateAsync({
+      const res = await upsert.mutateAsync({
         profileId,
         month,
         amount: value,
         payDate: date,
       })
-      toast.success('Salario guardado')
+      if (res !== OFFLINE_QUEUED) toast.success('Salario guardado')
       setEditing(false)
     } catch (err) {
       toast.error(errorMessage(err))
@@ -105,8 +105,8 @@ function SalaryInput({
   const handleDelete = async () => {
     if (!row) return
     try {
-      await remove.mutateAsync(row.id)
-      toast.success('Salario eliminado')
+      const res = await remove.mutateAsync(row.id)
+      if (res !== OFFLINE_QUEUED) toast.success('Salario eliminado')
       setConfirmOpen(false)
     } catch (err) {
       toast.error(errorMessage(err))
@@ -189,12 +189,12 @@ function SalaryInput({
       )
     }
     if (!canEdit) {
-      return <span className="text-sm text-slate-300">Sin salario</span>
+      return <span className="text-sm text-ink/70">Sin salario</span>
     }
     return (
       <button
         onClick={startEdit}
-        className="inline-flex min-h-10 items-center rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-ink/40 hover:border-pine-400 hover:text-pine-600"
+        className="inline-flex min-h-11 items-center rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-ink/40 hover:border-pine-400 hover:text-pine-600"
       >
         + Registrar salario
       </button>
@@ -204,6 +204,7 @@ function SalaryInput({
   return (
     <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
       <MoneyInput
+        label="Monto del salario"
         value={amount}
         onChange={setAmount}
         autoFocus
@@ -248,6 +249,7 @@ function SalaryInput({
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
 import Fab from '@/shared/components/ui/Fab'
 import { useMonthParam } from '@/shared/hooks/useMonthParam'
+import { OFFLINE_QUEUED } from '@/shared/lib/offline/offlineSafe'
 
 export default function Members() {
   usePageTitle('Miembros y Salarios')
@@ -269,6 +271,7 @@ export default function Members() {
   } = useExpenses(month)
   const { data: incomes } = useIncomes(month)
   const updatePayday = useUpdatePayday()
+  const toast = useToast()
   const [copied, setCopied] = useState(false)
 
   if (householdError) {
@@ -311,8 +314,14 @@ export default function Members() {
     return { member: m, aportado, pagado, balance: aportado - pagado }
   })
 
-  const handlePaydayChange = (m: Profile) => (e: { target: { value: string } }) => {
-    updatePayday.mutate({ profileId: m.id, payday: Number(e.target.value) })
+  const handlePaydayChange = (m: Profile) => async (e: { target: { value: string } }) => {
+    const payday = Number(e.target.value)
+    try {
+      await updatePayday.mutateAsync({ profileId: m.id, payday })
+      toast.success(`Día de pago: ${payday}`)
+    } catch (err) {
+      toast.error(errorMessage(err))
+    }
   }
 
   const copyCode = async () => {
@@ -352,7 +361,7 @@ export default function Members() {
           </p>
           <button
             onClick={copyCode}
-            className="mt-1 inline-flex min-h-10 items-center gap-2 rounded-lg bg-surface px-3 py-2 text-sm font-semibold text-ink/70 shadow-sm hover:bg-cream"
+            className="mt-1 inline-flex min-h-11 items-center gap-2 rounded-lg bg-surface px-3 py-2 text-sm font-semibold text-ink/70 shadow-sm hover:bg-cream"
           >
             {copied ? <Check size={16} className="text-pine-600" /> : <Copy size={16} />}
             {household.invite_code}

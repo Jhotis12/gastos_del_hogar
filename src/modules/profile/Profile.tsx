@@ -30,6 +30,7 @@ import {
 } from '@/modules/members/hooks/useMembers'
 import ConfirmDialog from '@/shared/components/ui/ConfirmDialog'
 import PageSkeleton from '@/shared/components/ui/PageSkeleton'
+import QueryError from '@/shared/components/ui/QueryError'
 import Toggle from '@/shared/components/ui/Toggle'
 import UserAvatar from '@/shared/components/ui/UserAvatar'
 import { useToast } from '@/shared/components/ui/Toast'
@@ -39,9 +40,8 @@ import { usePageTitle } from '@/shared/hooks/usePageTitle'
 import { useSearchParams } from 'react-router-dom'
 import AvatarLightbox from '@/shared/components/ui/AvatarLightbox'
 import { supabase } from '@/shared/lib/supabase'
+import { fieldClass } from '@/shared/components/ui/fieldClass'
 
-const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/20'
 
 // Sección tipo acordeón: el encabezado es un botón que despliega/contenido
 // colapsado con animación suave (grid-rows) y fuera del tabulador al cerrar.
@@ -128,7 +128,11 @@ export default function Profile() {
   usePageTitle('Perfil')
   const { user, profile, signOut } = useAuth()
   const { reduceAnimations, toggleReduceAnimations, palette, applyPalette } = useSettings()
-  const { data: household } = useHousehold()
+  const {
+    data: household,
+    error: householdError,
+    refetch: refetchHousehold,
+  } = useHousehold()
   const { data: members } = useMembers()
   const isOnlyMember = (members?.length ?? 1) <= 1
   const updateProfile = useUpdateProfile()
@@ -209,6 +213,26 @@ export default function Profile() {
     try {
       await removeAvatar.mutateAsync()
       toast.success('Foto de perfil eliminada')
+    } catch (err) {
+      toast.error(errorMessage(err))
+    }
+  }
+
+  // Salir/eliminar el hogar puede fallar (sin red, RLS): se avisa y el
+  // diálogo queda abierto para reintentar.
+  const handleLeaveHousehold = async () => {
+    try {
+      await leaveHousehold.mutateAsync()
+      setConfirmLeave(false)
+    } catch (err) {
+      toast.error(errorMessage(err))
+    }
+  }
+
+  const handleDeleteHousehold = async () => {
+    try {
+      await deleteHousehold.mutateAsync()
+      setConfirmDelete(false)
     } catch (err) {
       toast.error(errorMessage(err))
     }
@@ -338,7 +362,7 @@ export default function Profile() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className={inputClass}
+              className={fieldClass}
               autoComplete="name"
               autoCapitalize="words"
               enterKeyHint="done"
@@ -455,6 +479,8 @@ export default function Profile() {
               </button>
             </div>
           </div>
+        ) : householdError ? (
+          <QueryError error={householdError} onRetry={refetchHousehold} />
         ) : (
           <p className="text-sm text-ink/50">Sin hogar — ve a /setup para crear o unirte.</p>
         )}
@@ -544,7 +570,7 @@ export default function Profile() {
         title="Salir del hogar"
         message="Dejarás de ver los gastos y datos de este hogar. Podrás unirte de nuevo con el código de invitación."
         confirmLabel="Salir"
-        onConfirm={() => leaveHousehold.mutateAsync().then(() => setConfirmLeave(false))}
+        onConfirm={() => void handleLeaveHousehold()}
         onCancel={() => setConfirmLeave(false)}
         busy={leaveHousehold.isPending}
       />
@@ -564,7 +590,7 @@ export default function Profile() {
         title="Eliminar hogar"
         message="Se eliminará TODO el hogar: gastos, salarios, servicios, metas y facturas. Esta acción no se puede deshacer."
         confirmLabel="Eliminar todo"
-        onConfirm={() => deleteHousehold.mutateAsync().then(() => setConfirmDelete(false))}
+        onConfirm={() => void handleDeleteHousehold()}
         onCancel={() => setConfirmDelete(false)}
         busy={deleteHousehold.isPending}
       />
