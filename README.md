@@ -238,6 +238,9 @@ Abrir `http://localhost:5173`:
 - **Ahorro por movimientos**: los depósitos y retiros son movimientos; el
   saldo de la meta se recalcula solo. Las metas nuevas pueden ser personales
   o compartidas (las viejas quedan compartidas).
+- **Nómina automática opt-in**: en Miembros puedes activar que la nómina del
+  mes se cree sola al llegar tu día de pago, usando el último monto. Se
+  ejecuta al abrir/reconectar y no duplica la fila.
 - Si no hay ingresos registrados, `Disponible` no se inventa: la app sigue
   mostrando gasto y ahorro.
 
@@ -335,7 +338,7 @@ node tests/e2e-voice.mjs      # captura por voz con análisis mockeado
 
 # SQL/RLS contra local
 DB_CONTAINER=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
-for f in tests/db/ledger-integrity.sql tests/db/savings.sql tests/db/finance-rpcs.sql; do
+for f in tests/db/ledger-integrity.sql tests/db/savings.sql tests/db/finance-rpcs.sql tests/db/auto-salary.sql; do
   docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < "$f"
 done
 ```

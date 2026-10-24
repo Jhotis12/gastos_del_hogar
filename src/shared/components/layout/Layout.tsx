@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { useRealtimeSync } from '@/shared/hooks/useRealtimeSync'
+import { useRunDueSalaries } from '@/modules/members/hooks/useMembers'
 import { useRunDueSavings } from '@/modules/savings/hooks/useSavingsMovements'
 import { useDragToClose } from '@/shared/hooks/useDragToClose'
 import { useDialogA11y } from '@/shared/hooks/useDialogA11y'
@@ -98,18 +99,28 @@ export default function Layout() {
   const [confirmSignOut, setConfirmSignOut] = useState(false)
   const runDueSavings = useRunDueSavings()
   const runDueSavingsMutate = runDueSavings.mutate
+  const runDueSalaries = useRunDueSalaries()
+  const runDueSalariesMutate = runDueSalaries.mutateAsync
   useRealtimeSync(profile?.household_id ?? null)
 
-  // Autoahorro al abrir la app o reconectar. Es idempotente por mes.
+  // Nóminas automáticas y autoahorro al abrir/reconectar. Primero la
+  // nómina (para que el disponible del mes la tenga en cuenta) y luego
+  // el autoahorro. Ambos RPC son idempotentes.
   useEffect(() => {
     if (!profile?.household_id) return
-    const run = () => {
-      if (navigator.onLine) runDueSavingsMutate()
+    const run = async () => {
+      if (!navigator.onLine) return
+      try {
+        await runDueSalariesMutate()
+      } catch {
+        // Sin nómina no se bloquea el autoahorro ni el drenado offline.
+      }
+      runDueSavingsMutate()
     }
-    run()
+    void run()
     window.addEventListener('online', run)
     return () => window.removeEventListener('online', run)
-  }, [profile?.household_id, runDueSavingsMutate])
+  }, [profile?.household_id, runDueSalariesMutate, runDueSavingsMutate])
 
   const handleSignOut = async () => {
     setConfirmSignOut(false)

@@ -112,7 +112,9 @@ Aplicación web de **finanzas personales y del hogar** (Colombia, COP):
 households          id, name, invite_code (único), created_at
 profiles            id (= auth.users.id), household_id → households, full_name,
                     avatar_path (foto en el bucket avatars),
-                    payday (1-31, default 1)  → día de pago de la persona
+                    payday (1-31, default 1)  → día de pago de la persona,
+                    auto_salary (bool, default false) → crear la nómina del mes
+                    al llegar el payday usando el último monto
 salaries            household_id, profile_id, amount (>0), month (YYYY-MM-01),
                     pay_date (fecha real de la nómina de esa fila; default = día 1)
                     UNIQUE(profile_id, month)   → 1 salario por persona y mes
@@ -247,6 +249,7 @@ recursión infinita en políticas).
 | `get_household_monthly_history()` | Historial del hogar v2 con las mismas columnas; el ahorro solo suma metas compartidas. |
 | `create_savings_movement(p_goal_id, p_amount, p_kind, p_movement_date)` | Crea un depósito/retiro manual validando dueño, hogar, meta archivada, saldo y aporte propio en metas compartidas. |
 | `run_due_savings()` | Ejecuta los planes activos del hogar con catch-up de hasta 12 meses, recorte de día, omisión sin saldo y pausa al alcanzar la meta. Devuelve `(created, skipped)`. |
+| `run_due_salaries()` | Crea la nómina del mes para los miembros con `auto_salary` cuando ya llegó su `payday`, usando el último salario. No inventa si no hay historial ni duplica la fila del mes. Devuelve `(created, skipped)`. |
 
 Todas las funciones `security definer` fijan `search_path = public` y validan
 `auth.uid()` / pertenencia al hogar server-side. Las RPCs v2 revocan `EXECUTE`
@@ -567,6 +570,14 @@ Página Servicios: total fijo del mes, estado **Pagado/Pendiente** por servicio
 individual) o "Saltar". Un servicio legado **sin responsable** bloquea la
 aplicación y pide asignarlo; no se inventa pagador.
 
+### Nómina automática (opt-in)
+Cada miembro puede activar `auto_salary` en Miembros. Al abrir o reconectar la
+app, `run_due_salaries` crea la fila del mes si ya llegó su `payday` y no
+existe, copiando el último monto. No crea nada si no hay historial ni duplica
+la fila; el usuario puede corregir monto/fecha después. Si la app no se abre
+ese día, la fila se crea en la siguiente apertura. No sustituye el registro
+manual: es una comodidad para nóminas recurrentes.
+
 ### Quiero comprar (wishlist)
 `/quiero-comprar` registra deseos con precio, prioridad y forma de pago
 (contado o cuotas). Para cuotas calcula la **amortización francesa**
@@ -698,8 +709,8 @@ Con la bandera apagada el micrófono no aparece.
     autoahorro al reconectar.
   - `tests/e2e-mobile.mjs`, `tests/check-mobile.mjs`, `tests/e2e-realtime.mjs`
     y `tests/e2e-voice.mjs` (Edge Function mockeada + fixture de audio).
-- **SQL/RLS**: `tests/db/ledger-integrity.sql`, `savings.sql` y
-  `finance-rpcs.sql` se ejecutan en CI con `psql` contra Supabase local.
+- **SQL/RLS**: `tests/db/ledger-integrity.sql`, `savings.sql`,
+  `finance-rpcs.sql` y `auto-salary.sql` se ejecutan en CI con `psql` contra Supabase local.
 - Usa **navegación SPA** (clics en el sidebar, no `page.goto` a rutas
   protegidas), esperas por selector y `data-testid="confirm-dialog-confirm"`
   para los diálogos.

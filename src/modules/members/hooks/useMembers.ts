@@ -193,6 +193,46 @@ export function useUpdatePayday() {
   })
 }
 
+export function useUpdateAutoSalary() {
+  const queryClient = useQueryClient()
+  const { user, refreshProfile } = useAuth()
+
+  return useMutation({
+    mutationFn: async (autoSalary: boolean) => {
+      if (!user) throw new Error('No autenticado')
+      const { error } = await supabase
+        .from('profiles')
+        .update({ auto_salary: autoSalary })
+        .eq('id', user.id)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      void refreshProfile()
+      queryClient.invalidateQueries({ queryKey: ['members'] })
+      queryClient.invalidateQueries({ queryKey: ['salaries'] })
+    },
+  })
+}
+
+export function useRunDueSalaries() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc('run_due_salaries')
+      if (error) throw error
+      const row = (data as Array<{ created: number; skipped: number }> | null)?.[0]
+      return row ?? { created: 0, skipped: 0 }
+    },
+    onSuccess: (result) => {
+      if (result.created > 0) {
+        invalidateLedger(queryClient, LEDGER_INVALIDATION.salaries)
+        queryClient.invalidateQueries({ queryKey: ['salaries'] })
+      }
+    },
+  })
+}
+
 
 // ---------- Perfil y hogar ----------
 
