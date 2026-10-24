@@ -69,7 +69,7 @@ jobs:
       - name: Pruebas SQL/RLS
         run: |
           DB_CONTAINER=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
-          for file in tests/db/ledger-integrity.sql tests/db/savings.sql tests/db/finance-rpcs.sql; do
+          for file in tests/db/ledger-integrity.sql tests/db/savings.sql tests/db/finance-rpcs.sql tests/db/auto-salary.sql; do
             echo "== $file =="
             docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < "$file"
           done

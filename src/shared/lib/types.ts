@@ -11,6 +11,7 @@ export interface Profile {
   full_name: string
   avatar_path?: string | null
   payday?: number | null
+  auto_salary?: boolean
   created_at: string
 }
 

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Copy, Check, Users, Pencil, Trash2 } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
-import { useDeleteSalary, useMembers, useSalaries, useSalaryRows, useUpdatePayday, useUpsertSalary } from '@/modules/members/hooks/useMembers'
+import { useDeleteSalary, useMembers, useSalaries, useSalaryRows, useUpdateAutoSalary, useUpdatePayday, useUpsertSalary } from '@/modules/members/hooks/useMembers'
 import { useHousehold } from '@/modules/profile/hooks/useHousehold'
 import IncomeSection from '@/modules/members/components/IncomeSection'
 import UserAvatar from '@/shared/components/ui/UserAvatar'
@@ -255,6 +255,7 @@ export default function Members() {
   } = useMembers()
   const { salaries } = useSalaries(month)
   const updatePayday = useUpdatePayday()
+  const updateAutoSalary = useUpdateAutoSalary()
   const toast = useToast()
   const [copied, setCopied] = useState(false)
 
@@ -281,6 +282,19 @@ export default function Members() {
     await navigator.clipboard.writeText(household.invite_code)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
+  }
+
+  const handleAutoSalaryChange = async (autoSalary: boolean) => {
+    try {
+      await updateAutoSalary.mutateAsync(autoSalary)
+      toast.success(
+        autoSalary
+          ? 'Tu nómina se registrará automáticamente el día de pago'
+          : 'Registro automático de nómina desactivado',
+      )
+    } catch (err) {
+      toast.error(errorMessage(err))
+    }
   }
 
   return (
@@ -355,24 +369,37 @@ export default function Members() {
                       )}
                     </p>
                     {m.id === user?.id ? (
-                      <div className="mt-1.5 flex flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:gap-2">
-                        <span className="text-xs text-ink/40">Día de pago</span>
-                        <SelectInput
-                          aria-label="Día de pago"
-                          value={m.payday ?? 1}
-                          onChange={handlePaydayChange(m)}
-                          className="w-full sm:w-28"
-                        >
-                          {PAY_DAYS.map((d) => (
-                            <option key={d} value={d}>
-                              {d}
-                            </option>
-                          ))}
-                        </SelectInput>
+                      <div className="mt-1.5 flex flex-col items-start gap-1.5">
+                        <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+                          <span className="text-xs text-ink/40">Día de pago</span>
+                          <SelectInput
+                            aria-label="Día de pago"
+                            value={m.payday ?? 1}
+                            onChange={handlePaydayChange(m)}
+                            className="w-full sm:w-28"
+                          >
+                            {PAY_DAYS.map((d) => (
+                              <option key={d} value={d}>
+                                {d}
+                              </option>
+                            ))}
+                          </SelectInput>
+                        </div>
+                        <label className="flex items-center gap-2 text-xs text-ink/55">
+                          <input
+                            type="checkbox"
+                            checked={!!m.auto_salary}
+                            onChange={(event) => void handleAutoSalaryChange(event.target.checked)}
+                            disabled={updateAutoSalary.isPending}
+                            className="h-4 w-4 accent-pine-700"
+                          />
+                          Registrar mi nómina automáticamente el día de pago
+                        </label>
                       </div>
                     ) : (
                       <p className="text-xs text-ink/40">
                         Miembro del hogar · paga el día {m.payday ?? 1}
+                        {m.auto_salary && ' · nómina automática'}
                       </p>
                     )}
                   </div>
