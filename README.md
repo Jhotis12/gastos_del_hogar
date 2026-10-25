@@ -242,7 +242,9 @@ Abrir `http://localhost:5173`:
   pueden limpiar en bloque desde el aviso dorado de Gastos.
 - **Ahorro por movimientos**: los depósitos y retiros son movimientos; el
   saldo de la meta se recalcula solo. Las metas nuevas pueden ser personales
-  o compartidas (las viejas quedan compartidas).
+  o compartidas (las viejas quedan compartidas). Archivar conserva el saldo;
+  eliminar borra la meta con sus movimientos y deja de contar como ahorro (si
+  ya gastaste ese dinero, registra el gasto).
 - **Nómina automática opt-in**: en Miembros puedes activar que la nómina del
   mes se cree sola al llegar tu día de pago, usando el último monto. Se
   ejecuta al abrir/reconectar y no duplica la fila.

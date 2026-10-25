@@ -252,9 +252,10 @@ recursión infinita en políticas).
 | `get_monthly_surpluses()` | **Compatibilidad v1.** Sobrantes por mes desde el primer mes con actividad hasta el actual: `(month, income, expenses, surplus)`. |
 | `get_member_available(p_as_of)` | Disponible personal v2.1: Σ salarios + Σ incomes desde el último pago − Σ gastos pagados en esa ventana; sin ahorro; `(available nullable, income_basis, last_pay_date)`. |
 | `get_household_available(p_as_of)` | Suma de los disponibles personales del hogar desde el último pago de cada miembro; sin ahorro; `(available)`. |
-| `get_personal_monthly_history()` | Historial personal v2: `(month, income, expenses, savings, free, accumulated)`; el último acumulado coincide con el disponible a hoy. |
-| `get_household_monthly_history()` | Historial del hogar v2 con las mismas columnas; el ahorro solo suma metas compartidas. |
+| `get_personal_monthly_history()` | Historial personal v2: `(month, income, expenses, savings, free, accumulated)`. El acumulado es caja después del ahorro; no es el disponible del hero. |
+| `get_household_monthly_history()` | Historial del hogar v2 con las mismas columnas; el ahorro suma las metas compartidas (incluidas las archivadas). |
 | `create_savings_movement(p_goal_id, p_amount, p_kind, p_movement_date)` | Crea un depósito/retiro manual validando dueño, hogar, meta archivada, saldo y aporte propio en metas compartidas. |
+| `delete_savings_goal(p_goal)` | Elimina una meta con sus planes y movimientos. Solo el dueño de una meta personal o un miembro del hogar para una compartida. El monto deja de contar como ahorro. |
 | `run_due_savings()` | Ejecuta los planes activos del hogar con catch-up de hasta 12 meses, recorte de día, omisión sin saldo y pausa al alcanzar la meta. Devuelve `(created, skipped)`. |
 | `run_due_salaries()` | Crea la nómina del mes para los miembros con `auto_salary` cuando ya llegó su `payday`, usando el último salario. No inventa si no hay historial ni duplica la fila del mes. Devuelve `(created, skipped)`. |
 
@@ -509,10 +510,14 @@ Nada de esto requiere cambios en la BD: es todo frontend.
   sincronizados. Los salarios se rehacen con su upsert por profile+mes.
   Un gasto con pagador nulo o de otro hogar se rechaza (RLS) y el aviso pide
   editarlo; no se inserta.
-- **Ahorro online-only**: depósitos, retiros, planes y archivo requieren red
-  y no se encolan; el modal avisa sin dejar una promesa rechazada. Al
-  reconectar, `Layout` ejecuta `run_due_savings` sin bloquear el drenado de
+- **Ahorro online-only**: depósitos, retiros, planes, archivo y eliminación
+  requieren red y no se encolan; el modal avisa sin dejar una promesa rechazada.
+  Al reconectar, `Layout` ejecuta `run_due_savings` sin bloquear el drenado de
   la cola de gastos.
+- **Archivar vs eliminar**: archivar conserva movimientos y saldo; eliminar
+  borra la meta, sus planes y movimientos, y el monto deja de contar como
+  ahorro. Si el dinero ya se gastó, hay que registrar el gasto para que el
+  total siga real.
 - **Notificaciones**: sin toast al caer la red (el ícono es suficiente);
   "De vuelta en línea" y "N cambios sincronizados" sí se emiten desde
   `sync.ts` vía `emitToast` (emisor de módulo en `Toast.tsx`; el

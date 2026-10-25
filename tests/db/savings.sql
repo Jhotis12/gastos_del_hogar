@@ -164,4 +164,51 @@ begin
   raise notice 'PASS: depósitos y retiros válidos dejan la meta en cero';
 end $$;
 
+-- Eliminar una meta borra sus movimientos; las metas personales ajenas quedan
+-- protegidas. A tiene el claim activo en este punto.
+do $$
+begin
+  perform public.delete_savings_goal('cccccccc-3333-4000-8000-000000000004');
+  if exists (select 1 from public.savings_goals where id = 'cccccccc-3333-4000-8000-000000000004') then
+    raise exception 'FALLO: la meta compartida no se eliminó';
+  end if;
+  if exists (select 1 from public.savings_movements where goal_id = 'cccccccc-3333-4000-8000-000000000004') then
+    raise exception 'FALLO: quedaron movimientos de la meta eliminada';
+  end if;
+  raise notice 'PASS: eliminar meta compartida con movimientos';
+end $$;
+
+do $$
+begin
+  begin
+    perform public.delete_savings_goal('cccccccc-3333-4000-8000-000000000005');
+    raise exception 'FALLO: A eliminó la meta personal de B';
+  exception when sqlstate '42501' then
+    raise notice 'PASS: A no puede eliminar la meta personal de B';
+  end;
+end $$;
+
+select set_config('request.jwt.claims', '{"sub":"bbbbbbbb-2222-4000-8000-000000000002","role":"authenticated"}', true);
+
+do $$
+begin
+  perform public.delete_savings_goal('cccccccc-3333-4000-8000-000000000005');
+  if exists (select 1 from public.savings_goals where id = 'cccccccc-3333-4000-8000-000000000005') then
+    raise exception 'FALLO: B no eliminó su meta personal';
+  end if;
+  raise notice 'PASS: B elimina su meta personal';
+end $$;
+
+select set_config('request.jwt.claims', '{"sub":"aaaaaaaa-1111-4000-8000-000000000001","role":"authenticated"}', true);
+
+do $$
+begin
+  begin
+    perform public.delete_savings_goal('cccccccc-3333-4000-8000-000000000004');
+    raise exception 'FALLO: se pudo eliminar una meta ya eliminada';
+  exception when sqlstate '22023' then
+    raise notice 'PASS: meta inexistente rechazada';
+  end;
+end $$;
+
 rollback;
