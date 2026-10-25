@@ -76,8 +76,8 @@ declare
   v_accumulated numeric;
 begin
   select available into v_available from public.get_member_available(current_date);
-  if v_available <> 4950000 then
-    raise exception 'FALLO: disponible de A = %, esperado 4950000', v_available;
+  if v_available <> 2400000 then
+    raise exception 'FALLO: disponible de A = %, esperado 2400000', v_available;
   end if;
 
   select income, expenses, savings, free, accumulated
@@ -90,7 +90,12 @@ begin
     raise exception 'FALLO: historial personal de A (%, %, %, %, %)',
       v_income, v_expenses, v_savings, v_free, v_accumulated;
   end if;
-  raise notice 'PASS: disponible e historial personal de A';
+
+  select available into v_available from public.get_household_available(current_date);
+  if v_available <> 4100000 then
+    raise exception 'FALLO: disponible del hogar = %, esperado 4100000', v_available;
+  end if;
+  raise notice 'PASS: disponible desde el pago e historial personal de A';
 end $$;
 
 -- Disponible sin ingresos: D solo tiene un ahorro.
@@ -280,6 +285,13 @@ begin
     raise exception 'FALLO: anon ejecutó un RPC';
   exception when insufficient_privilege then
     raise notice 'PASS: anon sin permiso de ejecución';
+  end;
+
+  begin
+    perform public.get_household_available(current_date);
+    raise exception 'FALLO: anon ejecutó el RPC del hogar';
+  exception when insufficient_privilege then
+    raise notice 'PASS: anon sin permiso en el RPC del hogar';
   end;
 end $$;
 reset role;

@@ -23,8 +23,9 @@ gastos por voz con IA en una fase posterior.
   conservan en una bolsa `Sin asignar (histórico)` y se pueden limpiar después.
 - **BREAKING — Ahorro por movimientos.** El ahorro deja de ser un
   `saved_amount` editable a mano y pasa a registrarse con depósitos, retiros,
-  apertura y aportes automáticos. El disponible descuenta el ahorro neto; el
-  saldo de cada meta se recalcula desde sus movimientos.
+  apertura y aportes automáticos. El ahorro **no** descuenta del disponible:
+  se muestra en su propia sección y en el Historial. El saldo de cada meta se
+  recalcula desde sus movimientos.
 - **Foco personal por defecto.** Inicio muestra primero los gastos y ahorros
   personales; el resumen del hogar queda como sección secundaria. No se muestra
   el monto del salario como protagonista: la persona ya lo conoce.
@@ -36,6 +37,11 @@ gastos por voz con IA en una fase posterior.
   calcula con el último `salaries.pay_date` real de la persona o, si no hay
   nómina registrada, con su `profiles.payday`. El monto del salario solo se usa
   para calcular el disponible cuando existe; nunca se inventa.
+- **Disponible desde el último pago y del hogar.** El disponible personal es
+  ingresos desde el último pago menos gastos desde esa fecha, sin descontar
+  ahorro. El disponible del hogar es la suma de los disponibles personales.
+  El acumulado histórico y el sobrante mensual quedan en Historial
+  (`Libre`/`Acumulado`).
 - **Ingresos dejan de ser protagonistas.** Salarios y dinero extra se mantienen
   como datos opcionales para calcular el disponible y los totales del hogar,
   pero no son la métrica principal de Inicio. La app puede mostrar gasto y
@@ -106,8 +112,9 @@ gastos por voz con IA en una fase posterior.
 
 ## Impact
 
-- **Migraciones**: dos migraciones aditivas en `supabase/migrations/` (datos,
-  RLS, índices y RPCs del ledger personal; ahorro con movimientos y planes).
+- **Migraciones**: migraciones aditivas en `supabase/migrations/` (datos,
+  RLS, índices y RPCs del ledger personal; ahorro con movimientos y planes;
+  voz, nómina automática, correcciones de datos y disponible desde el pago).
   No se borran tablas ni columnas. El saldo histórico de ahorro se backfillea
   como movimiento de apertura. Producción solo por el workflow al mergear a
   `master`.
@@ -141,7 +148,7 @@ gastos por voz con IA en una fase posterior.
 
 - **Rama**: `feat/v2-finanzas-personales` desde `master`, después de cerrar
   `fix-datos-y-seguridad` (no aplica) y dejar el árbol limpio.
-- **Migraciones**: sí, dos migraciones aditivas. Se prueban en local con
+- **Migraciones**: sí, migraciones aditivas. Se prueban en local con
   `supabase db reset --local` y `supabase migration up --local`; antes de
   producción se corre `supabase db push --dry-run` y el merge dispara
   `supabase-migrations.yml`.

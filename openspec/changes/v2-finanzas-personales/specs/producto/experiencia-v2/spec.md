@@ -10,8 +10,10 @@ hogar clara, sin opciones duplicadas ni lenguaje ambiguo.
 ### Requirement: Inicio con foco personal
 
 La pantalla de entrada SHALL priorizar los gastos y ahorros personales. SHALL
-mostrar como mínimo el gasto del mes en curso, el gasto desde el último pago y
-el ahorro personal. El monto del salario SHALL NOT ser la cifra principal ni el
+mostrar como mínimo el gasto del mes en curso, el gasto desde el último pago, el
+ahorro personal y el disponible personal desde el último pago. SHALL mostrar
+también el disponible del hogar como suma de los disponibles personales, sin
+incluir el ahorro. El monto del salario SHALL NOT ser la cifra principal ni el
 titular de la pantalla.
 
 #### Scenario: Primer vistazo
@@ -77,9 +79,9 @@ visibles en una bolsa histórica, no como una opción de creación.
 ### Requirement: Terminología consistente
 
 La interfaz SHALL usar los mismos términos en todas las pantallas:
-`Mi mes`, `Desde mi último pago`, `Hogar`, `Ahorro`, `Disponible` y
-`Libre después del ahorro`. Las fechas de las ventanas SHALL mostrarse en
-español de Colombia.
+`Mi mes`, `Gastos desde mi último pago`, `Disponible desde mi último pago`,
+`Disponible del hogar`, `Hogar`, `Ahorro` y `Libre después del ahorro`. Las
+fechas de las ventanas SHALL mostrarse en español de Colombia.
 
 #### Scenario: Misma ventana, mismo nombre
 
@@ -167,6 +169,11 @@ el gasto del hogar y el desglose por persona; Historial SHALL tener `Hogar` y
 
 - **WHEN** el usuario abre Historial
 - **THEN** puede alternar entre `Hogar` y `Mis meses` sin perder el mes seleccionado
+
+#### Scenario: Sobrante del mes
+
+- **WHEN** el usuario abre Historial en `Hogar` o `Mis meses`
+- **THEN** ve `Libre` (ingresos − gastos − ahorro del mes) y `Acumulado`, con un acceso directo desde Inicio
 
 ### Requirement: Versión 2.0 visible y coherente
 
