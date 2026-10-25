@@ -212,6 +212,15 @@ Alternativa considerada: `pg_cron`. Se descarta para la v2.0 porque agrega una
 extensión/operación de producción y el hogar abre la app con frecuencia. Queda
 documentado como upgrade si se necesita garantía sin abrir la app.
 
+### 6.1 Nómina automática opt-in, sin cron
+
+`profiles.auto_salary` habilita que `run_due_salaries()` cree la nómina del mes
+cuando llega el `payday` del miembro. Usa el último monto registrado, no crea
+nada si no hay historial, no duplica la fila del mes y recorta el día 31 al
+último día del mes. Se ejecuta al abrir/reconectar, antes del autoahorro, y es
+editable como cualquier salario. Alternativa `pg_cron`: se descarta por la
+misma razón que el autoahorro.
+
 ### 7. Disponible e historial en RPC; totales visibles en cliente
 
 - `get_member_available(p_as_of)` devuelve `available` (nullable),
@@ -262,7 +271,8 @@ evita un god-file en `shared/`.
   sección secundaria; se retira la tarjeta `Saldos del mes`.
 - Ahorros: tabs `Mis metas` / `Compartidas`; tarjetas con progreso, movimientos,
   autoahorro y archivo.
-- Historial: tabs `Hogar` / `Mis meses`.
+- Historial: tabs `Hogar` / `Mis meses`; solo `Recibido`, `Gastado` y
+  `Quedó` por mes. El ahorro y los acumulados no se muestran aquí.
 - Proyección y Quiero comprar: personales; usan `useMemberAvailable` y el
   sobrante personal.
 - Calendario: filtro `Todos / Mis gastos`; pagador visible.
@@ -278,8 +288,9 @@ Nueva Edge Function `analyze-expense-audio` (Deno + Gemini), hermana de
 
 - valida JWT, hogar y rate limit por usuario (tabla de intentos, RLS sin
   políticas, como el patrón existente);
-- recibe un audio corto (máx. 30 s / 5 MB), lo envía a Gemini con un prompt
-  estructurado en español/COP y devuelve
+- recibe un audio corto (máx. 30 s / 5 MB), normaliza el MIME del navegador
+  (`audio/webm;codecs=opus` → `audio/webm`) y el data URL antes de enviarlo a
+  Gemini con un prompt estructurado en español/COP; devuelve
   `{ amount, description, date, category_hint, payer_hint, confidence }`;
 - no persiste el audio; lo descarta al terminar;
 - errores internos solo a logs, mensaje genérico al cliente;
@@ -301,9 +312,14 @@ incorrectos y por la promesa de calidad de la v2.0.
 2. **Ahorro**: tablas `savings_movements` y `savings_plans`, columnas
    `owner_id`/`archived_at`, backfill de apertura, trigger de `saved_amount`,
    RLS de metas personales/compartidas.
-3. **RPCs y realtime**: `get_member_available`, historiales, creación de
-   movimientos, `run_due_savings`, grants y publicación Realtime de las tablas
-   nuevas.
+3. **RPCs y realtime**: `get_member_available`, `get_household_available`,
+   historiales, creación de movimientos, `run_due_savings`,
+   `run_due_salaries`, `delete_savings_goal`, grants y publicación Realtime de
+   las tablas nuevas.
+4. **Datos reales**: normalización idempotente de salarios, ahorros y gastos
+   legacy; dry-run en producción con rollback y verificación de totales antes
+   del merge. La corrección del ajuste de Jhonatan se aplica en la misma
+   migración de cierre.
 
 Se pueden agrupar en dos migraciones si el revisor prefiere menos archivos, pero
 el orden lógico se mantiene. No se borran tablas ni columnas; `expenses.splits`
@@ -363,7 +379,12 @@ rama y no se implementa.
   documentación; no se elimina la página, solo cambia el alcance.
 - **IA de voz** → costo, privacidad y errores de interpretación. Mitigación:
   bandera, rate limit, audio no persistido, confirmación humana y fallback
-  manual; pruebas con fixture y mock.
+  manual; pruebas con fixture y mock. Gemini puede responder `503` por demanda
+  alta; la app muestra el error y ofrece reintentar/manual. La prueba real con
+  el audio del navegador quedó documentada con ese límite.
+- **Formatos del navegador** → Chrome envía `audio/webm;codecs=opus` y el
+  data URL incluye `;base64,`. Mitigación: normalizar ambos en cliente y
+  servidor, con pruebas unitarias y SQL del contrato.
 - **Ventana de deploy PWA** → clientes viejos contra esquema nuevo. Mitigación:
   migración aditiva, `UpdatePrompt`, aviso en la PR y pruebas con caché
   limpiada.

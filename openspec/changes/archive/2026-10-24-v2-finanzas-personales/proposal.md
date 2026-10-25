@@ -23,9 +23,10 @@ gastos por voz con IA en una fase posterior.
   conservan en una bolsa `Sin asignar (histórico)` y se pueden limpiar después.
 - **BREAKING — Ahorro por movimientos.** El ahorro deja de ser un
   `saved_amount` editable a mano y pasa a registrarse con depósitos, retiros,
-  apertura y aportes automáticos. El ahorro **no** descuenta del disponible:
-  se muestra en su propia sección y en el Historial. El saldo de cada meta se
-  recalcula desde sus movimientos.
+  apertura y aportes automáticos. El ahorro **no** descuenta del disponible y
+  **no aparece en Historial**: se gestiona solo en Ahorros. El saldo de cada
+  meta se recalcula desde sus movimientos; archivar conserva el saldo y
+  eliminar borra la meta con sus movimientos.
 - **Foco personal por defecto.** Inicio muestra primero los gastos y ahorros
   personales; el resumen del hogar queda como sección secundaria. No se muestra
   el monto del salario como protagonista: la persona ya lo conoce.
@@ -40,8 +41,12 @@ gastos por voz con IA en una fase posterior.
 - **Disponible desde el último pago y del hogar.** El disponible personal es
   ingresos desde el último pago menos gastos desde esa fecha, sin descontar
   ahorro. El disponible del hogar es la suma de los disponibles personales.
-  El acumulado histórico y el sobrante mensual quedan en Historial
-  (`Libre`/`Acumulado`).
+  Historial se simplifica a `Recibido`, `Gastado` y `Quedó` por mes; no muestra
+  ahorro ni acumulados.
+- **Nómina automática opt-in.** Cada miembro puede activar `auto_salary`; al
+  llegar su `payday`, `run_due_salaries()` crea la nómina del mes con el último
+  monto. Se ejecuta al abrir/reconectar, no duplica la fila y no inventa si no
+  hay historial.
 - **Ingresos dejan de ser protagonistas.** Salarios y dinero extra se mantienen
   como datos opcionales para calcular el disponible y los totales del hogar,
   pero no son la métrica principal de Inicio. La app puede mostrar gasto y
@@ -62,6 +67,11 @@ gastos por voz con IA en una fase posterior.
   `savings_goals.archived_at`; el saldo viejo de ahorro se convierte en un
   movimiento de apertura. Los históricos sin pagador o sin dueño no se
   inventan.
+- **Normalización de datos reales.** Migraciones idempotentes para los salarios
+  de Jhonatan/Charith, las aperturas de ahorro que no existían y los gastos
+  legacy; la migración de normalización verifica los totales reales y no toca
+  otros hogares. El dry-run en producción da Charith `1.872.700` después de la
+  nómina (`12.900` antes), Jhonatan `6.450` y ahorro `600.000`.
 - **Calidad verificable.** Pruebas unitarias de fechas y saldos, pruebas SQL de
   RLS/migración/RPCs, e2e principal con dos miembros y días de pago distintos,
   e2e móvil, `check-mobile`, realtime, offline y un paso de IA con fixtures.
@@ -69,9 +79,11 @@ gastos por voz con IA en una fase posterior.
   Jhotis12.
 - **IA de voz como fase posterior, con confirmación.** Se incluye la capacidad
   de grabar un audio (“gasté 50 mil en mercado ayer”), transcribirlo/parsearlo
-  con Gemini y dejar un borrador de gasto editable. Nunca se crea un gasto
-  definitivo sin confirmación del usuario. Queda detrás de una bandera de
-  funcionalidad y no bloquea el núcleo de la v2.0.
+  con Gemini y dejar un borrador de gasto editable. Normaliza el MIME
+  `audio/webm;codecs=opus` y el data URL del navegador antes de Gemini. Nunca
+  se crea un gasto definitivo sin confirmación del usuario. Queda detrás de una
+  bandera de funcionalidad y no bloquea el núcleo de la v2.0. La prueba real
+  quedó documentada con el límite de Gemini 503 (demanda alta).
 - **Cierre del change anterior.** `fix-datos-y-seguridad` se cierra como no
   aplicable a esta versión. Su alcance de seguridad/infraestructura no se
   implementa aquí; solo se toma la validación de integridad del pagador que

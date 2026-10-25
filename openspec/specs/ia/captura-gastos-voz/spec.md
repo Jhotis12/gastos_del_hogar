@@ -1,11 +1,10 @@
-# Spec Delta
+# ia/captura-gastos-voz Specification
 
 ## Purpose
-
 Permite dictar un gasto por voz y convertirlo en un borrador editable, con
 confirmación humana y privacidad, para reducir la fricción de registrar gastos.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Función detrás de una bandera
 
@@ -49,6 +48,28 @@ micrófono, SHALL mostrar un mensaje claro y ofrecer el formulario manual.
 
 - **WHEN** la grabación alcanza el máximo configurado
 - **THEN** se detiene automáticamente y se informa el límite
+
+### Requirement: Compatibilidad con el formato del navegador
+
+La app SHALL normalizar el MIME que agrega `MediaRecorder` (`audio/webm;codecs=opus`
+→ `audio/webm`) y SHALL quitar el prefijo `data:...;base64,` antes de enviar el
+audio. La Edge Function SHALL aceptar también clientes viejos que envían el data
+URL completo, sin fallar en `atob`.
+
+#### Scenario: Chrome con codecs
+
+- **WHEN** Chrome graba `audio/webm;codecs=opus` y `FileReader` devuelve `data:audio/webm;codecs=opus;base64,...`
+- **THEN** la función recibe `mime_type = audio/webm` y `audio_base64` sin el prefijo
+
+#### Scenario: Cliente viejo con data URL
+
+- **WHEN** un cliente ya desplegado envía el data URL completo en `audio_base64`
+- **THEN** la función lo limpia antes de decodificar y el análisis continúa
+
+#### Scenario: Error de formato
+
+- **WHEN** el MIME no es de audio o el base64 está vacío
+- **THEN** la función responde 400 con un mensaje claro y la app ofrece el formulario manual
 
 ### Requirement: Extracción estructurada del gasto
 

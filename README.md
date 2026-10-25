@@ -298,6 +298,12 @@ supabase functions deploy analyze-expense-audio
   gasto se crea **solo** al confirmar.
 - Rate limit: 10 análisis por usuario en 24 h (tabla
   `audio_analysis_attempts`, RLS sin políticas).
+- Chrome graba `audio/webm;codecs=opus`; la función normaliza el MIME y el
+  data URL antes de Gemini (clientes viejos también funcionan).
+- Prueba real (24-oct-2026): la llamada directa con el mismo audio devolvió un
+  borrador; dos intentos desde la app recibieron **503 de Gemini** por demanda
+  alta. La app muestra el error y ofrece reintentar o el formulario manual. Es
+  un límite del proveedor, no del formato del audio.
 - Con la bandera apagada el micrófono no aparece y el formulario manual sigue
   igual. Si la IA falla (sin red, cuota, timeout o audio ininteligible), la app
   ofrece el formulario manual.
