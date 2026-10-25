@@ -130,6 +130,8 @@ await step('Historial: Hogar / Mis meses', async () => {
   await page.getByRole('tab', { name: 'Mis meses' }).click()
   await page.getByRole('tab', { name: 'Hogar' }).click()
   await page.getByRole('columnheader', { name: 'Ingresos' }).waitFor()
+  await page.getByRole('columnheader', { name: 'Total con ahorros' }).waitFor()
+  await page.getByText('Cómo leer estas cifras').waitFor()
 })
 
 await step('Ahorro personal con depósito inicial y retiro', async () => {

@@ -173,7 +173,7 @@ el gasto del hogar y el desglose por persona; Historial SHALL tener `Hogar` y
 #### Scenario: Sobrante del mes
 
 - **WHEN** el usuario abre Historial en `Hogar` o `Mis meses`
-- **THEN** ve `Libre` (ingresos − gastos − ahorro del mes) y `Acumulado`, con un acceso directo desde Inicio
+- **THEN** ve `Total con ahorros` (ingresos − gastos), `Ahorro`, `Libre` (total − ahorro) y `Acumulado` (suma de libre), con una guía de lectura y un acceso directo desde Inicio
 
 ### Requirement: Versión 2.0 visible y coherente
 

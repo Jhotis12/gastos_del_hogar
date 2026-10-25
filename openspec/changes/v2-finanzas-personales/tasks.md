@@ -175,6 +175,7 @@
 - [x] 16.6 Borrar solo la apertura de `300.000` del Ahorro Charith archivado, mantener la apertura de `200.000` de Jhonatan y pasar el depósito de `200.000` de la meta nueva a Charith; verificar con un dry-run en producción
 - [ ] 16.7 Aplicar y verificar en producción los totales reales normalizados: Charith `1.872.700` después de la nómina (`12.900` antes), Jhonatan `6.450`, ahorro `600.000`; la migración hace dry-run con esos valores
 - [x] 16.8 Permitir eliminar una meta con sus planes y movimientos desde el front, con confirmación y pruebas SQL/e2e; verificar con `tests/db/savings.sql` y `e2e-flow`
+- [x] 16.9 Rediseñar Historial con `Total con ahorros`, `Ahorro`, `Libre` y `Acumulado`, guía de lectura y explicación de ajustes; verificar con `e2e-flow` y `check-mobile`
 
 ## Workflow follow-up
 
