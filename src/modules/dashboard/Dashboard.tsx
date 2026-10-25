@@ -18,7 +18,7 @@ import { useHousehold } from '@/modules/profile/hooks/useHousehold'
 import { useMembers } from '@/modules/members/hooks/useMembers'
 import { useFinanceWindow } from '@/modules/finance/hooks/useFinanceWindow'
 import { useMemberAvailable } from '@/modules/finance/hooks/useMemberAvailable'
-import { useHouseholdMonthlyHistory } from '@/modules/finance/hooks/useHouseholdMonthlyHistory'
+import { useHouseholdAvailable } from '@/modules/finance/hooks/useHouseholdAvailable'
 import { useSavingsMovements } from '@/modules/savings/hooks/useSavingsMovements'
 import {
   householdReconciliation,
@@ -78,11 +78,11 @@ export default function Dashboard() {
     refetch: refetchAvailable,
   } = useMemberAvailable(asOf)
   const {
-    data: householdHistory,
-    isPending: householdHistoryPending,
-    error: householdHistoryError,
-    refetch: refetchHouseholdHistory,
-  } = useHouseholdMonthlyHistory()
+    data: householdAvailableData,
+    isPending: householdAvailablePending,
+    error: householdAvailableError,
+    refetch: refetchHouseholdAvailable,
+  } = useHouseholdAvailable(asOf)
   const {
     data: savingsMovements,
     error: savingsError,
@@ -120,7 +120,7 @@ export default function Dashboard() {
     membersError,
     financeError,
     availableError,
-    householdHistoryError,
+    householdAvailableError,
     savingsError,
     expensesError,
   ].find(Boolean)
@@ -129,7 +129,7 @@ export default function Dashboard() {
     void refetchMembers()
     void refetchFinance()
     void refetchAvailable()
-    void refetchHouseholdHistory()
+    void refetchHouseholdAvailable()
     void refetchSavings()
     void refetchExpenses()
   }
@@ -153,7 +153,7 @@ export default function Dashboard() {
 
   const available = memberAvailable?.available ?? null
   const availableAnimated = useCountUp(available ?? 0)
-  const householdAvailable = householdHistory?.at(-1)?.accumulated ?? null
+  const householdAvailable = householdAvailableData?.available ?? null
   const householdAvailableAnimated = useCountUp(householdAvailable ?? 0)
 
   const homeExpenses = householdExpenses ?? []
@@ -220,7 +220,9 @@ export default function Dashboard() {
         <div className="relative">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-[1.35fr_1fr]">
             <div>
-              <p className="text-sm font-medium text-pine-200">Disponible personal · hoy</p>
+              <p className="text-sm font-medium text-pine-200">
+                Disponible personal · desde tu último pago
+              </p>
               <div
                 data-testid="hero-saldo"
                 className={cn(
@@ -237,7 +239,7 @@ export default function Dashboard() {
                 )}
               </div>
               <p className="mt-1 text-xs text-pine-200/80">
-                Ingresos − gastos − ahorro neto
+                Ingresos − gastos desde tu último pago
               </p>
             </div>
 
@@ -252,7 +254,7 @@ export default function Dashboard() {
                   householdAvailable !== null && householdAvailable < 0 && 'text-coral-200',
                 )}
               >
-                {householdHistoryPending ? (
+                {householdAvailablePending ? (
                   <Skeleton tone="onDark" className="mt-1 h-8 w-36" />
                 ) : householdAvailable === null ? (
                   <span className="text-lg font-semibold">Sin movimientos</span>
@@ -261,7 +263,7 @@ export default function Dashboard() {
                 )}
               </div>
               <p className="mt-1 text-[11px] text-pine-200/70">
-                Ingresos − gastos − ahorro compartido
+                Suma de los disponibles personales
               </p>
             </div>
           </div>
@@ -280,7 +282,7 @@ export default function Dashboard() {
             </div>
             <div className="rounded-xl bg-white/10 p-3 backdrop-blur-sm">
               <p className="flex items-center gap-1.5 text-xs font-medium text-pine-200">
-                <Wallet size={14} /> Desde mi último pago
+                <Wallet size={14} /> Gastos desde mi último pago
               </p>
               <div className="mt-1 font-display text-xl font-semibold">
                 {financePending ? <Skeleton tone="onDark" className="h-6 w-24" /> : formatCurrency(cycleSpent)}

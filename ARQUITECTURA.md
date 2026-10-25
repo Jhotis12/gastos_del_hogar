@@ -166,14 +166,16 @@ invite_lookup_attempts  user_id (= auth.users.id), attempts, window_start
   al último día del mes (p. ej. día 31 en febrero → 28). `pay_date` es la
   **fuente de verdad** del dinero: al registrar un salario se puede editar
   la fecha real de llegada (nóminas atrasadas, cambios de día).
-- **Disponible del hogar:** último `accumulated` de
-  `get_household_monthly_history()` = ingresos − gastos − ahorro compartido.
-  Se muestra junto al personal en Inicio; el sobrante mensual es la columna
-  `free` (Libre) de ese historial.
-- **Disponible personal v2.0:** RPC `get_member_available(p_as_of)` =
-  Σ `salaries` + Σ `incomes` del miembro (hasta la fecha) − Σ gastos pagados
-  por el miembro − Σ ahorro neto del miembro. Si no hay ingresos registrados,
-  `available` es null (no se inventa). No cuenta ingresos del hogar sin dueño.
+- **Disponible personal v2.1:** RPC `get_member_available(p_as_of)` =
+  Σ `salaries` + Σ `incomes` desde el último pago (real; si no hay, `payday`
+  configurado) − Σ gastos pagados en esa ventana. **No descuenta ahorro**: las
+  metas viven en Ahorros. Si no hay ingresos registrados, `available` es null
+  (no se inventa). No cuenta ingresos del hogar sin dueño.
+- **Disponible del hogar v2.1:** RPC `get_household_available(p_as_of)` = suma
+  de los disponibles personales de todos los miembros (cada uno desde su último
+  pago), sin ahorro. Se muestra junto al personal en Inicio. El acumulado
+  histórico y el sobrante mensual siguen en `get_household_monthly_history()` e
+  Historial (columnas `free` y `accumulated`).
 - **Historiales v2.0:** `get_personal_monthly_history()` y
   `get_household_monthly_history()` devuelven una fila por mes con
   `(month, income, expenses, savings, free, accumulated)`. El historial del
@@ -248,7 +250,8 @@ recursión infinita en políticas).
 | `apply_recurring_expense(p_recurring_id, p_month)` | Aplica **un** servicio vencido a `expenses` (con guarda anti-duplicados por mes) y avanza su `next_due_date` según `frequency` (1/2/3/12 meses). Se llama por servicio desde el wizard de "Aplicar al mes". |
 | `get_running_balance(p_date)` | **Compatibilidad v1.** Saldo acumulado del hogar a una fecha: Σ salarios (`pay_date <= p_date`) + Σ incomes (`income_date <= p_date`) − Σ gastos (`expense_date <= p_date`). |
 | `get_monthly_surpluses()` | **Compatibilidad v1.** Sobrantes por mes desde el primer mes con actividad hasta el actual: `(month, income, expenses, surplus)`. |
-| `get_member_available(p_as_of)` | Disponible personal v2: Σ salarios + Σ incomes del miembro − Σ gastos pagados − Σ ahorro neto hasta `p_as_of`; `(available nullable, income_basis, last_pay_date)`. |
+| `get_member_available(p_as_of)` | Disponible personal v2.1: Σ salarios + Σ incomes desde el último pago − Σ gastos pagados en esa ventana; sin ahorro; `(available nullable, income_basis, last_pay_date)`. |
+| `get_household_available(p_as_of)` | Suma de los disponibles personales del hogar desde el último pago de cada miembro; sin ahorro; `(available)`. |
 | `get_personal_monthly_history()` | Historial personal v2: `(month, income, expenses, savings, free, accumulated)`; el último acumulado coincide con el disponible a hoy. |
 | `get_household_monthly_history()` | Historial del hogar v2 con las mismas columnas; el ahorro solo suma metas compartidas. |
 | `create_savings_movement(p_goal_id, p_amount, p_kind, p_movement_date)` | Crea un depósito/retiro manual validando dueño, hogar, meta archivada, saldo y aporte propio en metas compartidas. |

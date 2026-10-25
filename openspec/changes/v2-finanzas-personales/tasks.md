@@ -165,6 +165,15 @@
 - [x] 15.6 Adjuntar a la PR la auditoría de migración, el resultado de `supabase db push --dry-run` y el plan de backup/rollback; verificar que el reviewer puede reproducirlo
 - [x] 15.7 Atender los comentarios de revisión sin mergear; verificar que los nuevos commits mantienen CI/E2E en verde
 
+## 16. Ajuste post-merge: disponible desde el último pago
+
+- [x] 16.1 Cambiar `get_member_available` para sumar ingresos y restar gastos solo desde el último pago (real o `payday` configurado), sin descontar ahorro; verificar con `tests/db/finance-rpcs.sql`
+- [x] 16.2 Agregar `get_household_available` como suma de los disponibles personales del hogar, sin ahorro, y su hook/cliente; verificar con pruebas unitarias y SQL
+- [x] 16.3 Actualizar Inicio: `Disponible personal · desde tu último pago`, `Gastos desde mi último pago` y `Disponible del hogar`; verificar con `e2e-flow`
+- [x] 16.4 Actualizar `README.md`, `ARQUITECTURA.md`, specs y design; verificar con `openspec validate`
+- [ ] 16.5 Verificar en producción los valores de Charith (`1.859.800`), Jhonatan (`193.267`) y hogar (`2.053.067`), y que los ahorros no alteren el disponible
+- [ ] 16.6 Revisar los `500.000` de saldos migrados que el usuario reporta como inexistentes; no forman parte del disponible y, si corresponde, eliminarlos con una migración
+
 ## Workflow follow-up
 
 - Jhotis12 revisa, aprueba y mergea la PR; el agente no mergea.

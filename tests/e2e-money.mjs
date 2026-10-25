@@ -168,7 +168,7 @@ await api('/rest/v1/expenses', {
 await page.reload({ waitUntil: 'networkidle' })
 await page.waitForTimeout(2500)
 
-await step('disponible personal = ingresos - gastos - ahorro', async () => {
+await step('disponible personal = ingresos - gastos desde el pago', async () => {
   const hero = await page.getByTestId('hero-saldo').innerText()
   if (!hero.includes('2.300.000')) throw new Error(`hero: ${hero}`)
 })
@@ -215,15 +215,15 @@ await step('crear meta personal con depósito inicial', async () => {
   await page.getByText('Meta dinero').first().waitFor()
 })
 
-await step('el ahorro manual baja el disponible', async () => {
+await step('el ahorro manual no cambia el disponible', async () => {
   await page.click('nav >> text=Inicio')
   await page.waitForURL((url) => url.pathname === '/', { timeout: 10000 })
   await page.waitForTimeout(1800)
   const hero = await page.getByTestId('hero-saldo').innerText()
-  if (!hero.includes('2.200.000')) throw new Error(`hero tras depósito: ${hero}`)
+  if (!hero.includes('2.300.000')) throw new Error(`hero tras depósito: ${hero}`)
 })
 
-await step('autoahorro al abrir la app y sin duplicados', async () => {
+await step('autoahorro no cambia el disponible y no duplica', async () => {
   await page.click('nav >> text=Ahorros')
   await page.waitForURL((url) => url.pathname === '/ahorros', { timeout: 10000 })
   await page.getByRole('tab', { name: 'Mis metas' }).click()
@@ -238,7 +238,7 @@ await step('autoahorro al abrir la app y sin duplicados', async () => {
   await page.click('nav >> text=Inicio')
   await page.waitForTimeout(1800)
   const hero = await page.getByTestId('hero-saldo').innerText()
-  if (!hero.includes('2.150.000')) throw new Error(`hero tras autoahorro: ${hero}`)
+  if (!hero.includes('2.300.000')) throw new Error(`hero tras autoahorro: ${hero}`)
 
   const [goal] = await api(`/rest/v1/savings_goals?name=eq.${encodeURIComponent('Meta dinero')}&select=id`)
   const movements = await api(

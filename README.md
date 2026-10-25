@@ -15,9 +15,10 @@ Supabase (Auth, Postgres + RLS, Realtime, Storage, Edge Functions) · PWA.
 
 ## Novedades de la 2.0
 
-- **Inicio personal:** `Disponible` personal y `Disponible del hogar`, más
-  `Mi mes`, `Desde mi último pago` y `Mi ahorro`; la sección `Hogar` queda
-  debajo y enlaza a Historial.
+- **Inicio personal:** `Disponible desde mi último pago` y `Disponible del
+  hogar` (suma de los personales, sin ahorro), más `Mi mes`, `Gastos desde mi
+  último pago` y `Mi ahorro`; la sección `Hogar` queda debajo y enlaza a
+  Historial.
 - **Gastos con dos lentes:** `Hogar` / `Mis gastos`, con ventana de mes o desde
   el último pago. El pagador es obligatorio.
 - **Ahorro real:** depósitos y retiros como movimientos; el saldo de la meta se
@@ -228,9 +229,11 @@ Abrir `http://localhost:5173`:
 
 ### Inicio y Gastos (v2.0)
 
-- **Inicio** abre con tu dinero personal: `Disponible`, `Mi mes`, `Desde mi
-  último pago` y `Mi ahorro`. Debajo está la sección `Hogar` con el total del
-  mes, el desglose por persona y la bolsa `Sin asignar`.
+- **Inicio** abre con tu dinero personal: `Disponible desde mi último pago`,
+  `Mi mes`, `Gastos desde mi último pago` y `Mi ahorro`. El `Disponible del
+  hogar` es la suma de los disponibles personales y no incluye ahorro. Debajo
+  está la sección `Hogar` con el total del mes, el desglose por persona y la
+  bolsa `Sin asignar`.
 - **Gastos** tiene dos vistas: `Hogar` y `Mis gastos`. La personal permite
   alternar `Este mes` / `Desde mi último pago`; el CSV y el desglose por
   categoría respetan los filtros.

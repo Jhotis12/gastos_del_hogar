@@ -106,17 +106,25 @@ ventana ni para calcular el total gastado.
 - **WHEN** el `payday` configurado es 31 y el mes en curso es febrero
 - **THEN** la fecha de pago se recorta al último día de febrero y la ventana se calcula con esa fecha
 
-### Requirement: Disponible personal opcional y sin invención
+### Requirement: Disponible personal desde el último pago
 
 Cuando exista ingreso registrado para la persona, el sistema SHALL mostrar un
-disponible calculado como ingresos menos gastos pagados menos ahorro neto. Si no
-hay ingreso registrado, SHALL mostrar solo gasto y ahorro, SHALL NOT inventar un
-disponible y SHALL NOT mostrar el monto del salario como protagonista.
+disponible calculado con los ingresos recibidos desde su último pago (real o la
+fecha configurada de pago) menos los gastos pagados por la persona en esa misma
+ventana. El ahorro SHALL NOT descontarse del disponible; se muestra en su propia
+sección. Si no hay ingreso registrado, SHALL mostrar solo gasto y ahorro, SHALL
+NOT inventar un disponible y SHALL NOT mostrar el monto del salario como
+protagonista.
 
 #### Scenario: Con ingreso registrado
 
-- **WHEN** la persona tiene ingresos registrados de 3.000.000, gastos de 1.200.000 y ahorro neto de 300.000
-- **THEN** el disponible muestra 1.500.000 y el detalle permite entender que se calculó con esos tres componentes
+- **WHEN** la persona tiene una nómina de 3.000.000 recibida el día 30 y gastos de 1.200.000 desde ese pago
+- **THEN** el disponible muestra 1.800.000 y el detalle aclara que es desde el último pago
+
+#### Scenario: El ahorro no reduce el disponible
+
+- **WHEN** la persona movió 300.000 a una meta de ahorro después de su pago
+- **THEN** el disponible sigue siendo ingresos menos gastos y el ahorro aparece en su propia sección
 
 #### Scenario: Sin ingreso registrado
 

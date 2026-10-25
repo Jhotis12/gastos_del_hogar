@@ -6,6 +6,11 @@ import {
   memberAvailableKey,
   type MemberAvailableClient,
 } from '../../src/modules/finance/lib/memberAvailable.ts'
+import {
+  fetchHouseholdAvailable,
+  householdAvailableKey,
+  type HouseholdAvailableClient,
+} from '../../src/modules/finance/lib/householdAvailable.ts'
 
 test('memberAvailableKey incluye hogar, miembro y fecha', () => {
   assert.deepEqual(memberAvailableKey('h1', 'm1', '2026-10-24'), [
@@ -68,4 +73,38 @@ test('fetchMemberAvailable propaga el error del RPC', async () => {
     rpc: async () => ({ data: null, error: new Error('sin sesión') }),
   }
   await assert.rejects(fetchMemberAvailable(failing, '2026-10-24'), /sin sesión/)
+})
+
+test('householdAvailableKey incluye hogar y fecha', () => {
+  assert.deepEqual(householdAvailableKey('h1', '2026-10-24'), [
+    'household-available',
+    'h1',
+    '2026-10-24',
+  ])
+})
+
+test('fetchHouseholdAvailable normaliza la fila del RPC', async () => {
+  const calls: Array<[string, Record<string, unknown>]> = []
+  const client: HouseholdAvailableClient = {
+    rpc: async (fn, args) => {
+      calls.push([fn, args])
+      return { data: [{ available: '2053067.00' }], error: null }
+    },
+  }
+
+  assert.deepEqual(await fetchHouseholdAvailable(client, '2026-10-24'), {
+    available: 2053067,
+  })
+  assert.deepEqual(calls, [
+    ['get_household_available', { p_as_of: '2026-10-24' }],
+  ])
+})
+
+test('fetchHouseholdAvailable devuelve null sin fila', async () => {
+  const client: HouseholdAvailableClient = {
+    rpc: async () => ({ data: [], error: null }),
+  }
+  assert.deepEqual(await fetchHouseholdAvailable(client, '2026-10-24'), {
+    available: null,
+  })
 })

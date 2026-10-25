@@ -113,8 +113,9 @@ Reglas:
 - los rangos son inclusivos y las comparaciones usan strings `YYYY-MM-DD`.
 
 El cliente carga la unión `[min(monthStart, cycleStart), asOf]` para que ambas
-ventanas tengan todas sus filas. El historial mensual y el disponible acumulado
-sí usan RPCs porque requieren todo el historial.
+ventanas tengan todas sus filas. El historial mensual, el disponible personal
+desde el último pago y el disponible del hogar sí usan RPCs porque requieren
+agregar varias ventanas por miembro.
 
 Alternativa considerada: un RPC `get_personal_summary` que devuelva todos los
 totales. Se descarta para el mes/ciclo porque complica la caché optimista
@@ -125,7 +126,8 @@ disponible/historial se mantiene porque no se puede derivar de una sola ventana.
 
 El monto del salario no es una cifra principal. La app solo lo usa para:
 
-- calcular el disponible cuando hay ingresos registrados;
+- calcular el disponible desde el último pago cuando hay ingresos registrados
+  (sin descontar el ahorro);
 - alimentar el total del hogar si se muestra en detalle;
 - calcular el historial personal cuando hay base.
 
@@ -213,9 +215,14 @@ documentado como upgrade si se necesita garantía sin abrir la app.
 ### 7. Disponible e historial en RPC; totales visibles en cliente
 
 - `get_member_available(p_as_of)` devuelve `available` (nullable),
-  `income_basis` y el último `pay_date` real. Suma ingresos menos gastos
-  pagados menos movimientos netos de ahorro de la persona. Es `security definer`
-  y solo permite el propio perfil o un miembro del mismo hogar.
+  `income_basis` y el último `pay_date` real. Suma los ingresos desde el último
+  pago (real o `payday` configurado) menos los gastos pagados en esa ventana;
+  el ahorro no se descuenta. Es `security definer` y solo permite el propio
+  perfil.
+- `get_household_available(p_as_of)` devuelve la suma de los disponibles
+  personales de todos los miembros, cada uno desde su último pago, sin incluir
+  el ahorro. Es la cifra del hero del hogar; el acumulado y el sobrante mensual
+  siguen en Historial.
 - `get_personal_monthly_history()` devuelve `(month, income, expenses,
   savings, free, accumulated)` para la persona actual. Reemplaza el uso de
   `get_monthly_surpluses` en la pestaña `Mis meses`.
@@ -244,9 +251,11 @@ evita un god-file en `shared/`.
 
 ### 9. UI consolidada, sin ruta nueva
 
-- Inicio: hero personal (`Mi mes`, `Desde mi último pago`, `Mi ahorro`,
-  `Disponible` si hay base), lista reciente con pagador y acceso a `Hogar`.
-  Se retiran las tarjetas duplicadas de sobrantes, salarios y proyección.
+- Inicio: hero personal (`Mi mes`, `Gastos desde mi último pago`, `Mi ahorro`,
+  `Disponible desde mi último pago` si hay base) y `Disponible del hogar`
+  (suma de personales, sin ahorro), lista reciente con pagador y acceso a
+  `Hogar`. Se retiran las tarjetas duplicadas de sobrantes, salarios y
+  proyección.
 - Gastos: tabs `Hogar` / `Mis gastos`; en personal, toggle de ventana; pagador
   obligatorio; filtros por persona y categoría.
 - Miembros: personas, `payday`, invitación e ingresos (salarios + extra) como
@@ -345,8 +354,8 @@ rama y no se implementa.
   opción de deshacer movimientos manuales; los automáticos se identifican.
 - **Totales en cliente vs historial en RPC** → pueden divergir si las ventanas
   no coinciden. Mitigación: `periods.ts` compartido, pruebas de invariantes
-  (`suma por persona + sin asignar = total`, `disponible = ingresos - gastos -
-  ahorro`) y fixtures con nóminas atrasadas.
+  (`suma por persona + sin asignar = total`, `disponible = ingresos - gastos
+  desde el último pago`, sin ahorro) y fixtures con nóminas atrasadas.
 - **Sin ingresos registrados** → el disponible es `null`; la UI no debe verse
   rota. Mitigación: estados explícitos y foco en gasto/ahorro.
 - **Retiro de la proyección del hogar** → puede sorprender a quien la usaba.
