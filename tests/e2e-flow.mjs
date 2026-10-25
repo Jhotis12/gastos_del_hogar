@@ -116,6 +116,22 @@ await step('Inicio refleja Mi mes y la lista personal', async () => {
   if (!body.includes('60.000')) throw new Error('Mi mes no refleja el gasto')
 })
 
+await step('Proyección: alcance hasta el próximo pago sin selector multi-mes', async () => {
+  await goTo('Mi proyección', '/proyeccion')
+  await page.getByText('¿Me alcanza?', { exact: true }).first().waitFor()
+  await page.getByText('Así se calcula', { exact: true }).first().waitFor()
+  await page.getByText('Compromisos antes del pago', { exact: true }).first().waitFor()
+  if ((await page.getByRole('button', { name: '1 mes', exact: true }).count()) > 0) {
+    throw new Error('sigue el selector 1/3/6')
+  }
+  if ((await page.getByText('Ahorro proyectado', { exact: false }).count()) > 0) {
+    throw new Error('sigue la tarjeta de ahorro proyectado')
+  }
+  if ((await page.getByText('Gasto estimado', { exact: false }).count()) > 0) {
+    throw new Error('sigue el hero de gasto estimado')
+  }
+})
+
 await step('Gastos: tabs Hogar / Mis gastos y ventanas', async () => {
   await goTo('Gastos', '/gastos')
   await page.getByRole('tab', { name: 'Mis gastos' }).click()
