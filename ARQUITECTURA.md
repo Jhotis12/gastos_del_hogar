@@ -429,8 +429,8 @@ Skill de referencia: `mobile-app-ui-design` (`.agents/skills/`).
   barra inferior (`lg:hidden`); en Gastos abre un action-sheet (Nuevo gasto /
   Escanear factura). Los CTAs del header quedan solo para desktop (`lg:`).
 - **Historial responsive**: cards apiladas por mes en móvil (`md:hidden`), la
-  tabla de 7 columnas (`Ingresos`, `Gastos`, `Ahorro`, `Total con ahorros`,
-  `Libre`, `Acumulado`) solo desde `md:` — sin scroll horizontal a 375px.
+  tabla de 4 columnas (`Mes`, `Recibido`, `Gastado`, `Quedó`) solo desde
+  `md:` — sin scroll horizontal a 375px. El ahorro no se muestra en Historial.
 - **Touch targets**: botones de icono en filas `p-2.5` mínimo (44px); CTAs
   `min-h-11/12`; toggle de servicios 28×48px; chips de filtro `py-2`.
 - **Safe area**: `viewport-fit=cover` en el index (sin él, `env(safe-area-*)`

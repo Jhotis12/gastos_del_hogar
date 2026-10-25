@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  HelpCircle,
+  ArrowDownCircle,
+  ArrowUpCircle,
   History as HistoryIcon,
-  PiggyBank,
   Plus,
   Wallet,
 } from 'lucide-react'
@@ -38,10 +38,7 @@ export default function History() {
 
   const totalIncome = rows.reduce((sum, row) => sum + row.income, 0)
   const totalExpenses = rows.reduce((sum, row) => sum + row.expenses, 0)
-  const totalSavings = rows.reduce((sum, row) => sum + row.savings, 0)
-  const totalWithSavings = totalIncome - totalExpenses
-  const totalFree = totalWithSavings - totalSavings
-  const finalAccumulated = rows.at(-1)?.accumulated ?? 0
+  const totalRemaining = totalIncome - totalExpenses
 
   if (isLoading) return <PageSkeleton />
   if (error) return <QueryError error={error} onRetry={refetch} />
@@ -54,9 +51,7 @@ export default function History() {
           Historial
         </h1>
         <p className="text-sm text-ink/50">
-          {view === 'hogar'
-            ? 'Ingresos, gastos y ahorro del hogar, mes a mes.'
-            : 'Tus ingresos, tus gastos y tus aportes a metas, mes a mes.'}
+          Dinero recibido, gastado y lo que quedó, mes a mes.
         </p>
       </div>
 
@@ -89,67 +84,42 @@ export default function History() {
         </button>
       </div>
 
-      <p className="text-xs leading-relaxed text-ink/45">
+      <p className="text-xs text-ink/45">
         {view === 'hogar'
-          ? 'Incluye todos los ingresos y gastos del hogar. El ahorro son las metas compartidas.'
-          : 'Incluye solo tus ingresos y gastos. El ahorro es lo que aportaste tú, aunque la meta sea compartida.'}
+          ? 'Incluye todos los ingresos y gastos del hogar.'
+          : 'Incluye solo tus ingresos y gastos.'}
       </p>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
-          label="Total con ahorros"
-          value={totalWithSavings}
-          icon={<Wallet size={20} />}
-          tone={totalWithSavings >= 0 ? 'positive' : 'negative'}
+          label="Recibido"
+          value={totalIncome}
+          icon={<ArrowUpCircle size={20} />}
+          tone="positive"
           delay={60}
-          hint="Ingresos − gastos. Incluye lo que está en metas."
+          hint="Salarios e ingresos extra del período."
         />
         <StatCard
-          label="Ahorro"
-          value={totalSavings}
-          icon={<PiggyBank size={20} />}
-          tone="default"
+          label="Gastado"
+          value={totalExpenses}
+          icon={<ArrowDownCircle size={20} />}
+          tone="negative"
           delay={120}
-          hint="Lo apartado en el período; no es un gasto."
+          hint="Gastos pagados en el período."
         />
         <StatCard
-          label="Acumulado después del ahorro"
-          value={finalAccumulated}
+          label="Quedó"
+          value={totalRemaining}
           icon={<Wallet size={20} />}
-          tone={finalAccumulated >= 0 ? 'positive' : 'negative'}
+          tone={totalRemaining >= 0 ? 'positive' : 'negative'}
           delay={180}
-          hint="Caja libre después de apartar el ahorro."
+          hint="Recibido − gastado."
         />
-      </div>
-
-      <div className="card animate-fade-up p-4" style={{ animationDelay: '220ms' }}>
-        <p className="flex items-center gap-1.5 text-sm font-medium text-ink">
-          <HelpCircle size={16} className="text-pine-600" />
-          Cómo leer estas cifras
-        </p>
-        <div className="mt-2 grid gap-1 text-xs leading-relaxed text-ink/60 sm:grid-cols-3">
-          <p>
-            <span className="font-semibold text-ink/75">Total con ahorros</span> =
-            ingresos − gastos. Es el dinero que te queda, esté en caja o en metas.
-          </p>
-          <p>
-            <span className="font-semibold text-ink/75">Libre</span> = total con
-            ahorros − ahorro del mes.
-          </p>
-          <p>
-            <span className="font-semibold text-ink/75">Acumulado</span> = suma de
-            libre de todos los meses.
-          </p>
-        </div>
-        <p className="mt-2 text-[11px] text-ink/40">
-          El ahorro no es un gasto. Los ajustes de saldo histórico aparecen como
-          gastos o ingresos de normalización.
-        </p>
       </div>
 
       <div
         className="card card-hover animate-fade-up overflow-hidden"
-        style={{ animationDelay: '260ms' }}
+        style={{ animationDelay: '220ms' }}
       >
         {rows.length === 0 ? (
           <EmptyState
@@ -157,7 +127,7 @@ export default function History() {
             title="Aún no hay movimientos registrados"
             hint={
               view === 'personal'
-                ? 'Tus meses aparecen cuando registras gastos, ingresos o ahorro'
+                ? 'Tus meses aparecen cuando registras ingresos o gastos'
                 : 'Los meses aparecen cuando el hogar registra salarios, ingresos o gastos'
             }
             action={
@@ -174,7 +144,7 @@ export default function History() {
           <>
             <div className="divide-y divide-slate-100 md:hidden">
               {rows.map((row) => {
-                const total = row.income - row.expenses
+                const remaining = row.income - row.expenses
                 return (
                   <div key={row.month} className="px-5 py-4">
                     <div className="flex items-start justify-between gap-3">
@@ -183,59 +153,29 @@ export default function History() {
                       </p>
                       <div className="text-right">
                         <p className="text-[10px] uppercase tracking-wide text-ink/40">
-                          Total con ahorros
+                          Quedó
                         </p>
                         <p
                           className={cn(
                             'text-sm font-bold',
-                            total >= 0 ? 'text-pine-600' : 'text-coral-600',
+                            remaining >= 0 ? 'text-pine-600' : 'text-coral-600',
                           )}
                         >
-                          {signedCurrency(total)}
+                          {signedCurrency(remaining)}
                         </p>
                       </div>
                     </div>
-                    <div className="mt-3 grid grid-cols-3 gap-2">
+                    <div className="mt-3 grid grid-cols-2 gap-2">
                       <div>
-                        <p className="text-xs text-ink/40">Ingresos</p>
+                        <p className="text-xs text-ink/40">Recibido</p>
                         <p className="text-sm font-medium text-ink/70">
                           {formatCurrency(row.income)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-ink/40">Gastos</p>
+                        <p className="text-xs text-ink/40">Gastado</p>
                         <p className="text-sm font-medium text-ink/70">
                           {formatCurrency(row.expenses)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-ink/40">Ahorro</p>
-                        <p className="text-sm font-medium text-ink/70">
-                          {formatCurrency(row.savings)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-2 grid grid-cols-2 gap-2 border-t border-slate-100 pt-2">
-                      <div>
-                        <p className="text-xs text-ink/40">Libre</p>
-                        <p
-                          className={cn(
-                            'text-sm font-medium',
-                            row.free >= 0 ? 'text-pine-600' : 'text-coral-600',
-                          )}
-                        >
-                          {signedCurrency(row.free)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-ink/40">Acumulado</p>
-                        <p
-                          className={cn(
-                            'text-sm font-medium',
-                            row.accumulated >= 0 ? 'text-ink/70' : 'text-coral-600',
-                          )}
-                        >
-                          {signedCurrency(row.accumulated)}
                         </p>
                       </div>
                     </div>
@@ -249,32 +189,14 @@ export default function History() {
                 <thead>
                   <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-ink/40">
                     <th className="px-5 py-3 font-medium">Mes</th>
-                    <th className="px-5 py-3 text-right font-medium">Ingresos</th>
-                    <th className="px-5 py-3 text-right font-medium">Gastos</th>
-                    <th className="px-5 py-3 text-right font-medium">Ahorro</th>
-                    <th
-                      className="px-5 py-3 text-right font-medium"
-                      title="Ingresos menos gastos: el dinero que queda, incluyendo lo ahorrado"
-                    >
-                      Total con ahorros
-                    </th>
-                    <th
-                      className="px-5 py-3 text-right font-medium"
-                      title="Total con ahorros menos el ahorro del mes"
-                    >
-                      Libre
-                    </th>
-                    <th
-                      className="px-5 py-3 text-right font-medium"
-                      title="Suma de libre de todos los meses"
-                    >
-                      Acumulado
-                    </th>
+                    <th className="px-5 py-3 text-right font-medium">Recibido</th>
+                    <th className="px-5 py-3 text-right font-medium">Gastado</th>
+                    <th className="px-5 py-3 text-right font-medium">Quedó</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {rows.map((row) => {
-                    const total = row.income - row.expenses
+                    const remaining = row.income - row.expenses
                     return (
                       <tr key={row.month}>
                         <td className="px-5 py-3 font-medium text-ink">
@@ -286,32 +208,13 @@ export default function History() {
                         <td className="px-5 py-3 text-right text-ink/70">
                           {formatCurrency(row.expenses)}
                         </td>
-                        <td className="px-5 py-3 text-right text-ink/60">
-                          {formatCurrency(row.savings)}
-                        </td>
                         <td
                           className={cn(
                             'px-5 py-3 text-right font-semibold',
-                            total >= 0 ? 'text-pine-600' : 'text-coral-600',
+                            remaining >= 0 ? 'text-pine-600' : 'text-coral-600',
                           )}
                         >
-                          {signedCurrency(total)}
-                        </td>
-                        <td
-                          className={cn(
-                            'px-5 py-3 text-right font-semibold',
-                            row.free >= 0 ? 'text-pine-600' : 'text-coral-600',
-                          )}
-                        >
-                          {signedCurrency(row.free)}
-                        </td>
-                        <td
-                          className={cn(
-                            'px-5 py-3 text-right font-medium',
-                            row.accumulated >= 0 ? 'text-ink/70' : 'text-coral-600',
-                          )}
-                        >
-                          {signedCurrency(row.accumulated)}
+                          {signedCurrency(remaining)}
                         </td>
                       </tr>
                     )
@@ -326,32 +229,13 @@ export default function History() {
                     <td className="px-5 py-3 text-right">
                       {formatCurrency(totalExpenses)}
                     </td>
-                    <td className="px-5 py-3 text-right">
-                      {formatCurrency(totalSavings)}
-                    </td>
                     <td
                       className={cn(
                         'px-5 py-3 text-right',
-                        totalWithSavings >= 0 ? 'text-pine-600' : 'text-coral-600',
+                        totalRemaining >= 0 ? 'text-pine-600' : 'text-coral-600',
                       )}
                     >
-                      {signedCurrency(totalWithSavings)}
-                    </td>
-                    <td
-                      className={cn(
-                        'px-5 py-3 text-right',
-                        totalFree >= 0 ? 'text-pine-600' : 'text-coral-600',
-                      )}
-                    >
-                      {signedCurrency(totalFree)}
-                    </td>
-                    <td
-                      className={cn(
-                        'px-5 py-3 text-right',
-                        finalAccumulated >= 0 ? 'text-ink/70' : 'text-coral-600',
-                      )}
-                    >
-                      {signedCurrency(finalAccumulated)}
+                      {signedCurrency(totalRemaining)}
                     </td>
                   </tr>
                 </tfoot>
@@ -360,7 +244,6 @@ export default function History() {
           </>
         )}
       </div>
-
     </div>
   )
 }

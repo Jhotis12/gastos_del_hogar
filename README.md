@@ -27,9 +27,9 @@ Supabase (Auth, Postgres + RLS, Realtime, Storage, Edge Functions) · PWA.
   meses.
 - **Historial personal y del hogar**, proyección y lista de deseos con el
   dinero personal (nunca con el saldo de otra persona). Historial →
-  `Hogar`/`Mis meses` muestra `Total con ahorros` (ingresos − gastos),
-  `Ahorro`, `Libre` (total − ahorro) y `Acumulado` (suma de libre), con una
-  guía de lectura. `Total con ahorros = Acumulado + Ahorro`.
+  `Hogar`/`Mis meses` muestra solo `Recibido`, `Gastado` y `Quedó`
+  (recibido − gastado) por mes. El ahorro se gestiona en Ahorros y no aparece
+  en Historial.
 - **Captura por voz (opcional):** graba un audio, Gemini propone un borrador y
   tú lo confirmas; requiere red y no guarda el audio.
 
