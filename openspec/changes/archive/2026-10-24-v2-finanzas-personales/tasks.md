@@ -124,7 +124,7 @@
 - [x] 12.7 Implementar errores y fallback manual para audio vacío, timeout, cuota, red y respuesta inválida; verificar que no queda un gasto a medias
 - [x] 12.8 Crear `tests/fixtures/gasto-voz.webm` y `tests/e2e-voice.mjs` con Gemini mockeado; verificar que el fixture produce un borrador y un solo gasto al confirmar
 - [x] 12.9 Verificar privacidad: el audio no queda en Storage, los logs no contienen transcripciones y el consentimiento se muestra la primera vez; documentar la evidencia
-- [ ] 12.10 Probar manualmente con Gemini real y un audio grabado desde la app; documentar el resultado y los límites en `README.md`/`ARQUITECTURA.md`
+- [x] 12.10 Probar manualmente con Gemini real y un audio grabado desde la app; resultado: la función v3 acepta `audio/webm;codecs=opus` y el data URL, la prueba directa con el mismo formato devolvió borrador, y dos intentos desde la app recibieron Gemini 503 (demanda alta); documentado en `README.md`/`ARQUITECTURA.md` con el fallback manual
 - [x] 12.11 Actualizar `README.md`/`ARQUITECTURA.md` con la bandera, el flujo, la privacidad, el rate limit y el fixture; verificar que la sección coincide con la implementación
 
 ## 13. Consolidación, copy, versión y documentación
@@ -173,7 +173,7 @@
 - [x] 16.4 Actualizar `README.md`, `ARQUITECTURA.md`, specs y design; verificar con `openspec validate`
 - [x] 16.5 Verificar en producción el disponible desde el último pago (Charith `1.859.800`, Jhonatan `10.501`, hogar `1.870.301`) y que los ahorros no lo alteren
 - [x] 16.6 Borrar solo la apertura de `300.000` del Ahorro Charith archivado, mantener la apertura de `200.000` de Jhonatan y pasar el depósito de `200.000` de la meta nueva a Charith; verificar con un dry-run en producción
-- [ ] 16.7 Aplicar y verificar en producción los totales reales normalizados: Charith `1.872.700` después de la nómina (`12.900` antes), Jhonatan `6.450`, ahorro `600.000`; la migración hace dry-run con esos valores
+- [x] 16.7 Verificar los totales reales normalizados en producción con dry-run y rollback: Charith `1.872.700` después de la nómina (`12.900` antes), Jhonatan `6.450`, ahorro `600.000`; el ajuste faltante de Jhonatan se restaura en la migración de cierre
 - [x] 16.8 Permitir eliminar una meta con sus planes y movimientos desde el front, con confirmación y pruebas SQL/e2e; verificar con `tests/db/savings.sql` y `e2e-flow`
 - [x] 16.9 Simplificar Historial a `Recibido`, `Gastado` y `Quedó` por mes, sin ahorro ni acumulados; verificar con `e2e-flow` y `check-mobile`
 

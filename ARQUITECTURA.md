@@ -618,7 +618,11 @@ audio a la Edge Function `analyze-expense-audio` (JWT + hogar + rate limit
 10/24 h) y recibe `{ amount, description, date, category_hint, payer_hint,
 confidence }`. El borrador se vuelca al formulario editable; **no se crea nada
 hasta confirmar**. El audio no se guarda y los logs no incluyen transcripciones.
-Con la bandera apagada el micrófono no aparece.
+La función normaliza `audio/webm;codecs=opus` y el prefijo `data:...;base64,`
+antes de Gemini; los clientes viejos siguen funcionando. Prueba real: la llamada
+directa devolvió borrador; dos intentos desde la app recibieron Gemini 503
+(demanda alta), con error visible y fallback manual. Con la bandera apagada el
+micrófono no aparece.
 
 ---
 

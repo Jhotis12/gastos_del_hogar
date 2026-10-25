@@ -171,6 +171,27 @@ pruebe las políticas nuevas con usuarios de dos hogares distintos.
 - **WHEN** se ejecuta `supabase db push --dry-run`
 - **THEN** solo aparecen las migraciones nuevas y ninguna operación destructiva
 
+### Requirement: Normalización idempotente de saldos reales
+
+Las correcciones de datos de producción SHALL identificarse por IDs concretos,
+SHALL verificar los totales antes de confirmar y SHALL ser no-op en local/CI
+cuando no exista el estado de producción. SHALL NOT tocar otros hogares.
+
+#### Scenario: Totales reales
+
+- **WHEN** se aplica la normalización en producción
+- **THEN** Charith queda en `1.872.700` después de su nómina (`12.900` antes), Jhonatan en `6.450` y el ahorro del hogar en `600.000`
+
+#### Scenario: Entorno sin estado de producción
+
+- **WHEN** la migración corre en local o CI sin los IDs de producción
+- **THEN** no inserta ni modifica filas
+
+#### Scenario: Dry run con rollback
+
+- **WHEN** se prueba la normalización en producción dentro de una transacción con rollback
+- **THEN** los totales calculados coinciden con los objetivos y los datos quedan intactos
+
 ### Requirement: Cierre del change anterior
 
 El change `fix-datos-y-seguridad` SHALL cerrarse como no aplicable a la v2.0
