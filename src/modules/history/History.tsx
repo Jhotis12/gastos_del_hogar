@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowDownCircle, ArrowUpCircle, Wallet, History as HistoryIcon, Plus } from 'lucide-react'
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  History as HistoryIcon,
+  Plus,
+  Wallet,
+} from 'lucide-react'
 import { useHouseholdMonthlyHistory } from '@/modules/finance/hooks/useHouseholdMonthlyHistory'
 import { usePersonalMonthlyHistory } from '@/modules/finance/hooks/usePersonalMonthlyHistory'
 import StatCard from '@/shared/components/ui/StatCard'
@@ -12,6 +18,11 @@ import { monthLabel } from '@/shared/lib/dates'
 import { formatCurrency } from '@/shared/lib/money'
 
 import { usePageTitle } from '@/shared/hooks/usePageTitle'
+
+function signedCurrency(value: number): string {
+  if (value === 0) return formatCurrency(0)
+  return `${value < 0 ? '−' : '+'}${formatCurrency(Math.abs(value))}`
+}
 
 export default function History() {
   usePageTitle('Historial')
@@ -25,9 +36,9 @@ export default function History() {
 
   const rows = history ?? []
 
-  const totalIncome = rows.reduce((sum, r) => sum + r.income, 0)
-  const totalExpenses = rows.reduce((sum, r) => sum + r.expenses, 0)
-  const finalAccumulated = rows.at(-1)?.accumulated ?? 0
+  const totalIncome = rows.reduce((sum, row) => sum + row.income, 0)
+  const totalExpenses = rows.reduce((sum, row) => sum + row.expenses, 0)
+  const totalRemaining = totalIncome - totalExpenses
 
   if (isLoading) return <PageSkeleton />
   if (error) return <QueryError error={error} onRetry={refetch} />
@@ -40,13 +51,15 @@ export default function History() {
           Historial
         </h1>
         <p className="text-sm text-ink/50">
-          {view === 'hogar'
-            ? 'Ingresos, gastos, ahorro compartido y libre del hogar, mes a mes'
-            : 'Tus ingresos, gastos, ahorro y libre, mes a mes'}
+          Dinero recibido, gastado y lo que quedó, mes a mes.
         </p>
       </div>
 
-      <div role="tablist" aria-label="Vista del historial" className="inline-flex rounded-full bg-cream p-1 ring-1 ring-ink/5">
+      <div
+        role="tablist"
+        aria-label="Vista del historial"
+        className="inline-flex rounded-full bg-cream p-1 ring-1 ring-ink/5"
+      >
         <button
           role="tab"
           aria-selected={view === 'hogar'}
@@ -71,38 +84,50 @@ export default function History() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <p className="text-xs text-ink/45">
+        {view === 'hogar'
+          ? 'Incluye todos los ingresos y gastos del hogar.'
+          : 'Incluye solo tus ingresos y gastos.'}
+      </p>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
-          label="Acumulado"
-          value={finalAccumulated}
-          icon={<Wallet size={20} />}
-          tone={finalAccumulated >= 0 ? 'positive' : 'negative'}
-          delay={60}
-        />
-        <StatCard
-          label="Ingresos del período"
+          label="Recibido"
           value={totalIncome}
           icon={<ArrowUpCircle size={20} />}
           tone="positive"
-          delay={120}
+          delay={60}
+          hint="Salarios e ingresos extra del período."
         />
         <StatCard
-          label="Gastos del período"
+          label="Gastado"
           value={totalExpenses}
           icon={<ArrowDownCircle size={20} />}
           tone="negative"
+          delay={120}
+          hint="Gastos pagados en el período."
+        />
+        <StatCard
+          label="Quedó"
+          value={totalRemaining}
+          icon={<Wallet size={20} />}
+          tone={totalRemaining >= 0 ? 'positive' : 'negative'}
           delay={180}
+          hint="Recibido − gastado."
         />
       </div>
 
-      <div className="card card-hover animate-fade-up overflow-hidden" style={{ animationDelay: '220ms' }}>
+      <div
+        className="card card-hover animate-fade-up overflow-hidden"
+        style={{ animationDelay: '220ms' }}
+      >
         {rows.length === 0 ? (
           <EmptyState
             icon={<HistoryIcon size={22} />}
             title="Aún no hay movimientos registrados"
             hint={
               view === 'personal'
-                ? 'Tus meses aparecen cuando registras gastos, ingresos o ahorro'
+                ? 'Tus meses aparecen cuando registras ingresos o gastos'
                 : 'Los meses aparecen cuando el hogar registra salarios, ingresos o gastos'
             }
             action={
@@ -118,118 +143,104 @@ export default function History() {
         ) : (
           <>
             <div className="divide-y divide-slate-100 md:hidden">
-            {rows.map((r) => {
-              return (
-                <div key={r.month} className="px-5 py-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-ink">
-                      {monthLabel(r.month)}
-                    </p>
-                    <p
+              {rows.map((row) => {
+                const remaining = row.income - row.expenses
+                return (
+                  <div key={row.month} className="px-5 py-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-semibold text-ink">
+                        {monthLabel(row.month)}
+                      </p>
+                      <div className="text-right">
+                        <p className="text-[10px] uppercase tracking-wide text-ink/40">
+                          Quedó
+                        </p>
+                        <p
+                          className={cn(
+                            'text-sm font-bold',
+                            remaining >= 0 ? 'text-pine-600' : 'text-coral-600',
+                          )}
+                        >
+                          {signedCurrency(remaining)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <div>
+                        <p className="text-xs text-ink/40">Recibido</p>
+                        <p className="text-sm font-medium text-ink/70">
+                          {formatCurrency(row.income)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-ink/40">Gastado</p>
+                        <p className="text-sm font-medium text-ink/70">
+                          {formatCurrency(row.expenses)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-ink/40">
+                    <th className="px-5 py-3 font-medium">Mes</th>
+                    <th className="px-5 py-3 text-right font-medium">Recibido</th>
+                    <th className="px-5 py-3 text-right font-medium">Gastado</th>
+                    <th className="px-5 py-3 text-right font-medium">Quedó</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {rows.map((row) => {
+                    const remaining = row.income - row.expenses
+                    return (
+                      <tr key={row.month}>
+                        <td className="px-5 py-3 font-medium text-ink">
+                          {monthLabel(row.month)}
+                        </td>
+                        <td className="px-5 py-3 text-right text-ink/70">
+                          {formatCurrency(row.income)}
+                        </td>
+                        <td className="px-5 py-3 text-right text-ink/70">
+                          {formatCurrency(row.expenses)}
+                        </td>
+                        <td
+                          className={cn(
+                            'px-5 py-3 text-right font-semibold',
+                            remaining >= 0 ? 'text-pine-600' : 'text-coral-600',
+                          )}
+                        >
+                          {signedCurrency(remaining)}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t border-slate-100 bg-cream/60 font-medium text-ink">
+                    <td className="px-5 py-3">Totales</td>
+                    <td className="px-5 py-3 text-right">
+                      {formatCurrency(totalIncome)}
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      {formatCurrency(totalExpenses)}
+                    </td>
+                    <td
                       className={cn(
-                        'text-sm font-bold',
-                        r.free >= 0 ? 'text-pine-600' : 'text-coral-600',
+                        'px-5 py-3 text-right',
+                        totalRemaining >= 0 ? 'text-pine-600' : 'text-coral-600',
                       )}
                     >
-                      {r.free >= 0 ? '+' : '−'}
-                      {formatCurrency(Math.abs(r.free))}
-                    </p>
-                  </div>
-                  <div className="mt-2 grid grid-cols-3 gap-2">
-                    <div>
-                      <p className="text-xs text-ink/40">Ingresos</p>
-                      <p className="text-sm font-medium text-ink/70">
-                        {formatCurrency(r.income)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-ink/40">Gastos</p>
-                      <p className="text-sm font-medium text-ink/70">
-                        {formatCurrency(r.expenses)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-ink/40">Ahorro</p>
-                      <p className="text-sm font-medium text-ink/70">
-                        {formatCurrency(r.savings)}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-2 text-xs text-ink/50">
-                    Acumulado:{' '}
-                    <span className="font-medium text-ink/70">
-                      {formatCurrency(r.accumulated)}
-                    </span>
-                  </p>
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="hidden overflow-x-auto md:block">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-ink/40">
-                  <th className="px-5 py-3 font-medium">Mes</th>
-                  <th className="px-5 py-3 text-right font-medium">Ingresos</th>
-                  <th className="px-5 py-3 text-right font-medium">Gastos</th>
-                  <th className="px-5 py-3 text-right font-medium">Libre</th>
-                  <th className="px-5 py-3 text-right font-medium">Ahorro</th>
-                  <th className="px-5 py-3 text-right font-medium">Acumulado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {rows.map((r) => {
-                  return (
-                    <tr key={r.month}>
-                      <td className="px-5 py-3 font-medium text-ink">
-                        {monthLabel(r.month)}
-                      </td>
-                      <td className="px-5 py-3 text-right text-ink/70">
-                        {formatCurrency(r.income)}
-                      </td>
-                      <td className="px-5 py-3 text-right text-ink/70">
-                        {formatCurrency(r.expenses)}
-                      </td>
-                      <td
-                        className={cn(
-                          'px-5 py-3 text-right font-semibold',
-                          r.free >= 0 ? 'text-pine-600' : 'text-coral-600',
-                        )}
-                      >
-                        {r.free >= 0 ? '+' : '−'}
-                        {formatCurrency(Math.abs(r.free))}
-                      </td>
-                      <td className="px-5 py-3 text-right text-ink/60">
-                        {formatCurrency(r.savings)}
-                      </td>
-                      <td className="px-5 py-3 text-right font-medium text-ink/70">
-                        {formatCurrency(r.accumulated)}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-              <tfoot>
-                <tr className="border-t border-slate-100 bg-cream/60 font-medium text-ink">
-                  <td className="px-5 py-3">Totales</td>
-                  <td className="px-5 py-3 text-right">{formatCurrency(totalIncome)}</td>
-                  <td className="px-5 py-3 text-right">{formatCurrency(totalExpenses)}</td>
-                  <td
-                    className={cn(
-                      'px-5 py-3 text-right',
-                      finalAccumulated >= 0 ? 'text-pine-600' : 'text-coral-600',
-                    )}
-                  >
-                    {finalAccumulated >= 0 ? '+' : '−'}
-                    {formatCurrency(Math.abs(finalAccumulated))}
-                  </td>
-                  <td className="px-5 py-3 text-right" />
-                  <td className="px-5 py-3 text-right">{formatCurrency(finalAccumulated)}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+                      {signedCurrency(totalRemaining)}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
           </>
         )}
       </div>

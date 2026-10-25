@@ -26,8 +26,10 @@ Supabase (Auth, Postgres + RLS, Realtime, Storage, Edge Functions) · PWA.
 - **Autoahorro idempotente:** se ejecuta al abrir/reconectar y recupera hasta 12
   meses.
 - **Historial personal y del hogar**, proyección y lista de deseos con el
-  dinero personal (nunca con el saldo de otra persona). El sobrante de cada
-  mes está en Historial → `Hogar`/`Mis meses`, columna `Libre` (y `Acumulado`).
+  dinero personal (nunca con el saldo de otra persona). Historial →
+  `Hogar`/`Mis meses` muestra solo `Recibido`, `Gastado` y `Quedó`
+  (recibido − gastado) por mes. El ahorro se gestiona en Ahorros y no aparece
+  en Historial.
 - **Captura por voz (opcional):** graba un audio, Gemini propone un borrador y
   tú lo confirmas; requiere red y no guarda el audio.
 
