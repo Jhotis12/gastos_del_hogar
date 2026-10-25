@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { supabase } from '@/shared/lib/supabase'
+import {
+  invalidateLedger,
+  LEDGER_INVALIDATION,
+} from '@/shared/lib/queryInvalidation'
 import type { Frequency, RecurringExpenseWithRelations } from '@/shared/lib/types'
 import { shiftMonth } from '@/shared/lib/dates'
 
@@ -112,10 +116,8 @@ export function useApplyRecurringOne(month: string) {
       return (data ?? 0) as number
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] })
+      invalidateLedger(queryClient, LEDGER_INVALIDATION.expenses)
       queryClient.invalidateQueries({ queryKey: ['recurring'] })
-      queryClient.invalidateQueries({ queryKey: ['running-balance'] })
-      queryClient.invalidateQueries({ queryKey: ['monthly-surpluses'] })
     },
   })
 }
