@@ -171,8 +171,10 @@
 - [x] 16.2 Agregar `get_household_available` como suma de los disponibles personales del hogar, sin ahorro, y su hook/cliente; verificar con pruebas unitarias y SQL
 - [x] 16.3 Actualizar Inicio: `Disponible personal · desde tu último pago`, `Gastos desde mi último pago` y `Disponible del hogar`; verificar con `e2e-flow`
 - [x] 16.4 Actualizar `README.md`, `ARQUITECTURA.md`, specs y design; verificar con `openspec validate`
-- [ ] 16.5 Verificar en producción los valores de Charith (`1.859.800`), Jhonatan (`193.267`) y hogar (`2.053.067`), y que los ahorros no alteren el disponible
-- [ ] 16.6 Revisar los `500.000` de saldos migrados que el usuario reporta como inexistentes; no forman parte del disponible y, si corresponde, eliminarlos con una migración
+- [x] 16.5 Verificar en producción el disponible desde el último pago (Charith `1.859.800`, Jhonatan `10.501`, hogar `1.870.301`) y que los ahorros no lo alteren
+- [x] 16.6 Borrar solo la apertura de `300.000` del Ahorro Charith archivado, mantener la apertura de `200.000` de Jhonatan y pasar el depósito de `200.000` de la meta nueva a Charith; verificar con un dry-run en producción
+- [ ] 16.7 Aplicar y verificar en producción los totales reales normalizados: Charith `1.872.700` después de la nómina (`12.900` antes), Jhonatan `6.450`, ahorro `600.000`; la migración hace dry-run con esos valores
+- [x] 16.8 Permitir eliminar una meta con sus planes y movimientos desde el front, con confirmación y pruebas SQL/e2e; verificar con `tests/db/savings.sql` y `e2e-flow`
 
 ## Workflow follow-up
 

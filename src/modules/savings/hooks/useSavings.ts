@@ -83,7 +83,9 @@ export function useDeleteSavingsGoal() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('savings_goals').delete().eq('id', id)
+      const { error } = await supabase.rpc('delete_savings_goal', {
+        p_goal: id,
+      })
       if (error) throw error
     },
     onSuccess: () => invalidateLedger(queryClient, LEDGER_INVALIDATION.savings),

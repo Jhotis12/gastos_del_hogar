@@ -164,6 +164,16 @@ await step('autoahorro y archivo de la meta', async () => {
   await page.getByText('Meta E2E').first().waitFor()
 })
 
+await step('eliminar meta archivada con movimientos', async () => {
+  const card = page.locator('.card', { hasText: 'Meta E2E' }).first()
+  await card.getByRole('button', { name: 'Eliminar meta' }).click()
+  await page.getByRole('button', { name: 'Eliminar', exact: true }).click()
+  await page.getByText('Meta eliminada').waitFor()
+  if ((await page.getByText('Meta E2E').count()) > 0) {
+    throw new Error('la meta eliminada sigue visible')
+  }
+})
+
 await step('gasto offline y sincronización', async () => {
   await goTo('Gastos', '/gastos')
   await page.context().setOffline(true)

@@ -3,8 +3,8 @@
 ## Purpose
 
 Permite ahorrar de forma personal o compartida con movimientos auditables,
-descuenta el ahorro del disponible y automatiza aportes mensuales sin perder
-historial ni atribuir dinero a quien no corresponde.
+mantiene el ahorro separado del disponible y automatiza aportes mensuales sin
+perder historial ni atribuir dinero a quien no corresponde.
 
 ## ADDED Requirements
 
@@ -62,27 +62,50 @@ calcularse como la suma de sus movimientos. La edición directa de
 - **WHEN** el cliente intenta actualizar `saved_amount` directamente sin crear un movimiento
 - **THEN** la operación no modifica el saldo de la meta o es rechazada por la política de escritura
 
-### Requirement: El ahorro reduce el disponible
+### Requirement: El ahorro se muestra separado del disponible
 
-Los depósitos netos de una persona SHALL restarse de su disponible cuando exista
-una base de ingresos registrada. Los retiros SHALL sumarse al disponible del
-miembro que los recibe. En metas compartidas, el depósito SHALL descontarse del
-miembro que aporta y no del resto del hogar.
+Los depósitos y retiros SHALL NOT modificar el disponible personal ni el del
+hogar; SHALL modificar el saldo de la meta y las columnas de ahorro del
+Historial. El ahorro SHALL verse en Ahorros, no en el hero de Inicio.
 
 #### Scenario: Depósito personal
 
 - **WHEN** A tiene un disponible de 1.000.000 y deposita 200.000 en su meta personal
-- **THEN** su disponible baja a 800.000 y el ahorro sube 200.000
+- **THEN** su disponible sigue en 1.000.000 y el ahorro sube 200.000
 
 #### Scenario: Depósito en meta compartida
 
 - **WHEN** A deposita 150.000 en una meta compartida
-- **THEN** el disponible de A baja 150.000, el de B no cambia y la meta sube 150.000
+- **THEN** el disponible de A y B no cambia y la meta sube 150.000
 
 #### Scenario: Retiro
 
 - **WHEN** A retira 50.000 de una meta compartida
-- **THEN** el disponible de A sube 50.000 y el saldo de la meta baja 50.000
+- **THEN** el saldo de la meta baja 50.000 y el disponible no cambia
+
+### Requirement: Eliminar una meta con sus movimientos
+
+El usuario SHALL poder eliminar una meta desde el front, no solo archiviarla.
+Eliminar SHALL borrar la meta, sus planes y sus movimientos; el monto SHALL
+dejar de contar como ahorro. La confirmación SHALL advertir que, si el dinero ya
+se gastó, se registre el gasto para que el total siga real. Las metas personales
+SHALL poder eliminarlas solo su dueño; las compartidas, cualquier miembro del
+hogar.
+
+#### Scenario: Eliminar meta con movimientos
+
+- **WHEN** A elimina una meta con depósitos y autoahorro
+- **THEN** la meta, sus movimientos y sus planes desaparecen y el ahorro del hogar baja
+
+#### Scenario: Meta personal ajena
+
+- **WHEN** A intenta eliminar una meta personal de B
+- **THEN** la operación se rechaza sin borrar movimientos
+
+#### Scenario: Meta inexistente
+
+- **WHEN** se intenta eliminar una meta que ya no existe
+- **THEN** la operación se rechaza con un mensaje claro
 
 #### Scenario: Sin ingresos registrados
 

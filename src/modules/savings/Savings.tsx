@@ -94,8 +94,6 @@ export default function Savings() {
     (plans ?? []).find(
       (plan) => plan.goal_id === goalId && plan.member_id === profile?.id,
     )
-  const hasMovements = (goalId: string) => goalMovements(goalId).length > 0
-
   const handleArchive = async () => {
     if (!archiving) return
     try {
@@ -381,15 +379,13 @@ export default function Savings() {
                         <Archive size={16} />
                       </button>
                     )}
-                    {!hasMovements(goal.id) && saved === 0 && (
-                      <button
-                        onClick={() => setDeleting(goal)}
-                        className="rounded-lg p-3 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
-                        aria-label="Eliminar meta"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => setDeleting(goal)}
+                      className="rounded-lg p-3 text-ink/40 hover:bg-coral-100/70 hover:text-coral-600"
+                      aria-label="Eliminar meta"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -443,7 +439,7 @@ export default function Savings() {
       <ConfirmDialog
         open={!!deleting}
         title="Eliminar meta"
-        message={`¿Eliminar "${deleting?.name}"? Solo se pueden eliminar metas sin movimientos.`}
+        message={`¿Eliminar "${deleting?.name}"? Se borrarán sus movimientos y el monto dejará de contar como ahorro. Si ya gastaste ese dinero, regístralo como gasto para que el total siga real.`}
         onConfirm={handleDelete}
         onCancel={() => setDeleting(null)}
         busy={remove.isPending}
