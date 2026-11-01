@@ -31,8 +31,8 @@
 - [x] 6.1 Crear la rama `feat/disponible-descuenta-ahorro` desde `master` (idealmente después del merge de `me-alcanza-hasta-proximo-pago`); verificar con `git branch --show-current`.
 - [x] 6.2 Hacer commits por bloques con la convención del repo (migración / frontend / tests / docs); verificar con `git log --oneline`.
 - [x] 6.3 Validación local completa con Supabase local y sandbox reseteados: `pnpm build`, `pnpm lint`, `pnpm test`, SQL de finance-rpcs, `node tests/e2e-flow.mjs`, `node tests/e2e-money.mjs` y `node tests/check-mobile.mjs`; verificar todo en verde y declarar en la PR lo que no se pudo correr.
-- [ ] 6.4 Hacer push de la rama y abrir la PR: `git push -u origin feat/disponible-descuenta-ahorro` y `gh pr create --base master --fill`; verificar la URL y que la PR tiene los checks `CI` y `E2E`.
-- [ ] 6.5 Si CI falla, corregir y volver a pushear; verificar que `CI` (build + lint) y `E2E` (Supabase local + suites) quedan en verde.
+- [x] 6.4 Hacer push de la rama y abrir la PR: `git push -u origin feat/disponible-descuenta-ahorro` y `gh pr create --base master --fill`; verificar la URL y que la PR tiene los checks `CI` y `E2E`.
+- [x] 6.5 Si CI falla, corregir y volver a pushear; verificar que `CI` (build + lint) y `E2E` (Supabase local + suites) quedan en verde.
 
 ## Workflow follow-up
 
