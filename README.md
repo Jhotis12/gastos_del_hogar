@@ -232,8 +232,9 @@ Abrir `http://localhost:5173`:
 ### Inicio y Gastos (v2.0)
 
 - **Inicio** abre con tu dinero personal: `Disponible desde mi último pago`,
-  `Mi mes`, `Gastos desde mi último pago` y `Mi ahorro`. El `Disponible del
-  hogar` es la suma de los disponibles personales y no incluye ahorro. Debajo
+  `Mi mes`, `Gastos desde mi último pago` y `Mi ahorro` (el disponible ya
+  descuenta ese ahorro). El `Disponible del hogar` es la suma de los
+  disponibles personales y no suma saldos de metas. Debajo
   está la sección `Hogar` con el total del mes, el desglose por persona y la
   bolsa `Sin asignar`.
 - **Gastos** tiene dos vistas: `Hogar` y `Mis gastos`. La personal permite
