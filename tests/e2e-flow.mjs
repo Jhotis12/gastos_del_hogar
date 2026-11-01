@@ -187,6 +187,12 @@ await step('eliminar meta archivada con movimientos', async () => {
   await card.getByRole('button', { name: 'Eliminar meta' }).click()
   await page.getByRole('button', { name: 'Eliminar', exact: true }).click()
   await page.getByText('Meta eliminada').waitFor()
+  // El toast sale antes que el refetch de la lista; esperar a que la tarjeta
+  // desaparezca evita una carrera en CI.
+  await page
+    .locator('.card', { hasText: 'Meta E2E' })
+    .first()
+    .waitFor({ state: 'detached', timeout: 5000 })
   if ((await page.getByText('Meta E2E').count()) > 0) {
     throw new Error('la meta eliminada sigue visible')
   }
