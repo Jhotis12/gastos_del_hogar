@@ -116,6 +116,22 @@ await step('Inicio refleja Mi mes y la lista personal', async () => {
   if (!body.includes('60.000')) throw new Error('Mi mes no refleja el gasto')
 })
 
+await step('Proyección: alcance hasta el próximo pago sin selector multi-mes', async () => {
+  await goTo('Mi proyección', '/proyeccion')
+  await page.getByText('¿Me alcanza?', { exact: true }).first().waitFor()
+  await page.getByText('Así se calcula', { exact: true }).first().waitFor()
+  await page.getByText('Compromisos antes del pago', { exact: true }).first().waitFor()
+  if ((await page.getByRole('button', { name: '1 mes', exact: true }).count()) > 0) {
+    throw new Error('sigue el selector 1/3/6')
+  }
+  if ((await page.getByText('Ahorro proyectado', { exact: false }).count()) > 0) {
+    throw new Error('sigue la tarjeta de ahorro proyectado')
+  }
+  if ((await page.getByText('Gasto estimado', { exact: false }).count()) > 0) {
+    throw new Error('sigue el hero de gasto estimado')
+  }
+})
+
 await step('Gastos: tabs Hogar / Mis gastos y ventanas', async () => {
   await goTo('Gastos', '/gastos')
   await page.getByRole('tab', { name: 'Mis gastos' }).click()
@@ -171,6 +187,12 @@ await step('eliminar meta archivada con movimientos', async () => {
   await card.getByRole('button', { name: 'Eliminar meta' }).click()
   await page.getByRole('button', { name: 'Eliminar', exact: true }).click()
   await page.getByText('Meta eliminada').waitFor()
+  // El toast sale antes que el refetch de la lista; esperar a que la tarjeta
+  // desaparezca evita una carrera en CI.
+  await page
+    .locator('.card', { hasText: 'Meta E2E' })
+    .first()
+    .waitFor({ state: 'detached', timeout: 5000 })
   if ((await page.getByText('Meta E2E').count()) > 0) {
     throw new Error('la meta eliminada sigue visible')
   }

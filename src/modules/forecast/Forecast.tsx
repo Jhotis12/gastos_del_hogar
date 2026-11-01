@@ -1,13 +1,13 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  TrendingUp,
-  Repeat,
-  PiggyBank,
-  Wallet,
-  Coins,
+  AlertTriangle,
+  CalendarDays,
+  CheckCircle2,
   Info,
-  BarChart3,
+  PiggyBank,
+  Repeat,
+  TrendingUp,
+  XCircle,
 } from 'lucide-react'
 import { useForecast } from '@/modules/forecast/hooks/useForecast'
 import { useCountUp } from '@/shared/hooks/useCountUp'
@@ -15,35 +15,168 @@ import { usePageTitle } from '@/shared/hooks/usePageTitle'
 import QueryError from '@/shared/components/ui/QueryError'
 import PageSkeleton from '@/shared/components/ui/PageSkeleton'
 import { cn } from '@/shared/lib/utils'
-import { shortMonthLabel } from '@/shared/lib/dates'
-import { formatCurrency, formatCurrencyCompact } from '@/shared/lib/money'
-import { savingsInMonths } from '@/modules/forecast/lib/forecast'
+import { formatDate } from '@/shared/lib/dates'
+import { formatCurrency } from '@/shared/lib/money'
+import type { CycleVerdict } from '@/modules/forecast/lib/forecast'
 
-const HORIZONS = [1, 3, 6]
+type VerdictMeta = {
+  label: string
+  hint: string
+  icon: typeof CheckCircle2
+  badge: string
+}
 
-// Máxima altura de barra en px (escala del gráfico de barras CSS)
-const BAR_MAX = 120
+const VERDICT_META: Record<CycleVerdict, VerdictMeta> = {
+  alcanza: {
+    label: 'Te alcanza',
+    hint: 'Tu disponible cubre los compromisos y tu gasto habitual.',
+    icon: CheckCircle2,
+    badge: 'bg-pine-500/20 text-pine-50 ring-pine-300/40',
+  },
+  no_alcanza: {
+    label: 'No te alcanza',
+    hint: 'Tus compromisos superan el disponible antes del próximo pago.',
+    icon: XCircle,
+    badge: 'bg-coral-500/20 text-coral-50 ring-coral-300/40',
+  },
+  ajustado: {
+    label: 'Ajustado',
+    hint: 'El resultado depende de cuánto gastes en variables.',
+    icon: AlertTriangle,
+    badge: 'bg-gold-400/20 text-gold-100 ring-gold-300/40',
+  },
+  preliminar: {
+    label: 'Estimación preliminar',
+    hint: 'La estimación mejorará cuando tengas más meses de historial.',
+    icon: Info,
+    badge: 'bg-white/10 text-pine-50 ring-white/20',
+  },
+  sin_base: {
+    label: 'Sin base de ingresos',
+    hint: 'Registra un ingreso para calcular tu disponible.',
+    icon: Info,
+    badge: 'bg-white/10 text-pine-50 ring-white/20',
+  },
+}
 
-function RangeRow({ label, value }: { label: string; value: number }) {
+function formatSigned(value: number | null, sign?: string): string {
+  if (value === null) return '—'
+  const amount = formatCurrency(Math.abs(value))
+  if (value === 0) return amount
+  if (sign) return `${sign}${amount}`
+  return value < 0 ? `−${amount}` : amount
+}
+
+function Header() {
   return (
-    <div className="flex items-center justify-between gap-2 py-1.5">
-      <span className="text-sm text-ink/60">{label}</span>
-      <span className="text-sm font-medium text-ink">{formatCurrency(value)}</span>
+    <div className="animate-fade-up">
+      <h1 className="flex items-center gap-2 font-display text-xl font-bold tracking-tight text-ink">
+        <TrendingUp size={22} className="text-pine-600" />
+        ¿Me alcanza?
+      </h1>
+      <p className="mt-1 text-sm text-ink/50">
+        Tu disponible, tus compromisos y tu gasto variable antes del pago.
+      </p>
     </div>
   )
 }
 
-export default function Forecast() {
-  usePageTitle('Mi proyección')
-  const { data, error, isLoading, refetch } = useForecast()
-  const [months, setMonths] = useState(3)
-  const animatedTotal = useCountUp(data?.totalExpense?.median ?? 0)
-  const animatedSavings = useCountUp(
-    data?.surplus && months > 0
-      ? savingsInMonths(data.baseBalance, data.surplus, months).median
-      : 0,
+function BreakdownRow({
+  label,
+  value,
+  sign,
+  strong,
+  muted,
+  note,
+}: {
+  label: string
+  value: number | null
+  sign?: string
+  strong?: boolean
+  muted?: boolean
+  note?: string
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3 py-2.5">
+      <dt
+        className={cn(
+          'text-sm',
+          strong ? 'font-semibold text-ink' : 'text-ink/60',
+          muted && 'text-ink/40',
+        )}
+      >
+        {label}
+        {note && (
+          <span className="mt-0.5 block text-xs text-ink/40">{note}</span>
+        )}
+      </dt>
+      <dd
+        className={cn(
+          'whitespace-nowrap text-sm tabular-nums',
+          strong ? 'font-bold text-ink' : 'font-medium text-ink',
+          muted && 'text-ink/40',
+        )}
+      >
+        {formatSigned(value, sign)}
+      </dd>
+    </div>
   )
-  const animatedAvg = useCountUp(data?.avg?.expenses ?? 0)
+}
+
+function CommitmentRow({
+  title,
+  subtitle,
+  amount,
+  overdue,
+  muted,
+}: {
+  title: string
+  subtitle: string
+  amount: number
+  overdue?: boolean
+  muted?: boolean
+}) {
+  return (
+    <li className="flex items-center justify-between gap-3 py-2.5">
+      <div className="min-w-0">
+        <p
+          className={cn(
+            'truncate text-sm',
+            muted ? 'text-ink/45' : 'text-ink',
+          )}
+        >
+          {title}
+        </p>
+        <p className="mt-0.5 text-xs text-ink/45">
+          {subtitle}
+          {overdue && (
+            <>
+              {' '}
+              <span className="font-medium text-coral-600">· Vencido</span>
+            </>
+          )}
+        </p>
+      </div>
+      <span
+        className={cn(
+          'whitespace-nowrap text-sm font-semibold tabular-nums',
+          muted ? 'text-ink/40' : 'text-ink',
+        )}
+      >
+        {formatCurrency(amount)}
+      </span>
+    </li>
+  )
+}
+
+export default function Forecast() {
+  usePageTitle('¿Me alcanza?')
+  const { data, error, isLoading, refetch } = useForecast()
+  const expected = data?.projection.expected ?? null
+  const expectedValue = expected?.median ?? 0
+  const daily = Math.max(0, data?.projection.dailyBudget ?? 0)
+  const animatedExpected = useCountUp(Math.abs(expectedValue))
+  const animatedDaily = useCountUp(daily)
 
   if (error) {
     return (
@@ -56,285 +189,311 @@ export default function Forecast() {
 
   if (isLoading || !data) return <PageSkeleton />
 
-  const {
-    nextMonth,
-    baseBalance,
-    fixedExpenses,
-    fixedItems,
-    variable,
-    totalExpense,
-    income,
-    extraIncomeAvg,
-    surplus,
-    avg,
-    historyMonths,
-    hasEnoughHistory,
-    hasIncomeBase,
-  } = data
-
-  const savings =
-    surplus && months > 0 ? savingsInMonths(baseBalance, surplus, months) : null
-
-  type ChartBar = { month: string; expenses: number; projected?: boolean }
-  const chartData: ChartBar[] = [
-    ...historyMonths.map((m) => ({ month: m.month, expenses: m.expenses })),
-    { month: nextMonth, expenses: totalExpense?.median ?? 0, projected: true },
-  ]
-  const maxChart = Math.max(...chartData.map((c) => c.expenses), 1)
+  const { projection } = data
+  const meta = VERDICT_META[projection.verdict]
+  const VerdictIcon = meta.icon
+  const expectedLabel =
+    projection.verdict === 'preliminar'
+      ? 'Saldo antes de tus gastos variables'
+      : expectedValue >= 0
+        ? 'Te quedarían al próximo pago'
+        : 'Te faltarían al próximo pago'
+  const hasRange = expected !== null && expected.low !== expected.high
+  const hasCommitments =
+    data.fixedCommitments.length > 0 ||
+    data.savingsPending.length > 0 ||
+    data.savingsAlreadyRun.length > 0
 
   return (
     <div className="space-y-6">
       <Header />
 
-      {!hasIncomeBase && (
-        <div className="animate-fade-up flex items-start gap-2.5 rounded-2xl border border-gold-200 bg-gold-100/60 p-4 text-sm text-gold-600">
-          <Info size={16} className="mt-0.5 shrink-0" />
-          <p>
-            No tienes ingresos registrados: no se inventa un disponible. La
-            proyección usa tus gastos y tus servicios; registra un ingreso si
-            quieres ver cuánto podrías ahorrar.
-          </p>
-        </div>
-      )}
-
-      {!hasEnoughHistory && (
-        <div className="animate-fade-up flex items-start gap-2.5 rounded-2xl border border-gold-200 bg-gold-100/60 p-4 text-sm text-gold-600">
-          <Info size={16} className="mt-0.5 shrink-0" />
-          <p>
-            La proyección de gastos variables se afina con al menos 2 meses de
-            historial completo. Por ahora se muestran los gastos fijos y tu
-            promedio histórico.
-          </p>
-        </div>
-      )}
-
-      {/* Hero: gasto estimado del próximo mes */}
       <section className="animate-fade-up relative overflow-hidden rounded-2xl bg-gradient-to-br from-pine-700 via-pine-800 to-pine-950 p-5 text-white shadow-lg shadow-pine-900/20 sm:p-8">
         <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-400/20 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-14 left-1/3 h-40 w-40 rounded-full bg-pine-400/20 blur-2xl" />
         <div className="relative">
-          <p className="text-sm font-medium text-pine-200">
-            Gasto estimado · {shortMonthLabel(nextMonth)}
-          </p>
-          <p className="mt-1 font-display text-3xl font-bold tracking-tight sm:text-5xl">
-            {formatCurrency(animatedTotal)}
-          </p>
-          {totalExpense && (
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-pine-200">
-              <span>
-                Fijos <strong className="text-white">{formatCurrency(fixedExpenses)}</strong>
-              </span>
-              {variable && (
-                <span>
-                  Variables ~{' '}
-                  <strong className="text-white">{formatCurrency(variable.median)}</strong>{' '}
-                  <span className="text-pine-300">
-                    ({formatCurrency(variable.low)}–{formatCurrency(variable.high)})
-                  </span>
-                </span>
-              )}
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-pine-200">
+                Hasta tu próximo pago · {formatDate(data.nextPayday)}
+              </p>
+              <div
+                role="status"
+                aria-live="polite"
+                className={cn(
+                  'mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold ring-1',
+                  meta.badge,
+                )}
+              >
+                <VerdictIcon size={16} aria-hidden="true" />
+                {meta.label}
+              </div>
             </div>
-          )}
-        </div>
-      </section>
 
-      {/* Selector de horizonte + ahorro proyectado */}
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="card card-hover animate-fade-up p-5 lg:col-span-2" style={{ animationDelay: '120ms' }}>
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="font-display text-sm font-semibold text-ink">Ahorro proyectado</h2>
-            <div
-              role="group"
-              aria-label="Horizonte de proyección"
-              className="flex flex-wrap rounded-xl bg-cream p-1"
-            >
-              {HORIZONS.map((h) => (
-                <button
-                  key={h}
-                  type="button"
-                  onClick={() => setMonths(h)}
-                  aria-pressed={months === h}
-                  className={cn(
-                    'min-h-11 rounded-lg px-2 text-sm font-medium transition-colors sm:px-3',
-                    months === h
-                      ? 'bg-pine-700 text-white shadow-sm'
-                      : 'text-ink/55 hover:text-ink',
+            {projection.verdict !== 'sin_base' && (
+              <div className="rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-right backdrop-blur-sm">
+                <p className="text-[11px] font-medium text-pine-200">
+                  {daily > 0 ? 'Puedes gastar' : 'Margen diario'}
+                </p>
+                <p className="font-display text-xl font-semibold">
+                  {daily > 0 ? formatCurrency(animatedDaily) : 'Sin margen'}
+                  {daily > 0 && (
+                    <span className="text-xs font-normal text-pine-200">
+                      /día
+                    </span>
                   )}
-                >
-                  {h} {h === 1 ? 'mes' : 'meses'}
-                </button>
-              ))}
-            </div>
+                </p>
+                <p className="text-[10px] text-pine-300">
+                  {data.remainingDays}{' '}
+                  {data.remainingDays === 1 ? 'día' : 'días'}
+                </p>
+              </div>
+            )}
           </div>
 
-          {savings ? (
-            <>
-              <div className="flex items-end gap-2">
-                <p className="font-display text-3xl font-bold tracking-tight text-pine-600">
-                  {formatCurrency(animatedSavings)}
+          <div className="mt-5">
+            {projection.verdict === 'sin_base' || !expected ? (
+              <>
+                <p className="font-display text-3xl font-bold tracking-tight sm:text-5xl">
+                  No hay un disponible todavía
                 </p>
-                <p className="pb-1 text-sm text-ink/50">
-                  al cierre del mes ({formatCurrency(baseBalance)}) + sobrante × {months}
+                <p className="mt-2 max-w-xl text-sm text-pine-200">
+                  No se inventa un saldo. Registra un ingreso para saber si tu
+                  dinero alcanza hasta el próximo pago.
                 </p>
-              </div>
-              <div className="mt-3 space-y-1 rounded-xl bg-cream p-3">
-                <RangeRow label="Realista" value={savings.median} />
-                <RangeRow label="Optimista" value={savings.high} />
-                <RangeRow label="Pesimista" value={savings.low} />
-              </div>
-            </>
-          ) : (
-            <p className="text-sm text-ink/50">
-              Registra al menos 2 meses de gastos para proyectar tu ahorro.
+                <Link
+                  to="/miembros"
+                  className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-pine-800 hover:bg-pine-50"
+                >
+                  Registrar ingreso
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-pine-200">{expectedLabel}</p>
+                <p
+                  className={cn(
+                    'mt-1 font-display text-3xl font-bold tracking-tight sm:text-5xl',
+                    expectedValue < 0
+                      ? 'text-coral-100'
+                      : projection.verdict === 'ajustado'
+                        ? 'text-gold-100'
+                        : 'text-white',
+                  )}
+                >
+                  {expectedValue < 0 ? '−' : ''}
+                  {formatCurrency(animatedExpected)}
+                </p>
+                {hasRange && (
+                  <p className="mt-2 text-sm text-pine-200">
+                    Rango estimado: {formatSigned(expected.low)} –{' '}
+                    {formatSigned(expected.high)}
+                  </p>
+                )}
+                <p className="mt-1 max-w-xl text-sm text-pine-200">
+                  {meta.hint}
+                </p>
+                {projection.variableDaily !== null && (
+                  <p className="mt-2 text-xs text-pine-300">
+                    Tu gasto variable habitual es ~
+                    {formatCurrency(projection.variableDaily)}/día.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+
+          {data.nextSalary !== null && (
+            <p className="mt-5 flex items-start gap-1.5 text-xs text-pine-300">
+              <CalendarDays size={14} className="mt-0.5 shrink-0" />
+              <span>
+                Tu nómina del {formatDate(data.nextPayday)} reinicia el ciclo:{' '}
+                {formatCurrency(data.nextSalary)}.
+              </span>
             </p>
           )}
         </div>
-
-        <div className="card card-hover animate-fade-up p-5" style={{ animationDelay: '200ms' }}>
-          <div className="mb-4 flex items-center gap-2">
-            <Wallet size={18} className="text-gold-600" />
-            <h2 className="font-display text-sm font-semibold text-ink">Tu promedio mensual</h2>
-          </div>
-          {avg ? (
-            <div className="space-y-3">
-              <div>
-                <p className="text-xs text-ink/50">Gasto normal</p>
-                <p className="font-display text-xl font-bold text-ink">{formatCurrency(animatedAvg)}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-3 border-t border-slate-100 pt-3">
-                <div>
-                  <p className="text-xs text-ink/50">Ingreso</p>
-                  <p className="text-sm font-semibold text-pine-600">{formatCurrency(avg.income)}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-ink/50">Sobrante</p>
-                  <p className={cn('text-sm font-semibold', avg.surplus >= 0 ? 'text-pine-600' : 'text-coral-600')}>
-                    {formatCurrency(avg.surplus)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <p className="text-sm text-ink/50">Aún no hay meses completados.</p>
-          )}
-        </div>
       </section>
 
-      {/* Gráfico: 6 meses + mes proyectado */}
-      <section className="card card-hover animate-fade-up p-5" style={{ animationDelay: '280ms' }}>
-        <div className="mb-5 flex items-center gap-2">
-          <BarChart3 size={18} className="text-pine-600" />
-          <h2 className="font-display text-sm font-semibold text-ink">Historial y proyección</h2>
+      <section
+        className="card card-hover animate-fade-up p-5"
+        style={{ animationDelay: '120ms' }}
+      >
+        <div className="mb-4 flex items-center gap-2">
+          <Info size={18} className="text-pine-600" />
+          <h2 className="font-display text-sm font-semibold text-ink">
+            Así se calcula
+          </h2>
         </div>
-        <div className="flex items-end gap-2 sm:gap-3">
-          {chartData.map((c) => {
-            const h = Math.max(Math.round((c.expenses / maxChart) * BAR_MAX), 4)
-            return (
-              <div key={c.month} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
-                <p className="whitespace-nowrap text-[11px] font-semibold text-ink/70">
-                  {formatCurrencyCompact(c.expenses)}
-                </p>
-                <div
-                  title={shortMonthLabel(c.month)}
-                  className={cn(
-                    'w-full max-w-16 rounded-t-lg transition-colors',
-                    c.projected
-                      ? 'bg-gold-400'
-                      : 'bg-pine-200 hover:bg-pine-300',
-                  )}
-                  style={{ height: h }}
-                />
-                <p className="text-[11px] text-ink/45">{shortMonthLabel(c.month)}</p>
-              </div>
-            )
-          })}
-        </div>
+        <dl className="divide-y divide-slate-100">
+          <BreakdownRow
+            label="Disponible hoy"
+            value={data.available}
+            note={data.available === null ? 'Sin base de ingresos' : undefined}
+          />
+          <BreakdownRow
+            label="Ingresos antes del pago"
+            value={data.incomeBefore}
+            sign="+"
+          />
+          <BreakdownRow
+            label="Servicios antes del pago"
+            value={data.fixedTotal}
+            sign="−"
+          />
+          <BreakdownRow
+            label="Ahorro programado"
+            value={data.savingsPendingTotal}
+            sign="−"
+          />
+          <BreakdownRow
+            label="Para gastar antes del pago"
+            value={projection.spendable}
+            strong
+          />
+          <BreakdownRow
+            label="Gasto variable estimado"
+            value={projection.variableScaled?.median ?? null}
+            sign="−"
+            muted={!projection.variableScaled}
+            note={
+              projection.variableScaled
+                ? `Mediana de ${data.variableMonths} ${
+                    data.variableMonths === 1 ? 'mes' : 'meses'
+                  } completos`
+                : 'Sin historial suficiente'
+            }
+          />
+          <BreakdownRow
+            label="Saldo esperado al pago"
+            value={expected?.median ?? null}
+            strong
+          />
+        </dl>
+        {hasRange && expected && (
+          <p className="mt-3 text-xs text-ink/45">
+            Rango p25–p75: {formatSigned(expected.low)} –{' '}
+            {formatSigned(expected.high)}.
+          </p>
+        )}
       </section>
 
-      {/* Desglose fijos */}
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="card card-hover animate-fade-up p-5" style={{ animationDelay: '360ms' }}>
-          <div className="mb-4 flex items-center gap-2">
+      <section
+        className="card card-hover animate-fade-up p-5"
+        style={{ animationDelay: '200ms' }}
+      >
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
             <Repeat size={18} className="text-pine-600" />
             <h2 className="font-display text-sm font-semibold text-ink">
-              Gastos fijos de {shortMonthLabel(nextMonth)}
+              Compromisos antes del pago
             </h2>
           </div>
-          {fixedItems.length === 0 ? (
-            <p className="text-sm text-ink/50">Ningún servicio vence el próximo mes.</p>
-          ) : (
-            <ul className="divide-y divide-slate-100">
-              {fixedItems.map((item) => (
-                <li key={item.description} className="flex items-center justify-between py-2.5">
-                  <span className="text-sm text-ink">{item.description}</span>
-                  <span className="text-sm font-semibold text-ink">{formatCurrency(item.amount)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <Link
+            to="/recurrentes"
+            className="inline-flex min-h-11 items-center text-sm font-medium text-pine-600 hover:text-ink"
+          >
+            Ver servicios
+          </Link>
         </div>
 
-        <div className="card card-hover animate-fade-up p-5" style={{ animationDelay: '420ms' }}>
-          <div className="mb-4 flex items-center gap-2">
-            <Coins size={18} className="text-pine-600" />
-            <h2 className="font-display text-sm font-semibold text-ink">Ingresos esperados</h2>
-          </div>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-ink/60">Nóminas del mes</span>
-              <span className="text-sm font-semibold text-ink">{formatCurrency(income)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-ink/60">Otros ingresos (promedio)</span>
-              <span className="text-sm font-semibold text-ink">{formatCurrency(extraIncomeAvg)}</span>
-            </div>
-            <div className="flex items-center justify-between border-t border-slate-100 pt-3">
-              <span className="text-sm font-semibold text-ink">Total esperado</span>
-              <span className="text-sm font-bold text-pine-600">{formatCurrency(income + extraIncomeAvg)}</span>
-            </div>
-          </div>
-          <div className="mt-5 rounded-xl bg-cream p-4">
-            <div className="flex items-center gap-2 text-sm text-ink/60">
-              <PiggyBank size={16} className="text-gold-600" />
-              <p>
-                A este ritmo podrías ahorrar{' '}
-                <strong className="text-pine-600">
-                  {surplus ? formatCurrency(surplus.median) : '—'}
-                </strong>{' '}
-                al mes.
-              </p>
-            </div>
-            <Link
-              to="/ahorros"
-              className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
-            >
-              <PiggyBank size={16} />
-              Ver mis metas de ahorro
+        {!hasCommitments ? (
+          <p className="text-sm text-ink/50">
+            Sin compromisos antes de tu próximo pago.
+          </p>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {data.fixedCommitments.map((item) => (
+              <CommitmentRow
+                key={item.id}
+                title={item.description}
+                subtitle={formatDate(item.dueDate)}
+                amount={item.amount}
+                overdue={item.overdue}
+              />
+            ))}
+            {data.savingsPending.map((item) => (
+              <CommitmentRow
+                key={item.id}
+                title={`Autoahorro · ${item.goalName}`}
+                subtitle={`Vence ${formatDate(item.dueDate)}`}
+                amount={item.amount}
+                overdue={item.overdue}
+              />
+            ))}
+            {data.savingsAlreadyRun.map((item) => (
+              <CommitmentRow
+                key={item.id}
+                title={`Autoahorro ya ejecutado · ${item.goalName}`}
+                subtitle={`Se ejecutó el ${formatDate(item.dueDate)}`}
+                amount={item.amount}
+                muted
+              />
+            ))}
+          </ul>
+        )}
+
+        {data.unassignedRecurringCount > 0 && (
+          <p className="mt-4 rounded-xl bg-gold-100/60 p-3 text-xs leading-relaxed text-gold-700">
+            {data.unassignedRecurringCount}{' '}
+            {data.unassignedRecurringCount === 1
+              ? 'servicio activo no tiene'
+              : 'servicios activos no tienen'}{' '}
+            responsable y no se incluyen.{' '}
+            <Link to="/recurrentes" className="font-semibold underline">
+              Asígnalos en Servicios
             </Link>
-          </div>
-        </div>
+            .
+          </p>
+        )}
       </section>
 
-      {/* Nota metodológica */}
+      {data.savedAway > 0 && (
+        <section
+          className="card card-hover animate-fade-up p-5"
+          style={{ animationDelay: '280ms' }}
+        >
+          <div className="mb-3 flex items-center gap-2">
+            <PiggyBank size={18} className="text-gold-600" />
+            <h2 className="font-display text-sm font-semibold text-ink">
+              Ahorro ya apartado
+            </h2>
+          </div>
+          <p className="font-display text-2xl font-bold tracking-tight text-pine-600">
+            {formatCurrency(data.savedAway)}
+          </p>
+          <p className="mt-1 text-sm text-ink/50">
+            No modifica tu disponible personal; se muestra aparte.
+          </p>
+          <Link
+            to="/ahorros"
+            className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-pine-700 px-4 py-2 text-sm font-medium text-white hover:bg-pine-800"
+          >
+            <PiggyBank size={16} />
+            Ver mis metas de ahorro
+          </Link>
+        </section>
+      )}
+
       <p className="animate-fade-up flex items-start gap-2 px-1 text-xs leading-relaxed text-ink/40">
         <Info size={14} className="mt-0.5 shrink-0" />
-        Mi proyección estimada: gastos fijos exactos (servicios con fecha de pago en el mes)
-        + mediana de tus gastos variables de los últimos meses. No es una promesa,
-        es un punto de partida basado en tu historial.
-      </p>
-    </div>
-  )
-}
-
-function Header() {
-  return (
-    <div className="animate-fade-up">
-      <h1 className="flex items-center gap-2 font-display text-xl font-bold tracking-tight text-ink">
-        <TrendingUp size={22} className="text-pine-600" />
-        Mi proyección
-      </h1>
-      <p className="mt-1 text-sm text-ink/50">
-        Tu gasto normal, tu disponible y cuánto podrías ahorrar.
+        <span>
+          {projection.verdict === 'sin_base'
+            ? 'No se usa el saldo del hogar ni se inventa un disponible. Registra un ingreso para ver el cálculo completo.'
+            : `${
+                data.variableMonths >= 2
+                  ? `La estimación variable usa la mediana de tus últimos ${
+                      data.variableMonths
+                    } meses completos y el rango p25–p75, escalada a los ${
+                      data.remainingDays
+                    } ${data.remainingDays === 1 ? 'día' : 'días'} que faltan.`
+                  : 'Aún no hay 2 meses completos de gastos variables; la estimación es preliminar y no incluye variables.'
+              } No incluye ingresos extra no registrados ni gastos de otros miembros.${
+                data.savedAway > 0
+                  ? ' El ahorro ya apartado no se descuenta del disponible.'
+                  : ''
+              }`}
+        </span>
       </p>
     </div>
   )

@@ -85,7 +85,7 @@ Aplicación web de **finanzas personales y del hogar** (Colombia, COP):
 │       ├── savings/         #   Savings + hooks/useSavings, useSavingsMovements + components/GoalForm, AdjustGoalModal
 │       ├── categories/      #   Categories + hooks/useCategories + components/BudgetModal
 │       ├── profile/         #   Profile + hooks/useHousehold, useSettings
-│       ├── forecast/        #   Forecast + hooks/useForecast + lib/forecast (proyección)
+│       ├── forecast/        #   Forecast + hooks/useForecast + lib/forecast (alcance hasta el próximo pago)
 │       └── wishlist/        #   Wishlist ("Quiero comprar") + hooks/useWishlist + components/WishlistItemForm + lib/installments
 ├── backups/                 # Dumps de BD (gitignored — datos sensibles)
 ├── openspec/                # Cambios spec-driven (proposal → specs → design → tasks)
@@ -342,7 +342,7 @@ en su módulo y el resto de módulos importa de ahí.
 | `savings` | `useSavings` (metas) · `useSavingsMovements` (movimientos, planes, depósito/retiro, autoahorro) |
 | `categories` | `useCategories` (categorías + presupuestos) |
 | `profile` | `useHousehold` (crear/unirse/eliminar hogar) · `useSettings` |
-| `forecast` | `useForecast` (proyección; lib `forecast.ts`) |
+| `forecast` | `useForecast` (alcance hasta el próximo pago; lib `forecast.ts`) |
 | `wishlist` | `useWishlist` (deseos + plan de cuotas; lib `installments.ts`) |
 | `dashboard` · `calendar` · `history` | — (consumen hooks de los módulos de datos) |
 
@@ -390,11 +390,22 @@ rangos vacíos en UTC−5 (bug histórico: "los gastos no se registraban").
 
 `src/shared/lib/periods.ts` concentra las ventanas del ledger v2:
 `monthToDateWindow(asOf)`, `sincePaydayWindow({ payday, salaries, asOf })`,
-`lastPaydayDate`, `clampPayday` y `rangeLabel`. Las ventanas son inclusivas y
-se comparan como strings `YYYY-MM-DD`; `lastPaydayDate` usa el último
-`salaries.pay_date` real ≤ `asOf` o el `profiles.payday` configurado (mes
-anterior si el día aún no llega), recortado al último día del mes. Las
-pruebas unitarias viven en `tests/unit/` y se ejecutan con `pnpm test`.
+`lastPaydayDate`, `nextPaydayDate`, `daysBetween`, `clampPayday` y
+`rangeLabel`. Las ventanas son inclusivas y se comparan como strings
+`YYYY-MM-DD`; `lastPaydayDate` usa el último `salaries.pay_date` real ≤ `asOf`
+o el `profiles.payday` configurado (mes anterior si el día aún no llega),
+recortado al último día del mes. `nextPaydayDate` usa la primera nómina futura
+o el `payday` configurado (mes siguiente si hoy ya es día de pago). Las pruebas
+unitarias viven en `tests/unit/` y se ejecutan con `pnpm test`.
+
+### Proyección: ¿me alcanza hasta el próximo pago?
+`/proyeccion` responde si el disponible personal cubre los compromisos del
+ciclo (servicios recurrentes y autoahorro que vencen antes del próximo pago)
+más la estimación variable. La nómina del próximo pago **no** cubre el ciclo
+actual: es el reinicio del siguiente. El motor puro vive en
+`modules/forecast/lib/forecast.ts`; la variable usa la mediana de hasta 6
+meses completos (con meses en cero) y un rango p25–p75. El ahorro ya apartado
+se muestra separado y no modifica el disponible personal.
 
 ### Sistema de diseño (Tailwind v4)
 - Paleta "billete" en `@theme`: `pine` (verde), `gold`, `coral`, `cream`, `ink`.

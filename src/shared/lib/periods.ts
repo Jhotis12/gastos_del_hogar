@@ -61,6 +61,41 @@ export function lastPaydayDate({
   return paydayDate(payday, previous.getFullYear(), previous.getMonth())
 }
 
+// Próximo pago: la primera nómina efectiva posterior a asOf; si no hay,
+// el payday configurado (mes actual si aún no llega, si no el siguiente).
+// Estrictamente futuro: si hoy es día de pago, el próximo cae el mes siguiente.
+export function nextPaydayDate({
+  payday,
+  salaries = [],
+  asOf,
+}: PaydayInput): string {
+  const end = asOf.slice(0, 10)
+  const future = salaries
+    .map((salary) => salary.pay_date.slice(0, 10))
+    .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date) && date > end)
+    .sort()
+
+  const next = future[0]
+  if (next) return next
+
+  const { year, month0 } = parseISO(end)
+  const current = paydayDate(payday, year, month0)
+  if (current > end) return current
+
+  const following = new Date(year, month0 + 1, 1, 12)
+  return paydayDate(payday, following.getFullYear(), following.getMonth())
+}
+
+// Diferencia en días calendario entre dos fechas YYYY-MM-DD. Se ancla al
+// mediodía local para no cruzar de día con zonas UTC−5. Puede ser negativa.
+export function daysBetween(from: string, to: string): number {
+  const a = parseISO(from)
+  const b = parseISO(to)
+  const start = new Date(a.year, a.month0, a.day, 12).getTime()
+  const end = new Date(b.year, b.month0, b.day, 12).getTime()
+  return Math.round((end - start) / 86_400_000)
+}
+
 // Mes calendario en curso: primer día hasta asOf, ambos inclusive.
 export function monthToDateWindow(asOf: string): DateRange {
   const end = asOf.slice(0, 10)

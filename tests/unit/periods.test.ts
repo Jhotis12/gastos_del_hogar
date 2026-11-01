@@ -2,8 +2,10 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
   clampPayday,
+  daysBetween,
   lastPaydayDate,
   monthToDateWindow,
+  nextPaydayDate,
   rangeLabel,
   sincePaydayWindow,
 } from '../../src/shared/lib/periods.ts'
@@ -85,6 +87,88 @@ test('lastPaydayDate acepta nómina atrasada como fecha real', () => {
     }),
     '2026-10-01',
   )
+})
+
+test('nextPaydayDate usa la nómina real futura más cercana', () => {
+  assert.equal(
+    nextPaydayDate({
+      payday: 24,
+      salaries: [{ pay_date: '2026-10-30' }],
+      asOf: '2026-10-24',
+    }),
+    '2026-10-30',
+  )
+  assert.equal(
+    nextPaydayDate({
+      payday: 24,
+      salaries: [
+        { pay_date: '2026-10-01' },
+        { pay_date: '2026-10-30' },
+        { pay_date: '2026-11-30' },
+      ],
+      asOf: '2026-10-24',
+    }),
+    '2026-10-30',
+  )
+})
+
+test('nextPaydayDate usa el payday configurado si no hay nóminas', () => {
+  assert.equal(
+    nextPaydayDate({ payday: 15, salaries: [], asOf: '2026-10-10' }),
+    '2026-10-15',
+  )
+  assert.equal(
+    nextPaydayDate({ payday: 25, salaries: [], asOf: '2026-10-10' }),
+    '2026-10-25',
+  )
+})
+
+test('nextPaydayDate pasa al mes siguiente si hoy es el día de pago', () => {
+  assert.equal(
+    nextPaydayDate({ payday: 24, salaries: [], asOf: '2026-10-24' }),
+    '2026-11-24',
+  )
+  assert.equal(
+    nextPaydayDate({
+      payday: 24,
+      salaries: [{ pay_date: '2026-10-24' }],
+      asOf: '2026-10-24',
+    }),
+    '2026-11-24',
+  )
+})
+
+test('nextPaydayDate recorta el día 31 en febrero y respeta bisiesto', () => {
+  assert.equal(
+    nextPaydayDate({ payday: 31, salaries: [], asOf: '2026-02-01' }),
+    '2026-02-28',
+  )
+  assert.equal(
+    nextPaydayDate({ payday: 31, salaries: [], asOf: '2028-02-01' }),
+    '2028-02-29',
+  )
+  assert.equal(
+    nextPaydayDate({ payday: 31, salaries: [], asOf: '2026-04-01' }),
+    '2026-04-30',
+  )
+})
+
+test('nextPaydayDate prefiere una nómina atrasada futura al payday', () => {
+  assert.equal(
+    nextPaydayDate({
+      payday: 24,
+      salaries: [{ pay_date: '2026-10-28' }],
+      asOf: '2026-10-24',
+    }),
+    '2026-10-28',
+  )
+})
+
+test('daysBetween cuenta días calendario sin cruzar por UTC', () => {
+  assert.equal(daysBetween('2026-10-24', '2026-10-30'), 6)
+  assert.equal(daysBetween('2026-10-31', '2026-11-01'), 1)
+  assert.equal(daysBetween('2026-02-28', '2026-03-01'), 1)
+  assert.equal(daysBetween('2026-10-30', '2026-10-24'), -6)
 })
 
 test('monthToDateWindow cubre el mes en curso', () => {

@@ -48,8 +48,8 @@ for (const [label, url] of [
   await checkOverflow(label)
 }
 
-// Pasada a 320px (pantallas muy angostas): el MonthPicker, el selector de
-// horizonte de Proyección y los grids deben seguir sin desbordar.
+// Pasada a 320px (pantallas muy angostas): el MonthPicker, las tarjetas de
+// Proyección y los grids deben seguir sin desbordar.
 page.setViewportSize({ width: 320, height: 700 })
 for (const [label, url] of [
   ['dashboard 320px', '/'],
