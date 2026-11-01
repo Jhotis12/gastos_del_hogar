@@ -1,4 +1,5 @@
--- RPCs de finanzas v2.0: disponible, historiales, movimientos y autoahorro.
+-- RPCs de finanzas v2: disponible neto de ahorro propio, historiales,
+-- movimientos y autoahorro.
 -- Uso:
 --   docker exec -i supabase_db_App-gastos psql -U postgres -d postgres \
 --     -v ON_ERROR_STOP=1 < tests/db/finance-rpcs.sql
@@ -76,8 +77,8 @@ declare
   v_accumulated numeric;
 begin
   select available into v_available from public.get_member_available(current_date);
-  if v_available <> 2400000 then
-    raise exception 'FALLO: disponible de A = %, esperado 2400000', v_available;
+  if v_available <> 1950000 then
+    raise exception 'FALLO: disponible de A = %, esperado 1950000 (3600000 - 1200000 - 450000 ahorro propio)', v_available;
   end if;
 
   select income, expenses, savings, free, accumulated
@@ -92,8 +93,8 @@ begin
   end if;
 
   select available into v_available from public.get_household_available(current_date);
-  if v_available <> 4100000 then
-    raise exception 'FALLO: disponible del hogar = %, esperado 4100000', v_available;
+  if v_available <> 3050000 then
+    raise exception 'FALLO: disponible del hogar = %, esperado 3050000 (A 1950000 + B 1100000)', v_available;
   end if;
   raise notice 'PASS: disponible desde el pago e historial personal de A';
 end $$;
