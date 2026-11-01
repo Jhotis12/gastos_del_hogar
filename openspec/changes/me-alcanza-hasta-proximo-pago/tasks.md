@@ -35,11 +35,11 @@
 
 ## 5. Git y PR
 
-- [ ] 5.1 Crear la rama `feat/me-alcanza-hasta-proximo-pago` desde `master`; verificar con `git branch --show-current`
-- [ ] 5.2 Hacer commits por bloques lógicos con la convención del repo (`feat`, `fix`, `test`, `docs`); verificar con `git log --oneline -5`
-- [ ] 5.3 Hacer push de la rama; verificar con `git push -u origin feat/me-alcanza-hasta-proximo-pago`
-- [ ] 5.4 Abrir la PR con `gh pr create --base master --fill`; verificar la URL y que la PR tenga los checks `CI` y `E2E`
-- [ ] 5.5 Si CI falla, corregir y volver a pushear; verificar que `CI` y `E2E` queden en verde
+- [x] 5.1 Crear la rama `feat/me-alcanza-hasta-proximo-pago` desde `master`; verificar con `git branch --show-current`
+- [x] 5.2 Hacer commits por bloques lógicos con la convención del repo (`feat`, `fix`, `test`, `docs`); verificar con `git log --oneline -5`
+- [x] 5.3 Hacer push de la rama; verificar con `git push -u origin feat/me-alcanza-hasta-proximo-pago`
+- [x] 5.4 Abrir la PR con `gh pr create --base master --fill`; verificar la URL y que la PR tenga los checks `CI` y `E2E`
+- [x] 5.5 Si CI falla, corregir y volver a pushear; verificar que `CI` y `E2E` queden en verde
 
 ## Workflow follow-up
 
