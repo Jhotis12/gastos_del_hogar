@@ -463,7 +463,7 @@ export default function Forecast() {
             {formatCurrency(data.savedAway)}
           </p>
           <p className="mt-1 text-sm text-ink/50">
-            No modifica tu disponible personal; se muestra aparte.
+            Ya está descontado de tu disponible personal.
           </p>
           <Link
             to="/ahorros"
@@ -490,7 +490,7 @@ export default function Forecast() {
                   : 'Aún no hay 2 meses completos de gastos variables; la estimación es preliminar y no incluye variables.'
               } No incluye ingresos extra no registrados ni gastos de otros miembros.${
                 data.savedAway > 0
-                  ? ' El ahorro ya apartado no se descuenta del disponible.'
+                  ? ' El ahorro ya apartado está descontado de tu disponible.'
                   : ''
               }`}
         </span>

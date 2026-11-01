@@ -143,11 +143,11 @@ export default function Dashboard() {
   )
   const monthSpent = monthExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0)
   const cycleSpent = cycleExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0)
-  const savingsThisMonth = (savingsMovements ?? [])
+  const savingsThisCycle = (savingsMovements ?? [])
     .filter(
       (movement) =>
         movement.member_id === profile?.id &&
-        inRange(movement.movement_date, financeWindows.month.start, financeWindows.month.end),
+        inRange(movement.movement_date, financeWindows.cycle.start, financeWindows.cycle.end),
     )
     .reduce((sum, movement) => sum + Number(movement.amount), 0)
 
@@ -239,7 +239,7 @@ export default function Dashboard() {
                 )}
               </div>
               <p className="mt-1 text-xs text-pine-200/80">
-                Ingresos − gastos desde tu último pago
+                Ingresos − gastos − ahorro desde tu último pago
               </p>
             </div>
 
@@ -298,14 +298,14 @@ export default function Dashboard() {
               <div
                 className={cn(
                   'mt-1 font-display text-xl font-semibold',
-                  savingsThisMonth < 0 && 'text-coral-200',
+                  savingsThisCycle < 0 && 'text-coral-200',
                 )}
               >
-                {savingsThisMonth >= 0 ? '' : '−'}
-                {formatCurrency(Math.abs(savingsThisMonth))}
+                {savingsThisCycle >= 0 ? '' : '−'}
+                {formatCurrency(Math.abs(savingsThisCycle))}
               </div>
               <p className="mt-0.5 text-[11px] text-pine-200/70">
-                Neto de este mes
+                {rangeLabel(financeWindows.cycle)}
               </p>
             </div>
           </div>
