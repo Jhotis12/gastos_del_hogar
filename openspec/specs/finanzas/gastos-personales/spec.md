@@ -105,25 +105,34 @@ ventana ni para calcular el total gastado.
 - **WHEN** el `payday` configurado es 31 y el mes en curso es febrero
 - **THEN** la fecha de pago se recorta al último día de febrero y la ventana se calcula con esa fecha
 
-### Requirement: Disponible personal desde el último pago
+### Requirement: Disponible personal neto de ahorro
 
-Cuando exista ingreso registrado para la persona, el sistema SHALL mostrar un
-disponible calculado con los ingresos recibidos desde su último pago (real o la
-fecha configurada de pago) menos los gastos pagados por la persona en esa misma
-ventana. El ahorro SHALL NOT descontarse del disponible; se muestra en su propia
-sección. Si no hay ingreso registrado, SHALL mostrar solo gasto y ahorro, SHALL
-NOT inventar un disponible y SHALL NOT mostrar el monto del salario como
-protagonista.
+Cuando exista ingreso registrado, el sistema SHALL mostrar un disponible
+calculado con los ingresos recibidos desde su último pago (real o configurado)
+menos los gastos pagados y menos su ahorro neto propio (aportes menos retiros)
+en esa misma ventana. Los aportes de otros miembros y las aperturas sin dueño
+SHALL NOT afectarlo. Sin ingreso registrado, SHALL mostrar solo gasto y ahorro,
+sin inventar un disponible; el salario SHALL NOT ser la cifra principal.
 
-#### Scenario: Con ingreso registrado
+#### Scenario: Con ingreso registrado y ahorro
 
-- **WHEN** la persona tiene una nómina de 3.000.000 recibida el día 30 y gastos de 1.200.000 desde ese pago
-- **THEN** el disponible muestra 1.800.000 y el detalle aclara que es desde el último pago
+- **WHEN** la persona tiene una nómina de 3.000.000 recibida el día 30, gastos de 1.200.000 y ahorro propio neto de 300.000 desde ese pago
+- **THEN** el disponible muestra 1.500.000 y el detalle aclara que descuenta el ahorro
 
-#### Scenario: El ahorro no reduce el disponible
+#### Scenario: El retiro devuelve el dinero
 
-- **WHEN** la persona movió 300.000 a una meta de ahorro después de su pago
-- **THEN** el disponible sigue siendo ingresos menos gastos y el ahorro aparece en su propia sección
+- **WHEN** la persona retira 50.000 de una meta de ahorro dentro del ciclo
+- **THEN** su disponible sube 50.000
+
+#### Scenario: Aporte de otro miembro
+
+- **WHEN** otro miembro deposita 200.000 en una meta compartida
+- **THEN** el disponible de la persona no cambia
+
+#### Scenario: Apertura migrada
+
+- **WHEN** una meta migrada tiene una apertura de 500.000 sin miembro
+- **THEN** el disponible de la persona no baja por esa apertura
 
 #### Scenario: Sin ingreso registrado
 
@@ -133,7 +142,7 @@ protagonista.
 #### Scenario: El salario no es el titular de Inicio
 
 - **WHEN** la persona tiene un salario registrado
-- **THEN** Inicio no muestra “Me pagaron” ni el monto del salario como cifra principal; el foco sigue siendo el gasto personal
+- **THEN** Inicio no muestra "Me pagaron" ni el monto del salario como cifra principal; el foco sigue siendo el gasto personal
 
 ### Requirement: Gasto personal contado una vez en el hogar
 

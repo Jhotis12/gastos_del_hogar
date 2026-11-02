@@ -61,26 +61,42 @@ calcularse como la suma de sus movimientos. La edición directa de
 - **WHEN** el cliente intenta actualizar `saved_amount` directamente sin crear un movimiento
 - **THEN** la operación no modifica el saldo de la meta o es rechazada por la política de escritura
 
-### Requirement: El ahorro se muestra separado del disponible
+### Requirement: El ahorro descuenta el disponible del aportante
 
-Los depósitos y retiros SHALL NOT modificar el disponible personal ni el del
-hogar; SHALL modificar el saldo de la meta y las columnas de ahorro del
-Historial. El ahorro SHALL verse en Ahorros, no en el hero de Inicio.
+Cada depósito o aporte automático SHALL reducir el disponible personal del
+miembro que lo hace, y cada retiro SHALL devolverle ese dinero, dentro de la
+ventana desde su último pago. Los aportes de otros miembros y las aperturas
+migradas sin miembro SHALL NOT afectar el disponible de la persona.
 
-#### Scenario: Depósito personal
+#### Scenario: Depósito en meta personal
 
 - **WHEN** A tiene un disponible de 1.000.000 y deposita 200.000 en su meta personal
-- **THEN** su disponible sigue en 1.000.000 y el ahorro sube 200.000
+- **THEN** su disponible pasa a 800.000 y el ahorro de la meta sube 200.000
 
 #### Scenario: Depósito en meta compartida
 
 - **WHEN** A deposita 150.000 en una meta compartida
-- **THEN** el disponible de A y B no cambia y la meta sube 150.000
+- **THEN** el disponible de A baja 150.000, el de B no cambia y la meta sube 150.000
 
 #### Scenario: Retiro
 
 - **WHEN** A retira 50.000 de una meta compartida
-- **THEN** el saldo de la meta baja 50.000 y el disponible no cambia
+- **THEN** el saldo de la meta baja 50.000 y el disponible de A sube 50.000
+
+#### Scenario: Aporte de otro miembro
+
+- **WHEN** B aporta 200.000 a una meta compartida
+- **THEN** el disponible de A no cambia por ese aporte
+
+#### Scenario: Apertura migrada
+
+- **WHEN** una meta migrada tiene una apertura de 500.000 sin miembro
+- **THEN** el disponible de ningún miembro baja por esa apertura
+
+#### Scenario: La resta es visible en Inicio
+
+- **WHEN** la persona ve el hero de Inicio
+- **THEN** la tarjeta "Mi ahorro" muestra su neto desde el último pago y el disponible descuenta exactamente ese monto
 
 ### Requirement: Eliminar una meta con sus movimientos
 

@@ -92,9 +92,10 @@ hogares ni permitir editar el perfil del miembro anterior.
 
 El sistema SHALL mostrar el disponible del hogar junto al personal en Inicio.
 SHALL calcularlo como la suma de los disponibles personales de todos los
-miembros, cada uno desde su último pago, y SHALL NOT incluir el ahorro. Si un
-miembro no tiene ingresos, sus gastos desde su fecha de pago SHALL reducir el
-total. El acumulado histórico y el sobrante mensual SHALL seguir en Historial.
+miembros, cada uno desde su último pago y ya descontando su ahorro neto propio;
+SHALL NOT sumar los saldos de las metas de ahorro. Si un miembro no tiene
+ingresos, sus gastos desde su fecha de pago SHALL reducir el total. El acumulado
+histórico y el sobrante mensual SHALL seguir en Historial.
 
 #### Scenario: Miembros con pagos distintos
 
@@ -105,6 +106,11 @@ total. El acumulado histórico y el sobrante mensual SHALL seguir en Historial.
 
 - **WHEN** el hogar tiene 700.000 en metas compartidas
 - **THEN** ese monto no se suma al disponible del hogar y se ve en Ahorros y en el Historial
+
+#### Scenario: El aporte propio baja el total
+
+- **WHEN** A aporta 150.000 a una meta compartida
+- **THEN** el disponible del hogar baja 150.000 por el disponible de A, y un aporte de B no baja el disponible de A
 
 #### Scenario: Miembro sin ingresos
 
